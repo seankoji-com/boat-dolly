@@ -282,13 +282,22 @@ const NS='vector-effect="non-scaling-stroke"';
 const ANIM_DUR=4.5;
 let ANIM_ON=!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 function toggleAnim(){ANIM_ON=!ANIM_ON;renderPage()}
+/* loop timing (fractions of ANIM_DUR): parts slide in over SLIDE_T, cut pieces come apart over SEP_T */
+const SLIDE_T=[.12,.5],SEP_T=[.55,.72];
+let CLIP_N=0;
+const k3=n=>n.toFixed(3);
+const REP=()=>`dur="${ANIM_DUR}s" repeatCount="indefinite"`;
+/* translate a group from 3D offset `from` to `to`, holding before t0 and after t1 */
+function slideTr(from,to,t0,t1){const A=proj(from).map(k3).join(' '),B=proj(to).map(k3).join(' ');
+  return `<animateTransform attributeName="transform" type="translate" values="${A};${A};${B};${B}" keyTimes="0;${k3(t0)};${k3(t1)};1" calcMode="spline" keySplines="0 0 1 1;.5 0 .2 1;0 0 1 1" ${REP()}/>`}
 
 function render(objs,o={}){
   const W=o.w||720,H=o.h||430,list=objs.slice().sort((a,b)=>a.order-b.order);
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   const grow=([x,y])=>{if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y};
   if(o.focus){const [a,b,c,d,e,f]=o.focus;for(const x of[a,b])for(const y of[c,d])for(const z of[e,f])grow(proj([x,y,z]))}
-  else{list.forEach(ob=>{ob.solids.forEach(s=>s.faces.forEach(f=>f.p.forEach(p=>grow(proj(add(p,ob.off))))));(ob.paths||[]).forEach(pa=>pa.pts.forEach(p=>grow(proj(add(p,ob.off)))))});(o.ann||[]).forEach(a=>[a.a,a.b,a.p].filter(Boolean).forEach(p=>grow(proj(p))))}
+  else{list.forEach(ob=>{const offs=ob.sep?[ob.off,add(ob.off,ob.sep)]:[ob.off];offs.forEach(o2=>{ob.solids.forEach(s=>s.faces.forEach(f=>f.p.forEach(p=>grow(proj(add(p,o2))))));(ob.paths||[]).forEach(pa=>pa.pts.forEach(p=>grow(proj(add(p,o2)))))})});
+    (o.ann||[]).forEach(a=>[a.a,a.b,a.p].filter(Boolean).forEach(p=>{grow(proj(p));if(a.ride)grow(proj(add(p,a.ride)));if(a.sep)grow(proj(add(p,a.sep)))}))}
   let bw=x1-x0,bh=y1-y0;const pad=Math.max(bw,bh)*(o.pad??.07);x0-=pad;y0-=pad;bw+=2*pad;bh+=2*pad;
   if(bw/bh<W/H){const nw=bh*W/H;x0-=(nw-bw)/2;bw=nw}else{const nh=bw*H/W;y0-=(nh-bh)/2;bh=nh}
   const s=bw/W;let out='',overlay='';
@@ -311,12 +320,18 @@ function render(objs,o={}){
   for(const ob of list){
     const op=ob.ghost?` opacity="${ob.ghost===true?.2:ob.ghost}"`:'';
     const moving=ANIMATE&&ob.anim&&(ob.off[0]||ob.off[1]||ob.off[2]);
-    if(!moving){out+=`<g${op}>${drawBody(ob,ob.solids,ob.off)}</g>`;continue}
+    if(!moving){const body=drawBody(ob,ob.solids,ob.off);
+      /* cut pieces: start joined, come apart after the saw cuts */
+      out+=ANIMATE&&ob.sep?`<g${op}><g>${slideTr(ZERO,ob.sep,...SEP_T)}${body}</g></g>`:`<g${op}>${body}</g>`;continue}
     /* cycle: hold exploded -> slide into place -> hold assembled. Stagger shifts each part a little later. */
-    const [dx,dy]=proj(ob.off),f=n=>n.toFixed(3),t0=.12+ob.stagger/ANIM_DUR,t1=.5+ob.stagger/ANIM_DUR;
-    const rep=`dur="${ANIM_DUR}s" repeatCount="indefinite"`;
-    out+=`<g${op}><g><animateTransform attributeName="transform" type="translate" values="${f(dx)} ${f(dy)};${f(dx)} ${f(dy)};0 0;0 0" keyTimes="0;${f(t0)};${f(t1)};1" calcMode="spline" keySplines="0 0 1 1;.5 0 .2 1;0 0 1 1" ${rep}/>`+
-      `<animate attributeName="opacity" values="1;0" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>${drawBody(ob,ob.movingSolids||ob.solids,ZERO)}</g>`+
+    const f=k3,t0=SLIDE_T[0]+ob.stagger/ANIM_DUR,t1=SLIDE_T[1]+ob.stagger/ANIM_DUR;
+    const rep=REP(),tr=slideTr(ob.off,ZERO,t0,t1),hide=`<animate attributeName="opacity" values="1;0" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>`;
+    /* bolt/pin shank: clipped at the surface it goes into, so it disappears down the hole instead of sliding over the metal */
+    let shank='';
+    if(ob.shank){const c=centroid(ob.shank.faces.flatMap(fc=>fc.p)),Ey=proj([c[0],c[1],ob.sink])[1],id='k'+(++CLIP_N);
+      shank=`<clipPath id="${id}"><rect x="${(x0-bw).toFixed(1)}" y="${(y0-2*bh).toFixed(1)}" width="${(3*bw).toFixed(1)}" height="${(Ey-y0+2*bh).toFixed(1)}"/></clipPath>`+
+        `<g clip-path="url(#${id})"><g>${tr}${hide}${drawBody(ob,[ob.shank],ZERO)}</g></g>`}
+    out+=`<g${op}>${shank}<g>${tr}${hide}${drawBody(ob,ob.movingSolids||ob.solids,ZERO)}</g>`+
       `<g opacity="0"><animate attributeName="opacity" values="0;1" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>${drawBody(ob,ob.finalSolids||ob.solids,ZERO)}</g></g>`;
     if(ob.spin){/* tightening: a marching dashed ring round the bolt head or nut, just after it lands */
       const c=centroid((ob.finalSolids||ob.solids).flatMap(sd=>sd.faces.flatMap(fc=>fc.p)));
@@ -327,21 +342,35 @@ function render(objs,o={}){
         `<animate attributeName="stroke-dashoffset" values="0;${f(-18*s)}" dur=".45s" repeatCount="indefinite"/></path>`;
     }
   }
-  out+=overlay+(o.ann||[]).map(a=>annSVG(a,s,ANIMATE)).join('');
+  /* annotations can ride with a sliding part (ride = same offset it starts from) or with a cut piece (sep) */
+  const annWrap=a=>{let g=annSVG(a,s,ANIMATE);
+    if(a.sep&&ANIMATE)g=`<g>${slideTr(ZERO,a.sep,...SEP_T)}${g}</g>`;
+    if(a.ride)g=ANIMATE?`<g>${slideTr(a.ride,ZERO,...SLIDE_T)}${g}</g>`:`<g transform="translate(${proj(a.ride).map(k3).join(' ')})">${g}</g>`;
+    return g};
+  out+=overlay+(o.ann||[]).map(annWrap).join('');
   if(o.ring){const [a,b,c,d,e,f]=o.ring,C=proj([(a+b)/2,(c+d)/2,(e+f)/2]);out+=`<circle cx="${C[0]}" cy="${C[1]}" r="${16*s}" fill="none" stroke="#e3000b" stroke-width="3.5" ${NS}/>`}
   return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${bw.toFixed(1)} ${bh.toFixed(1)}" preserveAspectRatio="xMidYMid meet" role="img">${out}</svg>`;
 }
 /* a twist drill bit (with a red chuck) that travels from A to B along a drill line, on the same loop as the parts */
-function drillBit(A,B,s){
+/* E = where the bit enters the material (screen coords). T = [start, reach surface, finish]. The bit eases down to E, then drills on to B. */
+function drillBit(A,B,s,E,T){
   const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]];
   const len=52*s,w=9*s,pt=(a,b)=>[a*u[0]+b*n[0],a*u[1]+b*n[1]].map(v=>v.toFixed(2)).join(',');
   const body=[pt(0,0),pt(-11*s,w/2),pt(-len,w/2),pt(-len,-w/2),pt(-11*s,-w/2)].join(' ');
   const flutes=[18,28,38].map(k=>`<line x1="${pt(-k*s,w/2).split(',')[0]}" y1="${pt(-k*s,w/2).split(',')[1]}" x2="${pt(-(k+7)*s,-w/2).split(',')[0]}" y2="${pt(-(k+7)*s,-w/2).split(',')[1]}" stroke="#55606b" stroke-width="1.2" ${NS}/>`).join('');
   const chuck=[pt(-len,w*.9),pt(-len-16*s,w*.9),pt(-len-16*s,-w*.9),pt(-len,-w*.9)].join(' ');
-  const f=v=>v.toFixed(1);
-  return `<g><animateTransform attributeName="transform" type="translate" values="${f(A[0])} ${f(A[1])};${f(A[0])} ${f(A[1])};${f(B[0])} ${f(B[1])};${f(B[0])} ${f(B[1])}" keyTimes="0;.15;.62;1" calcMode="spline" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1" dur="${ANIM_DUR}s" repeatCount="indefinite"/>`+
-    `<polygon points="${chuck}" fill="#e3000b" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#b8c2cc" stroke="#1d2329" stroke-width="1.2" ${NS}/>${flutes}</g>`;
+  const P=p=>p.map(v=>v.toFixed(1)).join(' ');
+  /* with an entry point the bit drills in, then pulls back out of the hole it made */
+  const pos=E?`values="${P(A)};${P(A)};${P(E)};${P(B)};${P(A)};${P(A)}" keyTimes="0;${k3(T[0])};${k3(T[1])};${k3(T[2])};${k3(Math.min(T[2]+.14,.89))};1" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1;.4 0 .6 1;0 0 1 1"`
+             :`values="${P(A)};${P(A)};${P(B)};${P(B)}" keyTimes="0;${k3(T[0])};${k3(T[2])};1" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1"`;
+  const vis=`<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${k3(Math.max(T[0]-.08,.005))};${k3(Math.max(T[0]-.02,.01))};.9;.96;1" ${REP()}/>`;
+  return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" ${pos} calcMode="spline" ${REP()}/>`+
+    `<polygon points="${chuck}" fill="#e3000b" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#b8c2cc" stroke="#1d2329" stroke-width="1.2" ${NS}/>${flutes}</g></g>`;
 }
+/* clip to the half of the screen on A's side of E (perpendicular to A->B): whatever passes E is hidden inside the material */
+function entryClip(A,B,E,s){const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]],G=5000*s,id='k'+(++CLIP_N);
+  const q=[[G,0],[-G,0],[-G,-G],[G,-G]].map(([a,b])=>[E[0]+a*n[0]+b*u[0],E[1]+a*n[1]+b*u[1]].map(v=>v.toFixed(1)).join(','));
+  return {id,def:`<clipPath id="${id}"><polygon points="${q.join(' ')}"/></clipPath>`}}
 function annSVG(a,s,anim){
   const fade=anim?`<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.32;.48;1" dur="${ANIM_DUR}s" repeatCount="indefinite"/>`:'';
   const march=anim?'<animate attributeName="stroke-dashoffset" values="26;0" dur=".7s" repeatCount="indefinite"/>':'';
@@ -351,12 +380,35 @@ function annSVG(a,s,anim){
   switch(a.t){
     case 'arrow':{const A=proj(a.a),B=proj(a.b),g=Math.atan2(B[1]-A[1],B[0]-A[0]),E=[B[0]-10*s*Math.cos(g),B[1]-10*s*Math.sin(g)];
       return `<g>${fade}<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}</g>`}
-    case 'line':return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
+    case 'line':if(anim&&a.draw){/* pen stroke: the line grows from a to b between draw[0] and draw[1] */
+        const A=proj(a.a),B=proj(a.b),[d0,d1]=a.draw,kt=`keyTimes="0;${k3(d0)};${k3(d1)};1" ${REP()}`,v=i=>`values="${A[i]};${A[i]};${B[i]};${B[i]}"`;
+        return `<line x1="${A[0]}" y1="${A[1]}" x2="${A[0]}" y2="${A[1]}" stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round" opacity="0" ${NS}>`+
+          `<animate attributeName="opacity" values="0;1;1" keyTimes="0;${k3(d0)};1" calcMode="discrete" ${REP()}/><animate attributeName="x2" ${v(0)} ${kt}/><animate attributeName="y2" ${v(1)} ${kt}/></line>`}
+      return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
     case 'dim':{const o=a.off||[0,0,0],A=add(a.a,o),B=add(a.b,o),M=proj(mid(A,B));
       return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+tag(mid(A,B),a.label)}
-    case 'drill':{const A=proj(a.a),B=proj(a.b);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}>${march}</line>`+head(A,B,'#e3000b',15)+(anim?drillBit(A,B,s):'')+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
+    case 'drill':{/* e = entry point on the surface: the dashed line stops there and the bit vanishes into the hole. hole = radius of the hole it leaves */
+      const A=proj(a.a),B=proj(a.b),E=a.e?proj(a.e):null,Z=E||B,T=a.tm||[.15,.3,.62];
+      let hole='';
+      if(a.e&&a.hole){const d=sub(a.b,a.a),ax=Math.abs(d[0])>Math.abs(d[1])&&Math.abs(d[0])>Math.abs(d[2])?'x':Math.abs(d[1])>Math.abs(d[2])?'y':'z';
+        hole=`<polygon points="${ptsStr(circ(a.e,a.hole,ax,20))}" fill="#2a2f35" stroke="#1d2329" stroke-width="1" ${NS}${anim?` opacity="0"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;${k3(T[1])};${k3(T[1]+.05)};1" ${REP()}/></polygon>`:'/>'}`}
+      let bit='';
+      if(anim){bit=drillBit(A,B,s,E,T);if(E){const c=entryClip(A,B,E,s);bit=`${c.def}<g clip-path="url(#${c.id})">${bit}</g>`}}
+      return hole+`<line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}>${march}</line>`+head(A,Z,'#e3000b',15)+bit+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
     case 'cut':{const [w,h]=a.size,c=a.c,q=a.axis==='y'?[[c[0]-w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]+h/2],[c[0]-w/2,c[1],c[2]+h/2]]:[[c[0],c[1]-w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]+h/2],[c[0],c[1]-w/2,c[2]+h/2]];
-      return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}>${anim?'<animate attributeName="opacity" values="1;.35;1" dur="1.1s" repeatCount="indefinite"/>':''}</polygon>`}
+      if(!anim)return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}/>`;
+      /* saw cut: the red cut face grows from the top down behind a sawing blade, then the outline fades just before the pieces separate */
+      const [t0,t1]=a.tm||[.08,.45],P=p=>proj(p).map(v=>v.toFixed(1)).join(','),kt=`keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}`;
+      const grow=[[q[3],q[2],q[2],q[3]],q].map(r=>r.map(P).join(' ')),ext=(p,r,k)=>add(p,sub(p,r).map(v=>v*k));
+      const bladeA=[ext(q[3],q[2],.25),ext(q[2],q[3],.25)].map(P).join(' '),bladeB=[ext(q[0],q[1],.25),ext(q[1],q[0],.25)].map(P).join(' ');
+      const e=proj(sub(q[2],q[3])),el=Math.hypot(...e)||1,sw=[e[0]/el*8*s,e[1]/el*8*s].map(k3).join(' ');
+      return `<g><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;${k3(SEP_T[0]-.04)};${k3(SEP_T[0])};1" ${REP()}/>`+
+        `<polygon points="${ptsStr(q)}" fill="none" stroke="#e3000b" stroke-width="2.5" stroke-dasharray="7 4" ${NS}/>`+
+        `<polygon points="${grow[0]}" fill="rgba(227,0,11,.3)"><animate attributeName="points" values="${grow[0]};${grow[0]};${grow[1]};${grow[1]}" ${kt}/></polygon>`+
+        `<polyline points="${bladeA}" fill="none" stroke="#55606b" stroke-width="4" stroke-linecap="round" opacity="0" ${NS}>`+
+          `<animate attributeName="points" values="${bladeA};${bladeA};${bladeB};${bladeB}" ${kt}/>`+
+          `<animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(Math.max(t0-.01,.001))};${k3(t1+.01)}" calcMode="discrete" ${REP()}/>`+
+          `<animateTransform attributeName="transform" type="translate" values="0 0;${sw};0 0" dur=".3s" repeatCount="indefinite"/></polyline></g>`}
     case 'cross':{const p=a.p,r=a.r||9,c=a.col||'#e3000b';return ln([p[0]-r,p[1],p[2]],[p[0]+r,p[1],p[2]],`stroke="${c}" stroke-width="2.5"`)+ln([p[0],p[1]-r,p[2]],[p[0],p[1]+r,p[2]],`stroke="${c}" stroke-width="2.5"`)}
     case 'dot':{const [x,y]=proj(a.p);return `<circle cx="${x}" cy="${y}" r="${6*s}" fill="${a.col||'#1a9c4a'}" stroke="#fff" stroke-width="1.5" ${NS}/>`}
     case 'text':return tag(a.p,a.label,a.col,a.bg);
@@ -392,8 +444,11 @@ def('rodL',0,cyl('x',RODC,10,-ROD_END,-500,COL.rod,{seg:16}));
 def('rodMid',0,cyl('x',RODC,10,-500,500,COL.rod,{seg:16}));
 def('plugL',1,holeX(box(-500,-440,-21,21,109,151,COL.wood),10.5));
 const pinBent=s=>[cyl('z',[s*PIN_X,0,0],2.5,116,150,COL.pin,{seg:8}),cyl('y',[s*PIN_X,0,155],5.5,-2,2,COL.pin,{seg:12,hubs:[{r:3,col:BG}]}),rodBetween([s*PIN_X-1.5,0,117],[s*PIN_X-14,0,98],2,COL.pin),rodBetween([s*PIN_X+1.5,0,117],[s*PIN_X+14,0,98],2,COL.pin)];
-const pinLoose=s=>[cyl('z',[s*PIN_X,0,0],2.5,100,150,COL.pin,{seg:8}),cyl('y',[s*PIN_X,0,155],5.5,-2,2,COL.pin,{seg:12,hubs:[{r:3,col:BG}]})];
-def('pinL',2,pinBent(-1),{whenOff:pinLoose(-1)});
+const pinShank=s=>cyl('z',[s*PIN_X,0,0],2.5,100,150,COL.pin,{seg:8}),pinHead=s=>cyl('y',[s*PIN_X,0,155],5.5,-2,2,COL.pin,{seg:12,hubs:[{r:3,col:BG}]});
+const pinLoose=s=>[pinShank(s),pinHead(s)];
+/* shank + sink: while sliding in, the shank is hidden below z = sink (the surface it goes into) */
+const pinDef=s=>({whenOff:pinLoose(s),moving:[pinHead(s)],shank:pinShank(s),sink:140});
+def('pinL',2,pinBent(-1),pinDef(-1));
 def('wLout',3,cyl('x',RODC,20,-584,-581,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
 def('wheelL',4,cyl('x',RODC,130,-580,-505,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
 def('wLin',5,cyl('x',RODC,20,-503,-500,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
@@ -410,12 +465,14 @@ for(const [j,[t,x0,y0]] of Object.entries(PLACE)){
 }
 for(const [j,hs] of Object.entries(HOLES))hs.forEach(([x,y],i)=>{
   const top=[cyl('z',[x,y,0],15,158,160,COL.washer,{seg:20,hubs:[{r:4.3,col:'#555555'}]}),hexNut(x,y,160,165.5)];
-  def(`${j}${i}t`,31,top,{whenOff:[cyl('z',[x,y,0],4,85,160,COL.bolt,{seg:12}),...top]});
+  const shank=cyl('z',[x,y,0],4,85,160,COL.bolt,{seg:12});
+  def(`${j}${i}t`,31,top,{whenOff:[shank,...top],moving:top,shank,sink:158});
   def(`${j}${i}b`,10,[hexNut(x,y,92,100),cyl('z',[x,y,0],15,100,102,COL.washer,{seg:20})]);
 });
 const EYE_Y=2185;
 const eyeTop=[cyl('z',[0,EYE_Y,0],15,155,157,COL.washer,{seg:20}),cyl('z',[0,EYE_Y,0],5,157,166,COL.bolt,{seg:12}),cyl('x',[0,EYE_Y,180],15,-3.5,3.5,COL.bolt,{seg:24,hubs:[{r:9,col:BG}]})];
-def('eye',35,eyeTop,{whenOff:[cyl('z',[0,EYE_Y,0],4,85,157,COL.bolt,{seg:12}),...eyeTop]});
+const eyeShank=cyl('z',[0,EYE_Y,0],4,85,157,COL.bolt,{seg:12});
+def('eye',35,eyeTop,{whenOff:[eyeShank,...eyeTop],moving:eyeTop,shank:eyeShank,sink:155});
 def('eyeB',10,[hexNut(0,EYE_Y,95,103),cyl('z',[0,EYE_Y,0],15,103,105,COL.washer,{seg:20})]);
 const screwHead=(x,y,z)=>cyl('z',[x,y,0],4.5,z,z+2.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]});
 def('scrC',32,[screwHead(-420,0,158),screwHead(420,0,158)]);
@@ -450,7 +507,7 @@ def('wRin',50,cyl('x',RODC,20,500,503,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555
 def('wheelR',51,cyl('x',RODC,130,505,580,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
 def('wRout',52,cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
 def('rodTip',53,cyl('x',RODC,10,581,ROD_END,COL.rod,{seg:16}));
-def('pinR',54,pinBent(1),{whenOff:pinLoose(1)});
+def('pinR',54,pinBent(1),pinDef(1));
 const loop=[];for(let d=0;d<=360;d+=10){const t=d*Math.PI/180;loop.push([0,EYE_Y+60*Math.sin(t),305-125*Math.cos(t)])}
 def('handle',60,[],{paths:[{pts:loop,col:COL.strap}]});
 
@@ -462,11 +519,11 @@ function scene(ids,{hl=[],off={},ghost=[]}={}){
   return ids.map(id=>{const m=M[id],d=off[id];let solids=m.solids;
     if(d&&m.whenOff)solids=m.whenOff;else if(!d&&m.placed)solids=m.placed;
     const ob={order:m.order,solids,paths:m.paths,off:d||[0,0,0],hl:hl.includes(id),ghost:ghost.includes(id)};
-    if(d){ob.anim=true;ob.movingSolids=m.whenOff||m.solids;ob.finalSolids=m.placed||m.solids;ob.stagger=Math.min(k++*0.08,0.6);ob.spin=/\d[tb]$/.test(id)||id==='eye'||id==='eyeB'||id==='scrC'||id==='scrP';}
+    if(d){ob.anim=true;ob.movingSolids=m.moving||m.whenOff||m.solids;ob.shank=m.shank;ob.sink=m.sink;ob.finalSolids=m.placed||m.solids;ob.stagger=Math.min(k++*0.08,0.6);ob.spin=/\d[tb]$/.test(id)||id==='eye'||id==='eyeB'||id==='scrC'||id==='scrP';}
     return ob});
 }
 const offAll=(ids,d)=>Object.fromEntries(ids.map(i=>[i,d]));
-const solo=(solids,o={})=>({order:o.order||0,solids:[].concat(solids),off:o.off||[0,0,0],hl:!!o.hl,ghost:o.ghost,paths:o.paths,anim:!!o.anim,stagger:o.stagger||0});
+const solo=(solids,o={})=>({order:o.order||0,solids:[].concat(solids),off:o.off||[0,0,0],hl:!!o.hl,ghost:o.ghost,paths:o.paths,anim:!!o.anim,stagger:o.stagger||0,sep:o.sep});
 
 /* build-up states */
 const BRICKS=['brickB1','brickB2','brickS1','brickS2'];
@@ -588,42 +645,42 @@ const ADULT_SVG=`<svg viewBox="0 0 40 40"><circle cx="13" cy="8" r="5" fill="#ff
 /* ================= STEPS ================= */
 const STAGES=[['Cut the parts','#e3000b'],['Drill the plates','#b0006a'],['Build the axle','#0062ad'],['Lay out the frame','#1a9c4a'],['Bolt the joints','#f07d00'],['Fit the wheels','#7b3fa0'],['Cradle and handle','#0d5257']];
 const marks=[-400,0,400].map(x=>({t:'line',a:[x,-34,156],b:[x,34,156]}));
-const tubeDrill=(j,i,label)=>{const [x,y]=HOLES[j][i];return{t:'drill',a:[x,y,320],b:[x,y,70],label}};
+const tubeDrill=(j,i,label)=>{const [x,y]=HOLES[j][i];return{t:'drill',a:[x,y,320],b:[x,y,70],e:[x,y,158],label}};
 const BOTH='Both sides';
 /* boat for the cradle and loading pictures: rounded bottom resting on the carpet */
 const hullSection=(dz=6)=>[[-600,530],...arcPts(-560,560,dz,24),[600,530]];
 const boatObj=(ghost=.45,order=70)=>solo(extrudeY(hullSection(),-1120,1325,COL.boat),{order,ghost});
 const tubeY=(len,col=COL.alu)=>box(-25,25,0,len,0,50,col,{hollow:[0,2]});
-const drillDown=(x,y,label,top=50,len=0)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],label});
+const drillDown=(x,y,label,top=50,len=0,hole=5.25)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],e:[x,y,top],hole,label});
 
 const STEPS=[
  /* ---- cut ---- */
  {st:0,cap:'Clamp tube A down. Measure <b>2200 mm</b> from one end. Mark a line all the way round. Cut on the line.',parts:[['Astock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
   tip:'Ask the metal shop to cut tubes A and C and the flat bar for you. Then you can skip to step 4.',
-  solo:()=>({objs:[solo(tubeY(2200)),solo(box(-25,25,2200,2500,0,50,COL.off,{hollow:[0,2]}),{order:1})],
-    ann:[{t:'cut',axis:'y',c:[0,2200,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,2200,0],off:[110,0,0],label:'2200 mm'},{t:'text',p:[-160,2420,0],label:'spare bit',col:'#b3261e'}]})},
+  solo:()=>({objs:[solo(tubeY(2200)),solo(box(-25,25,2200,2500,0,50,COL.off,{hollow:[0,2]}),{order:1,sep:[0,160,0]})],
+    ann:[{t:'cut',axis:'y',c:[0,2200,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,2200,0],off:[110,0,0],label:'2200 mm'},{t:'text',p:[-160,2420,0],label:'spare bit',col:'#b3261e',sep:[0,160,0]}]})},
  {st:0,cap:'Clamp a C tube. Measure <b>1250 mm</b>. Mark. Cut. Then do the other C tube.',parts:[['Cstock',2]],tools:['tape','marker','square','clamp','saw'],adult:1,mult:'Do both',
-  solo:()=>({objs:[solo(tubeY(1250)),solo(box(-25,25,1250,1500,0,50,COL.off,{hollow:[0,2]}),{order:1})],
+  solo:()=>({objs:[solo(tubeY(1250)),solo(box(-25,25,1250,1500,0,50,COL.off,{hollow:[0,2]}),{order:1,sep:[0,120,0]})],
     ann:[{t:'cut',axis:'y',c:[0,1250,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,1250,0],off:[110,0,0],label:'1250 mm'}]})},
  {st:0,cap:'Mark every <b>160 mm</b> along the flat bar. Cut on each mark. You need <b>8 plates</b>.',parts:[['Dstock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
-  solo:()=>({objs:[...Array.from({length:8},(_,i)=>solo(box(i*160,i*160+160,0,100,0,3,COL.plate),{off:[i*25,0,0]})),solo(box(1280,1400,0,100,0,3,COL.off),{off:[220,0,0]})],
-    ann:[{t:'dim',a:[0,0,3],b:[160,0,3],off:[0,-110,0],label:'160 mm'}]})},
+  solo:()=>({objs:[...Array.from({length:8},(_,i)=>solo(box(i*160,i*160+160,0,100,0,3,COL.plate),{sep:[i*25,0,0]})),solo(box(1280,1400,0,100,0,3,COL.off),{sep:[220,0,0]})],
+    ann:[...Array.from({length:8},(_,i)=>({t:'cut',axis:'x',c:[160*(i+1),50,1.5],size:[130,30],tm:[.05+i*.05,.13+i*.05]})),{t:'dim',a:[0,0,3],b:[160,0,3],off:[0,-110,0],label:'160 mm'}]})},
  {st:0,cap:'Clamp the hardwood. Measure <b>60 mm</b> from the end. Cut. Measure and cut again so you have <b>2 plugs</b>. Keep the rest for later.',parts:[['Lstock',1]],tools:['tape','marker','clamp','saw'],adult:1,
-  solo:()=>({objs:[solo([box(-21,21,0,60,0,42,COL.wood),box(-21,21,60,120,0,42,COL.wood)]),solo(box(-21,21,120,420,0,42,COL.wood),{order:1,ghost:.45})],
-    ann:[{t:'cut',axis:'y',c:[0,60,21],size:[70,70]},{t:'cut',axis:'y',c:[0,120,21],size:[70,70]},{t:'dim',a:[21,0,0],b:[21,60,0],off:[70,0,0],label:'60'},{t:'dim',a:[21,60,0],b:[21,120,0],off:[70,0,0],label:'60'},{t:'text',p:[0,330,90],label:'keep for step 34'}]})},
+  solo:()=>({objs:[solo(box(-21,21,0,60,0,42,COL.wood),{sep:[0,-90,0]}),solo(box(-21,21,60,120,0,42,COL.wood),{sep:[0,-45,0]}),solo(box(-21,21,120,420,0,42,COL.wood),{order:1,ghost:.45})],
+    ann:[{t:'cut',axis:'y',c:[0,120,21],size:[70,70],tm:[.06,.25]},{t:'cut',axis:'y',c:[0,60,21],size:[70,70],tm:[.28,.47]},{t:'dim',a:[21,0,0],b:[21,60,0],off:[70,0,0],label:'60',sep:[0,-90,0]},{t:'dim',a:[21,60,0],b:[21,120,0],off:[70,0,0],label:'60',sep:[0,-45,0]},{t:'text',p:[0,330,90],label:'keep for step 34'}]})},
  {st:0,cap:'Draw an X from corner to corner on the end of each plug. Clamp the plug standing up. Drill a <b>6 mm</b> hole through the middle of the X, then open it up to <b>20 mm</b>.',parts:[],partsNote:'The 2 plugs from step 4',tools:['marker','clamp','drill:6','drill:20','sand'],adult:1,mult:'Do both',
   tip:'Use a 20 mm Forstner bit and go slowly. Then push the rod in. If it\'s tight, roll sandpaper round a pencil and sand inside the hole until the rod slides.',
   solo:()=>{const q=[[-21,-21],[21,-21],[21,21],[-21,21]].map(([x,y])=>[x*Math.cos(.5)-y*Math.sin(.5),x*Math.sin(.5)+y*Math.cos(.5)]);
-    return{objs:[solo(prism(q,0,60,COL.wood))],ann:[{t:'line',a:[...q[0],60],b:[...q[2],60],col:'#1a1a1a',w:2.5},{t:'line',a:[...q[1],60],b:[...q[3],60],col:'#1a1a1a',w:2.5},{t:'drill',a:[0,0,220],b:[0,0,-15],label:'6 then 20 mm'}]}}},
+    return{objs:[solo(prism(q,0,60,COL.wood))],ann:[{t:'line',a:[...q[0],60],b:[...q[2],60],col:'#1a1a1a',w:2.5,draw:[.02,.12]},{t:'line',a:[...q[1],60],b:[...q[3],60],col:'#1a1a1a',w:2.5,draw:[.13,.23]},{t:'drill',a:[0,0,220],b:[0,0,-15],e:[0,0,60],hole:10,tm:[.3,.42,.74],label:'6 then 20 mm'}]}}},
  {st:0,cap:'File every cut edge smooth. Write <b>FRONT</b> on one end of the long tube, and <b>TIP</b> and <b>FOOT</b> on the two ends of each brace.',parts:[],partsNote:'Every piece you cut',tools:['file','marker'],
   solo:()=>({objs:[solo(tubeY(1250)),solo(box(120,280,-60,40,0,3,COL.plate),{order:1,hl:true})],ann:[{t:'text',p:[0,1180,90],label:'TIP'},{t:'text',p:[0,70,90],label:'FOOT'},{t:'text',p:[200,0,60],label:'smooth!'}]})},
  /* ---- drill on the bench ---- */
  {st:1,cap:'Cut out <b>Template C-LEFT</b>. Stack 2 plates on a scrap board. Tape the template on top, edges lined up. Clamp everything down.',parts:[['P',2]],tools:['scissors','stape','board','clamp'],
   tip:'Print the templates from the <a onclick="goTpl()">Templates page</a> first.',
-  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none'})),solo(box(0,100,-160,0,6,6.4,COL.paper),{off:[0,0,90],hl:true,order:2,anim:true})],ann:[...tplCrosses('CL',0,0,96.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,96.4]},{t:'arrow',a:[115,-80,95],b:[115,-80,15]}]})},
+  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none'})),solo(box(0,100,-160,0,6,6.4,COL.paper),{off:[0,0,90],hl:true,order:2,anim:true})],ann:[...tplCrosses('CL',0,0,6.4).map(c=>({...c,col:'#e3000b',ride:[0,0,90]})),{t:'dot',p:[50,-110,6.4],ride:[0,0,90]},{t:'arrow',a:[115,-80,95],b:[115,-80,15]}]})},
  {st:1,cap:'Tap a dent on every red cross with the punch and hammer. Drill each one <b>4 mm</b>, then <b>8.5 mm</b>, through both plates. Drill the green dot <b>4.5 mm</b>.',parts:[],partsNote:'The clamped plates',tools:['punch','hammer','drill:4','drill:4.5','drill:8.5'],adult:1,
   tip:'Write CL on both plates. Keep them together the same way up, writing on top.',
-  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none',paper:true}),{order:1})],ann:[...tplCrosses('CL',0,0,6.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,6.4]},...TPL.CL.holes.map(([x,y],i)=>({t:'drill',a:[x,-y,140],b:[x,-y,8],label:i?'':'8.5 mm'}))]})},
+  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none',paper:true}),{order:1})],ann:[...tplCrosses('CL',0,0,6.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,6.4]},...TPL.CL.holes.map(([x,y],i)=>({t:'drill',a:[x,-y,140],b:[x,-y,-10],e:[x,-y,6.4],hole:4.25,label:i?'':'8.5 mm'}))]})},
  {st:1,cap:'Do the same with templates <b>C-RIGHT</b>, <b>M</b> and <b>T</b>. Write CR, M or T on each pair.',parts:[['P',6]],tools:['scissors','stape','clamp','punch','hammer','drill:4','drill:8.5','file','marker'],adult:1,
   tip:'File off the sharp bits round every hole.',
   solo:()=>({objs:[solo(platePair('CL',0,30)),solo(platePair('CR',130,30)),solo(platePair('M',260,30)),solo(platePair('T',390,0))],
@@ -634,16 +691,16 @@ const STEPS=[
  {st:1,cap:'On the long tube, draw a line down the middle. Measure from the end <b>without</b> FRONT on it. Mark at <b>25</b>, <b>65</b>, <b>1167</b> and <b>1217 mm</b>. Drill each one <b>4 mm</b>, then <b>10.5 mm</b>, straight through.',parts:[],partsNote:'The long tube',tools:['tape','marker','clamp','punch','hammer','drill:4','drill:10.5'],adult:1,
   solo:()=>({objs:[solo(tubeY(2200))],ann:[{t:'line',a:[0,10,51],b:[0,2190,51],col:'#1a1a1a',w:1.5,dash:'6 5'},drillDown(0,25,''),drillDown(0,65,'10.5 mm'),drillDown(0,1167,''),drillDown(0,1217,''),{t:'text',p:[0,40,-60],label:'25 · 65'},{t:'text',p:[0,1190,-60],label:'1167 · 1217'},{t:'text',p:[0,2200,110],label:'FRONT'}]})},
  {st:1,cap:'Now the FRONT end. Drill an <b>8.5 mm</b> hole straight through, <b>40 mm</b> from the end. Turn the tube over. Drill <b>3.5 mm</b> through the bottom wall only, <b>105 mm</b> from the end.',parts:[],partsNote:'The long tube',tools:['tape','marker','clamp','punch','hammer','drill:4','drill:8.5','drill:3.5'],adult:1,
-  solo:()=>({objs:[solo(box(-25,25,1950,2200,0,50,COL.alu,{hollow:[0,2]}))],ann:[drillDown(0,2160,'8.5 mm'),{t:'drill',a:[0,2095,-170],b:[0,2095,3],label:'3.5 mm, bottom only'},{t:'dim',a:[25,2160,50],b:[25,2200,50],off:[70,0,0],label:'40'},{t:'dim',a:[25,2095,0],b:[25,2200,0],off:[140,0,0],label:'105'}]})},
+  solo:()=>({objs:[solo(box(-25,25,1950,2200,0,50,COL.alu,{hollow:[0,2]}))],ann:[drillDown(0,2160,'8.5 mm',50,0,4.25),{t:'drill',a:[0,2095,-170],b:[0,2095,8],e:[0,2095,0],label:'3.5 mm, bottom only'},{t:'dim',a:[25,2160,50],b:[25,2200,50],off:[70,0,0],label:'40'},{t:'dim',a:[25,2095,0],b:[25,2200,0],off:[140,0,0],label:'105'}]})},
  {st:1,cap:'On the axle tube, drill a <b>3.5 mm</b> hole through the <b>top wall only</b>, <b>20 mm</b> from each end.',parts:[['B',1]],tools:['tape','marker','punch','hammer','drill:3.5'],adult:1,
   tip:'These holes are for the screws that hold the plugs in.',
-  solo:()=>({objs:[solo(box(-500,500,-25,25,0,50,COL.alu,{hollow:[1,3]}))],ann:[{t:'drill',a:[480,0,220],b:[480,0,52],label:'3.5 mm, top only'},{t:'drill',a:[-480,0,220],b:[-480,0,52],label:''},{t:'dim',a:[480,25,50],b:[500,25,50],off:[0,80,0],label:'20'}]})},
+  solo:()=>({objs:[solo(box(-500,500,-25,25,0,50,COL.alu,{hollow:[1,3]}))],ann:[{t:'drill',a:[480,0,220],b:[480,0,44],e:[480,0,50],hole:1.75,label:'3.5 mm, top only'},{t:'drill',a:[-480,0,220],b:[-480,0,44],e:[-480,0,50],hole:1.75,label:''},{t:'dim',a:[480,25,50],b:[500,25,50],off:[0,80,0],label:'20'}]})},
  {st:1,cap:'Mark the rod <b>110 mm</b> from one end. Slide on an axle washer, a wheel and another axle washer, pushed up to the mark. Mark the rod <b>4 mm</b> past the outer washer. Take them off, then do the other end.',parts:[['F',1],['K',2],['E',1]],tools:['tape','marker'],mult:'Both ends',
   solo:()=>({objs:[solo(cyl('x',[0,0,0],10,0,400,COL.rod,{seg:16})),solo(box(270,290,-40,40,-40,40,COL.wood),{order:1}),solo([cyl('x',[0,0,0],20,290,293,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}),cyl('x',[0,0,0],130,295,370,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}),cyl('x',[0,0,0],20,371,374,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]})],{order:2})],
     ann:[{t:'line',a:[378,-14,11],b:[378,14,11],w:4},{t:'text',p:[385,0,60],label:'4 mm'},{t:'dim',a:[290,0,-140],b:[400,0,-140],off:[0,0,0],label:'110 mm'},{t:'text',p:[280,0,90],label:'mark'}]})},
  {st:1,cap:'Clamp the rod in a vice between two bits of wood. Punch each mark. Drill <b>2.5 mm</b>, then <b>4.5 mm</b>, straight through.',parts:[],partsNote:'The rod',tools:['clamp','punch','hammer','drill:2.5','drill:4.5'],adult:1,
   tip:'Never hold the rod by hand while it\'s drilled. It\'s round and the bit will skid.',
-  solo:()=>({objs:[solo(cyl('x',[0,0,30],10,0,1220,COL.rod,{seg:16})),solo([box(1020,1150,-60,-10,0,60,COL.wood),box(1020,1150,10,60,0,60,COL.wood)],{order:1})],ann:[{t:'line',a:[1196,-14,41],b:[1196,14,41],w:4},{t:'drill',a:[1196,0,200],b:[1196,0,20],label:'2.5 then 4.5'},{t:'line',a:[24,-14,41],b:[24,14,41],w:4},{t:'text',p:[24,0,110],label:'other end too'}]})},
+  solo:()=>({objs:[solo(cyl('x',[0,0,30],10,0,1220,COL.rod,{seg:16})),solo([box(1020,1150,-60,-10,0,60,COL.wood),box(1020,1150,10,60,0,60,COL.wood)],{order:1})],ann:[{t:'line',a:[1196,-14,41],b:[1196,14,41],w:4},{t:'drill',a:[1196,0,200],b:[1196,0,20],e:[1196,0,40],hole:2.25,label:'2.5 then 4.5'},{t:'line',a:[24,-14,41],b:[24,14,41],w:4},{t:'text',p:[24,0,110],label:'other end too'}]})},
  /* ---- axle tube ---- */
  {st:2,cap:'Turn each plug so its hole points along the tube. Tap a plug into each end of the axle tube with the mallet. Stop when it\'s level with the end.',parts:[['L',2]],tools:['mallet','etape'],
   tip:'Plug too loose? Wrap electrical tape around it first.',
@@ -675,7 +732,7 @@ const STEPS=[
   view:()=>({ids:S.cornersB,hl:[...bolts('cornerL'),...bolts('cornerR')],off:{...offAll([...tops('cornerL'),...tops('cornerR')],[0,0,190]),...offAll([...bots('cornerL'),...bots('cornerR')],[0,0,-170])},focus:F.corner,ann:[{t:'arrow',a:[500,40,330],b:[500,40,190]}]})},
  {st:4,cap:'Put the 3.5 mm bit through the small hole at the <b style="color:#1a9c4a">green dot</b>. Drill just through the top of the axle tube. Drive in a screw.',parts:[['Z',2]],tools:['drill:3.5','screwdriver'],adult:1,mult:BOTH,
   tip:'This screw stops the axle tube sliding sideways. The rod isn\'t in yet, so there\'s nothing to hit.',
-  view:()=>({ids:S.cornersS,hl:['scrC'],off:{scrC:[0,0,120]},focus:F.corner,ann:[{t:'drill',a:[420,0,320],b:[420,0,150],label:'3.5 mm'}]})},
+  view:()=>({ids:S.cornersS,hl:['scrC'],off:{scrC:[0,0,120]},focus:F.corner,ann:[{t:'drill',a:[420,0,320],b:[420,0,150],e:[420,0,158],hole:1.75,label:'3.5 mm'}]})},
  {st:4,cap:'Take the 2 <b>M</b> plates. Slide one under the middle joint and put one on top, both writing up. Line up the holes. Clamp them.',parts:[['P',2]],tools:['clamp'],
   view:()=>({ids:S.mid,hl:plates('middle'),off:{middleT:[0,0,170],middleB:[0,0,-170]},focus:F.middle,ann:[{t:'arrow',a:[80,30,330],b:[80,30,180]},{t:'arrow',a:[80,30,-80],b:[80,30,80]}]})},
  {st:4,cap:'Bolt the middle joint: 6 bolts, the same way as before.',parts:[['G',6],['W',12],['N',6],['X',1]],tools:['spanner'],
