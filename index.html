@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boat Dolly: Build Booklet + Shopping Trolley</title>
+<style>
+:root{
+  --sky:#d6e8f5; --ink:#1a1a1a; --muted:#5d6872; --line:#d9dee3;
+  --yellow:#ffd500; --red:#e3000b; --blue:#0062ad; --orange:#f07d00;
+  --bun-green:#0d5257; --bun-red:#da291c; --bun-bg:#f3f3f1;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--sky);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+
+.topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:3px solid var(--yellow)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800}
+.brick{width:34px;height:24px;background:var(--red);border-radius:3px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.brick::before,.brick::after{content:"";position:absolute;top:-5px;width:10px;height:6px;background:var(--red);border-radius:2px 2px 0 0}
+.brick::before{left:5px}.brick::after{right:5px}
+.tabs{margin-left:auto;display:flex;gap:6px;background:#eef1f4;padding:4px;border-radius:999px}
+.tab{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:700;color:var(--muted)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--bun-red);color:#fff;font-size:12px;line-height:20px}
+
+#booklet{max-width:1120px;margin:20px auto 60px;padding:0 16px}
+.page{background:#fff;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 12px 30px rgba(20,60,100,.12);min-height:640px;padding:26px 30px 40px;position:relative;overflow:hidden}
+.pager{display:flex;align-items:center;gap:10px;margin:14px 0 0}
+.pager button.nav{border:0;background:var(--ink);color:#fff;width:52px;height:52px;border-radius:50%;font-size:26px;font-weight:700;flex:none}
+.pager button.nav:disabled{opacity:.2;cursor:default}
+.dots{display:flex;gap:5px;flex-wrap:wrap;flex:1;justify-content:center}
+.dot{border:0;min-width:28px;height:28px;border-radius:6px;background:#fff;font-size:12px;font-weight:800;color:var(--muted);padding:0 5px}
+.dot.on{background:var(--yellow);color:var(--ink)}
+.pageno{position:absolute;bottom:12px;right:20px;font-weight:800;color:#b5bec7;font-size:14px}
+.stagebar{position:absolute;top:0;left:0;right:0;height:8px}
+
+.cover{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:center;min-height:580px}
+.cover h1{font-size:60px;line-height:.95;margin:12px 0 14px;letter-spacing:-.03em}
+.setno{display:inline-flex;gap:8px;align-items:center;font-weight:800;font-size:13px;flex-wrap:wrap}
+.setno span{background:var(--ink);color:#fff;padding:4px 8px;border-radius:4px}
+.setno span.y{background:var(--yellow);color:var(--ink)}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.fact{border:2px solid var(--ink);border-radius:8px;padding:8px 12px;font-weight:800;font-size:15px}
+.fact small{display:block;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.art{background:radial-gradient(circle at 50% 45%,#fff 0,#eef5fb 60%,#dcebf6 100%);border-radius:14px;padding:6px}
+.art svg{width:100%;height:auto;display:block}
+.btn{border:0;background:var(--ink);color:#fff;border-radius:999px;padding:12px 20px;font-weight:800;font-size:15px;margin:4px 6px 4px 0}
+.btn.y{background:var(--yellow);color:var(--ink)}
+.btn.o{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+
+h2.pt{font-size:30px;margin:4px 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 18px;font-size:16px;line-height:1.4}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{border:3px solid var(--ink);border-radius:14px;padding:16px}
+.card h3{margin:0 0 10px;font-size:20px}
+.card p,.card li{margin:0 0 8px;font-size:15.5px;line-height:1.45}
+.card ul{margin:0;padding-left:20px}
+.card.adultc{background:#fff1e0;border-color:var(--orange)}
+.card.warnc{background:#fff7d1}
+.gear{display:flex;gap:16px;font-size:15px;font-weight:700}
+.gear div{text-align:center}.gear span{display:block;font-size:40px}
+.toolgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.tool{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;font-weight:700;text-align:center;line-height:1.2}
+.tool svg{width:44px;height:44px}
+
+.bag{border:3px solid var(--blue);background:#eef6fd;border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.bag h3{margin:0 0 10px;color:var(--blue);font-size:15px;text-transform:uppercase;letter-spacing:.06em}
+.bagrow{display:flex;flex-wrap:wrap;gap:10px}
+.pc{background:#fff;border-radius:10px;padding:8px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:118px;position:relative;border:1px solid #c9dff1}
+.pc svg{width:96px;height:62px}
+.pc .q{font-size:24px;font-weight:900;line-height:1}
+.pc .nm{font-size:13px;font-weight:700;text-align:center}
+.pc .nt{font-size:12px;color:var(--muted);text-align:center}
+.badge{position:absolute;top:6px;left:6px;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:900;font-size:11px}
+
+.step{display:grid;grid-template-columns:250px 1fr;gap:22px}
+.stage{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.stepnum{font-size:112px;font-weight:900;line-height:.85;letter-spacing:-.05em;margin:6px 0 10px}
+.callout{border:3px solid var(--blue);border-radius:12px;background:#eef6fd;padding:10px;margin-bottom:12px}
+.callout h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue)}
+.callout .bagrow{gap:8px}
+.callout .pc{min-width:0;flex:1 1 96px;padding:6px}
+.callout .pc svg{width:80px;height:52px}
+.callout .pc .q{font-size:22px}
+.callout.none{border-style:dashed;color:var(--muted);font-weight:700;font-size:14px;text-align:center;padding:16px 10px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.tools .tool{width:70px}
+.tools .tool svg{width:38px;height:38px}
+.adult{display:flex;align-items:center;gap:8px;background:var(--orange);color:#fff;border-radius:12px;padding:8px 12px;font-weight:900;font-size:15px;margin-bottom:12px}
+.adult svg{width:34px;height:34px;flex:none}
+.diagram{position:relative;background:linear-gradient(#f7fbfe,#fff);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.diagram>svg{width:100%;height:auto;display:block}
+.mini{position:absolute;top:10px;right:10px;width:168px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:2px}
+.mini svg,.inset svg{width:100%;height:auto;display:block}
+.inset{position:absolute;left:10px;bottom:10px;width:230px;background:#fff;border:3px solid var(--blue);border-radius:12px;padding:2px}
+.inset span{position:absolute;top:4px;left:8px;font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.06em}
+.mult{position:absolute;left:14px;top:12px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;font-weight:900;font-size:22px;padding:4px 14px;transform:rotate(-3deg)}
+.caption{font-size:21px;line-height:1.4;font-weight:600;margin:16px 4px 0}
+.tip{display:flex;gap:10px;align-items:flex-start;margin-top:12px;background:#fff7d1;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.4}
+.tip .bang{flex:none;width:30px;height:30px;background:var(--yellow);border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:900}
+.tip a,.sub a{color:var(--blue);font-weight:800;cursor:pointer;text-decoration:underline}
+.checks{list-style:none;padding:0;margin:14px 0 0}
+.checks li{font-size:20px;font-weight:600;padding:10px 4px;border-top:1px solid #eef1f4}
+.checks label{display:flex;gap:12px;align-items:center;cursor:pointer}
+.checks input{width:28px;height:28px;accent-color:#1a9c4a;flex:none}
+table.lt{border-collapse:collapse;width:100%;font-size:16px;margin-top:10px}
+table.lt th,table.lt td{border:2px solid var(--ink);padding:10px;text-align:left}
+table.lt th{background:var(--yellow)}
+
+.tpls{display:flex;flex-wrap:wrap;gap:22px 30px;align-items:flex-start}
+.tpl{break-inside:avoid}
+.tpl h4{margin:0 0 4px;font-size:15px}
+.tpl svg{display:block;background:#fff}
+.ruler{width:100mm;height:8mm;border:1px solid #000;border-top:0;position:relative;margin-top:8px;background:repeating-linear-gradient(90deg,#000 0 .3mm,transparent .3mm 10mm)}
+.ruler span{position:absolute;left:0;top:9mm;font-size:12px;font-weight:700;white-space:nowrap}
+
+.gnotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.gn{border:2px solid var(--ink);border-radius:12px;padding:14px;background:#fffdf3}
+.gn h3{margin:0 0 6px;font-size:16px}
+.gn p{margin:0;font-size:14px;line-height:1.45}
+
+#cart{display:none;background:var(--bun-bg);min-height:calc(100vh - 60px)}
+.bun-head{background:var(--bun-green);color:#fff}
+.bun-head .wrap{max-width:1180px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.bun-logo{font-weight:900;font-size:22px;display:flex;align-items:center;gap:8px}
+.bun-logo i{display:inline-block;width:14px;height:14px;background:var(--bun-red);border-radius:50%}
+.bun-store{margin-left:auto;font-size:13px;opacity:.9}
+.bun-wrap{max-width:1180px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.bun-wrap h1{font-size:28px;margin:4px 0 2px;color:var(--bun-green)}
+.crumbs{font-size:12px;color:var(--muted)}
+.mode{display:flex;gap:6px;margin:14px 0}
+.mode button{border:2px solid var(--bun-green);background:#fff;color:var(--bun-green);padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px}
+.mode button.on{background:var(--bun-green);color:#fff}
+.storeh{margin:22px 0 10px;font-size:17px;color:var(--bun-green);display:flex;align-items:center;gap:8px}
+.storeh small{font-size:12.5px;color:var(--muted);font-weight:600}
+.item{background:#fff;border-radius:6px;padding:14px;display:grid;grid-template-columns:96px 1fr auto;gap:16px;margin-bottom:10px;border:1px solid #e3e3df}
+.item.picked{background:#f1f8f3}.item.picked .thumb{opacity:.6}
+.thumb{width:96px;height:96px;border-radius:6px;background:#f6f7f8;display:grid;place-items:center;border:1px solid #ececec;position:relative}
+.thumb svg{width:84px;height:60px}
+.thumb .badge{background:var(--bun-green)}
+.cat{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;display:flex;gap:6px;align-items:center}
+.st{font-size:10px;padding:2px 7px;border-radius:999px;color:#fff;letter-spacing:.04em}
+.st.changed{background:#f39200}.st.added{background:var(--bun-red)}
+.iname{font-weight:700;font-size:15px;margin:3px 0 4px;line-height:1.3}
+.isize{font-size:13px;color:#444}
+.used{font-size:12px;color:var(--muted);margin-top:6px}
+.used a{color:var(--bun-green);font-weight:700;margin-right:6px;cursor:pointer;text-decoration:underline}
+.flag{margin-top:8px;font-size:12.5px;background:#fff4e5;border-left:4px solid #f39200;padding:6px 8px;border-radius:0 4px 4px 0}
+.ctl{display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:150px}
+.price{font-size:22px;font-weight:800;color:var(--bun-red);text-align:right}
+.price small{font-size:11px;color:var(--muted);font-weight:600;display:block}
+.priceedit{width:64px;font:inherit;font-size:12px;padding:3px 5px;border:1px solid #ccc;border-radius:4px;text-align:right}
+.qty{display:flex;align-items:center;border:2px solid var(--bun-green);border-radius:999px;overflow:hidden}
+.qty button{border:0;background:#fff;color:var(--bun-green);width:34px;height:32px;font-size:18px;font-weight:800}
+.qty span{min-width:30px;text-align:center;font-weight:800}
+.pick{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--bun-green);cursor:pointer;user-select:none}
+.pick input{width:20px;height:20px;accent-color:var(--bun-green)}
+.aisle{font-size:12px;color:var(--muted)}
+.summary{background:#fff;border-radius:6px;padding:18px;border:1px solid #e3e3df;position:sticky;top:76px}
+.summary h3{margin:0 0 12px;color:var(--bun-green)}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0}
+.row.total{border-top:2px solid #eee;margin-top:6px;padding-top:12px;font-size:18px;font-weight:800}
+.row.total span:last-child{color:var(--bun-red)}
+.progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:8px 0 4px}
+.progress i{display:block;height:100%;background:var(--bun-green);transition:width .3s}
+.cta{display:block;width:100%;border:0;background:var(--bun-red);color:#fff;font-weight:800;font-size:16px;padding:14px;border-radius:999px;margin-top:14px}
+.cta.sec{background:#fff;color:var(--bun-green);border:2px solid var(--bun-green);font-size:14px;padding:11px;margin-top:8px}
+.disclaimer{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.4}
+.changes{background:#fff;border:1px solid #e3e3df;border-left:5px solid #f39200;border-radius:6px;padding:12px 14px;margin:10px 0 4px;font-size:13.5px;line-height:1.45}
+.changes b{color:var(--bun-green)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;transition:transform .25s;z-index:20}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media (max-width:860px){
+  .cover,.step,.bun-wrap{grid-template-columns:1fr}
+  .cover h1{font-size:42px}
+  .stepnum{font-size:80px}
+  .mini{width:110px}.inset{width:150px}
+  .summary{position:static}
+  .item{grid-template-columns:72px 1fr}
+  .thumb{width:72px;height:72px}.thumb svg{width:62px;height:46px}
+  .ctl{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;min-width:0}
+  .page{padding:20px 16px 40px}
+}
+@media print{
+  .topbar,.pager,.mode,.cta,.btn,.noprint{display:none!important}
+  body,#booklet{background:#fff;margin:0;padding:0}
+  .page{box-shadow:none;padding:0}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brick"></div> Boat Dolly</div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-book" aria-selected="true">Build booklet</button>
+    <button class="tab" role="tab" id="tab-cart" aria-selected="false">Shopping trolley<span class="count" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main id="booklet">
+  <div class="page" id="page"></div>
+  <div class="pager">
+    <button class="nav" id="prev" aria-label="Previous page">&#8249;</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav" id="next" aria-label="Next page">&#8250;</button>
+  </div>
+</main>
+
+<section id="cart">
+  <div class="bun-head"><div class="wrap">
+    <div class="bun-logo"><i></i> Shopping trolley</div>
+    <div class="bun-store">Boat Dolly · 3 stops: metal shop, Bunnings, marine store</div>
+  </div></div>
+  <div class="bun-wrap">
+    <div>
+      <div class="crumbs">Home › Projects › Marine › Boat dolly</div>
+      <h1>Your trolley</h1>
+      <div class="changes"><b>Why three shops?</b> Bunnings' Metal Mate range doesn't carry 50 x 50 x 3 mm tube, 100 mm flat bar or 20 mm round bar. An aluminium supplier sells these and will usually cut them to length for you. Bunnings covers the hardware. Barrier paste comes from a marine store.</div>
+      <div class="mode">
+        <button id="m-shop" class="on">Shopping list</button>
+        <button id="m-store">In-store pick mode</button>
+      </div>
+      <div id="items"></div>
+    </div>
+    <aside class="summary">
+      <h3>Order summary</h3>
+      <div class="row"><span>Line items</span><span id="sLines">0</span></div>
+      <div class="row"><span>Units</span><span id="sUnits">0</span></div>
+      <div class="row"><span>Picked</span><span id="sPicked">0 / 0</span></div>
+      <div class="progress"><i id="sBar" style="width:0"></i></div>
+      <div class="row total"><span>Est. total</span><span id="sTotal">$0.00</span></div>
+      <button class="cta" id="copyBtn">Copy shopping list</button>
+      <button class="cta sec" id="toBook">Back to build booklet</button>
+      <p class="disclaimer">Prices are placeholder estimates in AUD, not quotes. Type the real price into any item to update the total. Check stock with each store before you go.</p>
+    </aside>
+  </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= ISOMETRIC 3D ENGINE ================= */
+const C30=Math.cos(Math.PI/6), LIGHT=[.365,.183,.913], BG='#f7fbfe';
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const l=Math.hypot(...a)||1;return a.map(v=>v/l)};
+const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2];
+const proj=p=>[(p[0]-p[1])*C30,(p[0]+p[1])*0.5-p[2]];
+function shade(hex,k){const n=parseInt(hex.slice(1),16),f=c=>Math.min(255,Math.round(c*k));return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`}
+function centroid(ps){const c=[0,0,0];ps.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});return c.map(v=>v/ps.length)}
+function newell(p){let x=0,y=0,z=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];x+=(a[1]-b[1])*(a[2]+b[2]);y+=(a[2]-b[2])*(a[0]+b[0]);z+=(a[0]-b[0])*(a[1]+b[1])}const l=Math.hypot(x,y,z)||1;return[x/l,y/l,z/l]}
+function solid(faces){const c=centroid(faces.flatMap(f=>f.p));faces.forEach(f=>{let n=newell(f.p);const fc=centroid(f.p);if((fc[0]-c[0])*n[0]+(fc[1]-c[1])*n[1]+(fc[2]-c[2])*n[2]<0)n=n.map(v=>-v);f.n=n});return{faces}}
+const inset=(p,r)=>{const c=centroid(p);return p.map(q=>q.map((v,i)=>c[i]+(v-c[i])*r))};
+const circ=(c,r,axis,seg=20)=>Array.from({length:seg},(_,i)=>{const t=i/seg*2*Math.PI,u=r*Math.cos(t),v=r*Math.sin(t);return axis==='x'?[c[0],c[1]+u,c[2]+v]:axis==='y'?[c[0]+u,c[1],c[2]+v]:[c[0]+u,c[1]+v,c[2]]});
+function prism(poly,z0,z1,col,o={}){
+  const n=poly.length,B=poly.map(([x,y])=>[x,y,z0]),T=poly.map(([x,y])=>[x,y,z1]);
+  const faces=[{p:T,col,extra:o.topExtra},{p:B.slice().reverse(),col}];
+  for(let i=0;i<n;i++){const j=(i+1)%n,f={p:[B[i],B[j],T[j],T[i]],col};if(o.hollow&&o.hollow.includes(i))f.extra=[{p:inset(f.p,o.r||.88),col:'#4b545d'}];faces.push(f)}
+  return solid(faces);
+}
+const box=(x0,x1,y0,y1,z0,z1,col,o)=>prism([[x0,y0],[x1,y0],[x1,y1],[x0,y1]],z0,z1,col,o);
+function holeX(sd,r){sd.faces.forEach(f=>{if(Math.abs(f.n[0])>.9)(f.extra=f.extra||[]).push({p:circ(centroid(f.p),r,'x'),col:'#2a2f35'})});return sd}
+function ringsFaces(A,B,col,seam,hubsA,hubsB){const seg=A.length,faces=[];for(let i=0;i<seg;i++){const j=(i+1)%seg;faces.push({p:[A[i],A[j],B[j],B[i]],col,seam})}faces.push({p:A.slice().reverse(),col,extra:hubsA},{p:B,col,extra:hubsB});return solid(faces)}
+function cyl(axis,c,r,a0,a1,col,o={}){
+  const seg=o.seg||28,rot=o.rot||0;
+  const ring=(a,rr)=>Array.from({length:seg},(_,i)=>{const t=2*Math.PI*i/seg+rot,u=rr*Math.cos(t),v=rr*Math.sin(t);return axis==='x'?[a,c[1]+u,c[2]+v]:axis==='y'?[c[0]+u,a,c[2]+v]:[c[0]+u,c[1]+v,a]});
+  const hubs=a=>(o.hubs||[]).map(h=>({p:ring(a,h.r),col:h.col}));
+  return ringsFaces(ring(a0,r),ring(a1,r),col,seg>8,hubs(a0),hubs(a1));
+}
+function rodBetween(p,q,r,col,seg=10){const d=norm(sub(q,p));const u=norm(Math.abs(d[2])<.9?cross(d,[0,0,1]):cross(d,[1,0,0])),v=cross(d,u);
+  const ring=c=>Array.from({length:seg},(_,i)=>{const t=2*Math.PI*i/seg;return[0,1,2].map(k=>c[k]+r*(Math.cos(t)*u[k]+Math.sin(t)*v[k]))});
+  return ringsFaces(ring(p),ring(q),col,true)}
+const ptsStr=(ps,off)=>ps.map(p=>proj(off?add(p,off):p).map(v=>v.toFixed(1)).join(',')).join(' ');
+const NS='vector-effect="non-scaling-stroke"';
+
+function render(objs,o={}){
+  const W=o.w||720,H=o.h||430,list=objs.slice().sort((a,b)=>a.order-b.order);
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  const grow=([x,y])=>{if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y};
+  if(o.focus){const [a,b,c,d,e,f]=o.focus;for(const x of[a,b])for(const y of[c,d])for(const z of[e,f])grow(proj([x,y,z]))}
+  else{list.forEach(ob=>{ob.solids.forEach(s=>s.faces.forEach(f=>f.p.forEach(p=>grow(proj(add(p,ob.off))))));(ob.paths||[]).forEach(pa=>pa.pts.forEach(p=>grow(proj(add(p,ob.off)))))});(o.ann||[]).forEach(a=>[a.a,a.b,a.p].filter(Boolean).forEach(p=>grow(proj(p))))}
+  let bw=x1-x0,bh=y1-y0;const pad=Math.max(bw,bh)*(o.pad??.07);x0-=pad;y0-=pad;bw+=2*pad;bh+=2*pad;
+  if(bw/bh<W/H){const nw=bh*W/H;x0-=(nw-bw)/2;bw=nw}else{const nh=bw*H/W;y0-=(nh-bh)/2;bh=nh}
+  const s=bw/W;let out='';
+  for(const ob of list){
+    let under='',body='';
+    for(const sd of ob.solids)for(const f of sd.faces){
+      if(f.n[0]+f.n[1]+f.n[2]<=1e-6)continue;
+      const k=.6+.4*Math.max(0,f.n[0]*LIGHT[0]+f.n[1]*LIGHT[1]+f.n[2]*LIGHT[2]);
+      const pts=ptsStr(f.p,ob.off),fill=shade(f.col,k);
+      body+=`<polygon points="${pts}" fill="${fill}" stroke="${f.seam?fill:'#1d2329'}" stroke-width="${f.seam?1:1.2}" stroke-linejoin="round" ${NS}/>`;
+      if(ob.hl)under+=`<polygon points="${pts}" fill="#ffd500" stroke="#ffd500" stroke-width="10" stroke-linejoin="round" ${NS}/>`;
+      (f.extra||[]).forEach(e=>body+=`<polygon points="${ptsStr(e.p,ob.off)}" fill="${e.col===BG?BG:shade(e.col,k)}" stroke="#1d2329" stroke-width="1" ${NS}/>`);
+    }
+    (ob.paths||[]).forEach(pa=>{const p=ptsStr(pa.pts,ob.off);
+      if(ob.hl)under+=`<polyline points="${p}" fill="none" stroke="#ffd500" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" ${NS}/>`;
+      body+=`<polyline points="${p}" fill="none" stroke="#1d2329" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" ${NS}/><polyline points="${p}" fill="none" stroke="${pa.col}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" ${NS}/>`});
+    out+=`<g${ob.ghost?` opacity="${ob.ghost===true?.2:ob.ghost}"`:''}>${under}${body}</g>`;
+  }
+  out+=(o.ann||[]).map(a=>annSVG(a,s)).join('');
+  if(o.ring){const [a,b,c,d,e,f]=o.ring,C=proj([(a+b)/2,(c+d)/2,(e+f)/2]);out+=`<circle cx="${C[0]}" cy="${C[1]}" r="${16*s}" fill="none" stroke="#e3000b" stroke-width="3.5" ${NS}/>`}
+  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${bw.toFixed(1)} ${bh.toFixed(1)}" preserveAspectRatio="xMidYMid meet" role="img">${out}</svg>`;
+}
+function annSVG(a,s){
+  const ln=(p,q,st)=>{const A=proj(p),B=proj(q);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" ${st} ${NS}/>`};
+  const head=(A,B,col,sz)=>{const g=Math.atan2(B[1]-A[1],B[0]-A[0]),h=sz*s;return `<polygon points="${B[0]},${B[1]} ${B[0]-h*Math.cos(g-.45)},${B[1]-h*Math.sin(g-.45)} ${B[0]-h*Math.cos(g+.45)},${B[1]-h*Math.sin(g+.45)}" fill="${col}" stroke="#fff" stroke-width="1.5" ${NS}/>`};
+  const tag=(p,txt,col='#1a1a1a',bg='#fff')=>{const [x,y]=proj(p),fs=16*s,w=(txt.length*9.2+16)*s,h=26*s;return `<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="${7*s}" fill="${bg}" stroke="${col==='#fff'?bg:col}" stroke-width="2" ${NS}/><text x="${x}" y="${y+fs*.36}" font-size="${fs}" text-anchor="middle" font-weight="800" fill="${col}" font-family="Helvetica Neue,Arial,sans-serif">${txt}</text>`};
+  switch(a.t){
+    case 'arrow':{const A=proj(a.a),B=proj(a.b),g=Math.atan2(B[1]-A[1],B[0]-A[0]),E=[B[0]-10*s*Math.cos(g),B[1]-10*s*Math.sin(g)];
+      return `<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}`}
+    case 'line':return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
+    case 'dim':{const o=a.off||[0,0,0],A=add(a.a,o),B=add(a.b,o),M=proj(mid(A,B));
+      return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+tag(mid(A,B),a.label)}
+    case 'drill':{const A=proj(a.a),B=proj(a.b);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}/>`+head(A,B,'#e3000b',15)+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
+    case 'cut':{const [w,h]=a.size,c=a.c,q=a.axis==='y'?[[c[0]-w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]+h/2],[c[0]-w/2,c[1],c[2]+h/2]]:[[c[0],c[1]-w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]+h/2],[c[0],c[1]-w/2,c[2]+h/2]];
+      return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}/>`}
+    case 'cross':{const p=a.p,r=a.r||9,c=a.col||'#e3000b';return ln([p[0]-r,p[1],p[2]],[p[0]+r,p[1],p[2]],`stroke="${c}" stroke-width="2.5"`)+ln([p[0],p[1]-r,p[2]],[p[0],p[1]+r,p[2]],`stroke="${c}" stroke-width="2.5"`)}
+    case 'dot':{const [x,y]=proj(a.p);return `<circle cx="${x}" cy="${y}" r="${6*s}" fill="${a.col||'#1a9c4a'}" stroke="#fff" stroke-width="1.5" ${NS}/>`}
+    case 'text':return tag(a.p,a.label,a.col,a.bg);
+  }
+  return '';
+}
+
+/* ================= TEMPLATES (mm). x across the paper, y down the paper. Top edge = FRONT (handle end). ================= */
+/* thru = holes that go through a tube (blue: top plate only on the bench, then drilled through tube + bottom plate in the frame).
+   Other holes pass beside the axle tube (red: drilled through both plates on the bench). screw = green dot for the anti-slip screw. */
+const TPL={
+  T:{w:160,h:100,holes:[[80,25],[80,75],[22.15,71.1],[137.85,71.1]],thru:[0,1,2,3]},
+  CL:{w:100,h:160,holes:[[59.5,35],[13,80],[87,80],[20,140],[80,140]],thru:[0],screw:[50,110]},
+  CR:{w:100,h:160,holes:[[40.5,35],[87,80],[13,80],[80,140],[20,140]],thru:[0],screw:[50,110]},
+  M:{w:100,h:160,holes:[[50,20],[50,60],[13,80],[87,80],[20,140],[80,140]],thru:[0,1]},
+};
+
+/* ================= THE MODEL (mm; X = across, Y = toward handle, Z = up) ================= */
+const COL={alu:'#c9d2da',plate:'#e4eaf0',rod:'#a9b4bf',wheel:'#30343a',rim:'#d4d8dc',bolt:'#97a2ad',wood:'#c99a5c',pad:'#46586f',strap:'#f39c12',pin:'#d6332b',washer:'#dce1e6',off:'#f5b7b1',brick:'#b4533a',paper:'#ffffff',boat:'#3d7fb8',pine:'#e2c48e',carpet:'#56677b'};
+const SA=0.3,CA=Math.sqrt(1-SA*SA),YT=25+1250*CA,YF=YT+50;
+const BRACE_L=[[-25,YT],[-25-50*CA,YT+50*SA],[-25-50*CA-375,YT+50*SA-1250*CA],[-400,25]];
+const mirror=poly=>poly.map(([x,y])=>[-x,y]);
+/* where each template sits in the model: X = x + x0, Y = y0 - y */
+const PLACE={tee:['T',-80,YF],cornerL:['CL',-470,110],cornerR:['CR',370,110],middle:['M',-50,110]};
+const HOLES=Object.fromEntries(Object.entries(PLACE).map(([j,[t,x0,y0]])=>[j,TPL[t].holes.map(([x,y])=>[x+x0,y0-y])]));
+const M={};
+const def=(id,order,solids,x={})=>M[id]={order,solids:[].concat(solids),...x};
+const RODC=[0,0,130],ROD_END=610,PIN_X=588;
+const hexNut=(x,y,z0,z1)=>cyl('z',[x,y,0],7.5,z0,z1,COL.bolt,{seg:6,rot:Math.PI/6});
+def('brickB1',-1,box(-288,-212,-115,115,0,105,COL.brick));def('brickB2',-1,box(212,288,-115,115,0,105,COL.brick));
+def('brickS1',-1,box(-115,115,762,838,0,105,COL.brick));def('brickS2',-1,box(-115,115,1762,1838,0,105,COL.brick));
+def('rodL',0,cyl('x',RODC,10,-ROD_END,-500,COL.rod,{seg:16}));
+def('rodMid',0,cyl('x',RODC,10,-500,500,COL.rod,{seg:16}));
+def('plugL',1,holeX(box(-500,-440,-21,21,109,151,COL.wood),10.5));
+const pinBent=s=>[cyl('z',[s*PIN_X,0,0],2.5,116,150,COL.pin,{seg:8}),cyl('y',[s*PIN_X,0,155],5.5,-2,2,COL.pin,{seg:12,hubs:[{r:3,col:BG}]}),rodBetween([s*PIN_X-1.5,0,117],[s*PIN_X-14,0,98],2,COL.pin),rodBetween([s*PIN_X+1.5,0,117],[s*PIN_X+14,0,98],2,COL.pin)];
+const pinLoose=s=>[cyl('z',[s*PIN_X,0,0],2.5,100,150,COL.pin,{seg:8}),cyl('y',[s*PIN_X,0,155],5.5,-2,2,COL.pin,{seg:12,hubs:[{r:3,col:BG}]})];
+def('pinL',2,pinBent(-1),{whenOff:pinLoose(-1)});
+def('wLout',3,cyl('x',RODC,20,-584,-581,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
+def('wheelL',4,cyl('x',RODC,130,-580,-505,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
+def('wLin',5,cyl('x',RODC,20,-503,-500,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
+def('B',20,box(-500,500,-25,25,105,155,COL.alu,{hollow:[1,3]}));
+def('braceL',21,prism(BRACE_L,105,155,COL.alu,{hollow:[0,2]}));
+def('A',22,box(-25,25,25,2225,105,155,COL.alu,{hollow:[0,2]}));
+def('braceR',23,prism(mirror(BRACE_L),105,155,COL.alu,{hollow:[0,2]}));
+def('plugR',25,holeX(box(440,500,-21,21,109,151,COL.wood),10.5),{placed:[holeX(box(499.4,500,-21,21,109,151,COL.wood),10.5)]});
+def('rodR',26,cyl('x',RODC,10,500,ROD_END,COL.rod,{seg:16}));
+for(const [j,[t,x0,y0]] of Object.entries(PLACE)){
+  const {w,h}=TPL[t],x1=x0+w,yb=y0-h;
+  def(j+'T',30,box(x0,x1,yb,y0,155,158,COL.plate,{topExtra:HOLES[j].map(([x,y])=>({p:circ([x,y,158],4.25,'z',14),col:'#2a2f35'}))}));
+  def(j+'B',11,box(x0,x1,yb,y0,102,105,COL.plate));
+}
+for(const [j,hs] of Object.entries(HOLES))hs.forEach(([x,y],i)=>{
+  const top=[cyl('z',[x,y,0],15,158,160,COL.washer,{seg:20,hubs:[{r:4.3,col:'#555555'}]}),hexNut(x,y,160,165.5)];
+  def(`${j}${i}t`,31,top,{whenOff:[cyl('z',[x,y,0],4,85,160,COL.bolt,{seg:12}),...top]});
+  def(`${j}${i}b`,10,[hexNut(x,y,92,100),cyl('z',[x,y,0],15,100,102,COL.washer,{seg:20})]);
+});
+const EYE_Y=2185;
+const eyeTop=[cyl('z',[0,EYE_Y,0],15,155,157,COL.washer,{seg:20}),cyl('z',[0,EYE_Y,0],5,157,166,COL.bolt,{seg:12}),cyl('x',[0,EYE_Y,180],15,-3.5,3.5,COL.bolt,{seg:24,hubs:[{r:9,col:BG}]})];
+def('eye',35,eyeTop,{whenOff:[cyl('z',[0,EYE_Y,0],4,85,157,COL.bolt,{seg:12}),...eyeTop]});
+def('eyeB',10,[hexNut(0,EYE_Y,95,103),cyl('z',[0,EYE_Y,0],15,103,105,COL.washer,{seg:20})]);
+const screwHead=(x,y,z)=>cyl('z',[x,y,0],4.5,z,z+2.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]});
+def('scrC',32,[screwHead(-420,0,158),screwHead(420,0,158)]);
+def('scrP',27,[screwHead(-480,0,155),screwHead(480,0,155)]);
+def('foot',9,cyl('z',[0,2120,0],15,75,105,'#222222',{seg:20}));
+/* hull cradle for a round-bottomed boat (e.g. a Sabot). HULL_R is only for the drawings: real blocks are traced from the boat. */
+const HULL_R=1200,HULL_Z0=212;
+const hullZ=x=>HULL_Z0+HULL_R-Math.sqrt(HULL_R*HULL_R-x*x);
+function extrudeY(poly,y0,y1,col){const n=poly.length,F=poly.map(([x,z])=>[x,y1,z]),Bk=poly.map(([x,z])=>[x,y0,z]);
+  const faces=[{p:F,col},{p:Bk.slice().reverse(),col}];
+  for(let i=0;i<n;i++){const j=(i+1)%n;faces.push({p:[Bk[i],Bk[j],F[j],F[i]],col})}return solid(faces)}
+const arcPts=(x0,x1,dz=0,n=12)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,hullZ(x)+dz]});
+const cradleSolids=s=>{const a=60,b=360,m=x=>s*x;
+  const block=[[m(a),155],[m(b),155],...arcPts(b,a).map(([x,z])=>[m(x),z])];
+  const carpet=[...arcPts(a,b).map(([x,z])=>[m(x),z]),...arcPts(b,a,6).map(([x,z])=>[m(x),z])];
+  const cl=[85,335].map(m).sort((p,q)=>p-q);
+  return {block:[extrudeY(block,-22.5,22.5,COL.pine),box(cl[0],cl[1],25,67,128,170,COL.wood),box(cl[0],cl[1],-67,-25,128,170,COL.wood)],carpet:[extrudeY(carpet,-24,24,COL.carpet)]};
+};
+const CR_L=cradleSolids(-1),CR_R=cradleSolids(1);
+def('cradleL',40,CR_L.block);def('cradleR',40,CR_R.block);
+def('carpetL',41,CR_L.carpet);def('carpetR',41,CR_R.carpet);
+const BOW_Y0=720,BOW_Y1=1020,BOW_TOP=212;
+def('bowBlock',40,[box(-22.5,22.5,BOW_Y0,BOW_Y1,155,BOW_TOP,COL.pine),box(25,67,BOW_Y0+25,BOW_Y1-25,128,170,COL.wood),box(-67,-25,BOW_Y0+25,BOW_Y1-25,128,170,COL.wood),box(-24,24,BOW_Y0,BOW_Y1,BOW_TOP,BOW_TOP+6,COL.carpet)]);
+/* straps: over the block, down the side, across the cleat, down its outside; the part under the tube is drawn early */
+const strapOverX=(x,top)=>[box(x-12,x+12,-24,24,top,top+2.5,COL.strap),box(x-12,x+12,22.5,25,170,top+2.5,COL.strap),box(x-12,x+12,25,69.5,170,172.5,COL.strap),box(x-12,x+12,67,69.5,100,172.5,COL.strap)];
+const strapOverY=(y,top)=>[box(-24,24,y-12,y+12,top,top+2.5,COL.strap),box(22.5,25,y-12,y+12,170,top+2.5,COL.strap),box(25,69.5,y-12,y+12,170,172.5,COL.strap),box(67,69.5,y-12,y+12,100,172.5,COL.strap)];
+def('cStraps',42,[...strapOverX(-210,hullZ(210)+6),...strapOverX(210,hullZ(210)+6)]);
+def('cStrapsUnder',9,[box(-222,-198,-69.5,69.5,97.5,100,COL.strap),box(198,222,-69.5,69.5,97.5,100,COL.strap)]);
+def('bStrap',42,strapOverY((BOW_Y0+BOW_Y1)/2,BOW_TOP+6));
+def('bStrapUnder',9,[box(-69.5,69.5,(BOW_Y0+BOW_Y1)/2-12,(BOW_Y0+BOW_Y1)/2+12,97.5,100,COL.strap)]);
+def('wRin',50,cyl('x',RODC,20,500,503,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
+def('wheelR',51,cyl('x',RODC,130,505,580,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
+def('wRout',52,cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
+def('rodTip',53,cyl('x',RODC,10,581,ROD_END,COL.rod,{seg:16}));
+def('pinR',54,pinBent(1),{whenOff:pinLoose(1)});
+const loop=[];for(let d=0;d<=360;d+=10){const t=d*Math.PI/180;loop.push([0,EYE_Y+60*Math.sin(t),305-125*Math.cos(t)])}
+def('handle',60,[],{paths:[{pts:loop,col:COL.strap}]});
+
+const bolts=j=>HOLES[j].flatMap((_,i)=>[`${j}${i}t`,`${j}${i}b`]);
+const tops=j=>HOLES[j].map((_,i)=>`${j}${i}t`),bots=j=>HOLES[j].map((_,i)=>`${j}${i}b`);
+const plates=j=>[j+'T',j+'B'];
+function scene(ids,{hl=[],off={},ghost=[]}={}){
+  return ids.map(id=>{const m=M[id],d=off[id];let solids=m.solids;
+    if(d&&m.whenOff)solids=m.whenOff;else if(!d&&m.placed)solids=m.placed;
+    return{order:m.order,solids,paths:m.paths,off:d||[0,0,0],hl:hl.includes(id),ghost:ghost.includes(id)}});
+}
+const offAll=(ids,d)=>Object.fromEntries(ids.map(i=>[i,d]));
+const solo=(solids,o={})=>({order:o.order||0,solids:[].concat(solids),off:o.off||[0,0,0],hl:!!o.hl,ghost:o.ghost,paths:o.paths});
+
+/* build-up states */
+const BRICKS=['brickB1','brickB2','brickS1','brickS2'];
+const S={};
+S.plugs=['B','plugL','plugR'];
+S.plugScr=[...S.plugs,'scrP'];
+S.layB=[...BRICKS,...S.plugScr];
+S.spine=[...S.layB,'A'];
+S.frame=[...S.spine,'braceL','braceR'];
+S.tee=[...S.frame,...plates('tee')];
+S.teeB=[...S.tee,...bolts('tee')];
+S.corners=[...S.teeB,...plates('cornerL'),...plates('cornerR')];
+S.cornersB=[...S.corners,...bolts('cornerL'),...bolts('cornerR')];
+S.cornersS=[...S.cornersB,'scrC'];
+S.mid=[...S.cornersS,...plates('middle')];
+S.midB=[...S.mid,...bolts('middle')];
+const RODS=['rodL','rodMid','rodR','rodTip'];
+S.rod=[...S.midB,...RODS];
+const WHEELS=['wLin','wheelL','wLout','wRin','wheelR','wRout'];
+S.wheels=[...S.rod,...WHEELS];
+S.pins=[...S.wheels,'pinL','pinR'];
+const CRADLE=['cradleL','cradleR','carpetL','carpetR'];
+S.cradle=[...S.pins,...CRADLE];
+S.cStraps=[...S.cradle,'cStraps','cStrapsUnder'];
+S.eye=[...S.cStraps,'eye','eyeB'];
+S.foot=[...S.eye,'foot'];
+S.handle=[...S.foot,'handle'];
+S.all=[...S.handle,'bowBlock','bStrap','bStrapUnder'];
+const FINAL=S.all.filter(i=>!BRICKS.includes(i));
+
+const F={tee:[-150,150,YT-130,YT+120,-120,380],corner:[330,520,-90,150,-120,380],middle:[-120,120,-80,140,-220,480],
+  wheel:[480,1220,-140,140,0,260],rodEnd:[520,660,-140,140,0,300],front:[-150,150,2080,2300,60,440],cradle:[-520,520,-80,80,90,300],bow:[-160,160,680,1060,90,260]};
+
+/* bench scenes for drilling plate pairs */
+/* holes: 'none' | 'red' (only beside-tube holes) | 'all'. single: top plate only */
+function platePair(t,x0,y0,{holes='all',paper=false,single=false}={}){
+  const {w,h}=TPL[t],thru=TPL[t].thru;
+  const pick=TPL[t].holes.map(([x,y],i)=>({x:x0+x,y:y0-y,thru:thru.includes(i)})).filter(hl=>holes==='all'||(holes==='red'&&!hl.thru));
+  const ex=z=>pick.map(hl=>({p:circ([hl.x,hl.y,z],4.25,'z',14),col:'#2a2f35'}));
+  const top=box(x0,x0+w,y0-h,y0,3,6,COL.plate,{topExtra:holes==='none'?undefined:ex(6)});
+  return [...(single?[]:[box(x0,x0+w,y0-h,y0,0,3,COL.plate)]),top,...(paper?[box(x0,x0+w,y0-h,y0,6,6.4,COL.paper)]:[])];
+}
+const tplCrosses=(t,x0,y0,z,only)=>TPL[t].holes.map(([x,y],i)=>({i,x,y})).filter(({i})=>!only||(only==='red')!==TPL[t].thru.includes(i)).map(({x,y,i})=>({t:'cross',p:[x0+x,y0-y,z],col:TPL[t].thru.includes(i)?'#0062ad':'#e3000b'}));
+
+/* ================= PARTS (pictures for callouts) ================= */
+const tubeIcon=()=>[box(0,320,-25,25,0,50,COL.alu,{hollow:[1,3]})];
+const PART={
+  Astock:{nm:'Tube A',nt:'about 2.5 m',b:'A',icon:tubeIcon},
+  Cstock:{nm:'Tube C',nt:'about 1.5 m',b:'C',icon:tubeIcon},
+  Dstock:{nm:'Flat bar',nt:'1.4 m long',b:'D',icon:()=>[box(0,400,0,100,0,3,COL.plate)]},
+  Lstock:{nm:'Hardwood',nt:'42 x 42 mm, 1.8 m',b:'L',icon:()=>[box(0,250,-21,21,0,42,COL.wood)]},
+  Qstock:{nm:'Pine board',nt:'140 x 45 mm, 1.2 m',b:'Q',icon:()=>[box(0,300,-22,22,0,140,COL.pine)]},
+  Cb:{nm:'Cradle block',nt:'300 mm, curved top',b:'Q',icon:()=>[extrudeY([[60,0],[360,0],...arcPts(360,60).map(([x,z])=>[x,z-155])],-22.5,22.5,COL.pine)]},
+  Bb:{nm:'Bow block',nt:'300 mm',b:'Q',icon:()=>[box(0,300,-22,22,0,50,COL.pine)]},
+  Cl:{nm:'Cleat',nt:'250 mm',b:'L',icon:()=>[box(0,250,-21,21,0,42,COL.wood)]},
+  Kc:{nm:'Carpet strip',nt:'120 mm wide',b:'I',icon:()=>[box(0,300,0,120,0,6,COL.carpet)]},
+  Ws:{nm:'Wood screw',nt:'65 mm',b:'V',icon:()=>[cyl('z',[0,0,0],2.2,0,65,COL.bolt,{seg:10}),cyl('z',[0,0,0],4.5,65,68,COL.bolt,{seg:14,hubs:[{r:1.2,col:'#333333'}]})]},
+  Card:{nm:'Cardboard',nt:'about 600 x 300 mm',b:'',icon:()=>[box(0,300,0,150,0,3,'#c8a46a')]},
+  A:{nm:'Long tube',nt:'2200 mm',b:'A',icon:tubeIcon},
+  B:{nm:'Axle tube',nt:'1000 mm',b:'B',icon:tubeIcon},
+  C:{nm:'Brace tube',nt:'1250 mm',b:'C',icon:tubeIcon},
+  P:{nm:'Plate',nt:'160 x 100 mm',b:'D',icon:()=>[box(0,160,0,100,0,3,COL.plate)]},
+  F:{nm:'Axle rod',nt:'1220 mm',b:'F',icon:()=>[cyl('x',[0,0,0],10,0,320,COL.rod,{seg:16})]},
+  L:{nm:'Plug',nt:'60 mm, with hole',b:'L',icon:()=>[box(-21,21,-21,21,0,60,COL.wood,{topExtra:[{p:circ([0,0,60],10,'z',16),col:'#3a3a3a'}]})]},
+  E:{nm:'Wheel',nt:'260 mm',b:'E',icon:()=>[cyl('x',[0,0,0],130,0,75,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]})]},
+  G:{nm:'Bolt',nt:'M8 x 75 mm',b:'G',icon:()=>[cyl('z',[0,0,0],4,0,75,COL.bolt,{seg:12}),cyl('z',[0,0,0],7.5,75,81,COL.bolt,{seg:6,rot:Math.PI/6})]},
+  N:{nm:'Lock nut',nt:'M8',b:'H',icon:()=>[cyl('z',[0,0,0],7.5,0,8,COL.bolt,{seg:6,rot:Math.PI/6,hubs:[{r:4,col:'#ffffff'}]})]},
+  W:{nm:'Bolt washer',nt:'M8 hole, 30 mm wide',b:'W',icon:()=>[cyl('z',[0,0,0],15,0,2,COL.washer,{seg:24,hubs:[{r:4.3,col:'#ffffff'}]})]},
+  K:{nm:'Axle washer',nt:'20 mm hole',b:'K',icon:()=>[cyl('z',[0,0,0],20,0,3,COL.washer,{seg:24,hubs:[{r:10.5,col:'#ffffff'}]})]},
+  J:{nm:'Split pin',nt:'4 mm',b:'J',icon:()=>[cyl('x',[0,0,0],2.5,0,40,COL.pin,{seg:8}),cyl('x',[0,0,5],2.5,0,30,COL.pin,{seg:8})]},
+  O:{nm:'Eye bolt',nt:'M8',b:'O',icon:()=>[cyl('z',[0,0,0],4,0,70,COL.bolt,{seg:12}),cyl('x',[0,0,85],15,-3.5,3.5,COL.bolt,{seg:24,hubs:[{r:9,col:'#ffffff'}]})]},
+  X:{nm:'Paste',nt:'grown-ups only',b:'N',icon:()=>[cyl('x',[0,0,0],12,0,70,'#eeeeee',{seg:16}),cyl('x',[0,0,0],7,70,84,COL.pin,{seg:16})]},
+  U:{nm:'Glue',nt:'contact adhesive',b:'U',icon:()=>[cyl('x',[0,0,0],12,0,70,'#ffe27a',{seg:16}),cyl('x',[0,0,0],7,70,84,'#1a1a1a',{seg:16})]},
+  Istock:{nm:'Pad strip',nt:'1.5 m, 20 mm thick',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
+  Ib:{nm:'Beam pad',nt:'1000 mm',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
+  Iw:{nm:'Bow pad',nt:'400 mm',b:'I',icon:()=>[box(0,160,0,64,0,20,COL.pad)]},
+  Mstock:{nm:'Webbing',nt:'5 m',b:'M',icon:()=>[box(0,300,0,25,0,2.5,COL.strap)]},
+  Ms:{nm:'Block strap',nt:'900 mm',b:'M',icon:()=>[box(0,200,0,25,0,2.5,COL.strap)]},
+  Ml:{nm:'Long strap',nt:'800 mm',b:'M',icon:()=>[box(0,320,0,25,0,2.5,COL.strap)]},
+  Z:{nm:'Screw',nt:'8g x 12 mm',b:'Z',icon:()=>[cyl('z',[0,0,0],2,0,12,COL.bolt,{seg:10}),cyl('z',[0,0,0],4.5,12,14.5,COL.bolt,{seg:14,hubs:[{r:1.2,col:'#333333'}]})]},
+  R:{nm:'Rubber foot',nt:'about 30 mm tall',b:'R',icon:()=>[cyl('z',[0,0,0],15,0,30,'#222222',{seg:20,hubs:[{r:3,col:'#888888'}]})]},
+  S:{nm:'Tie-down strap',nt:'cam buckle, 3 m',b:'S',icon:()=>[box(0,260,0,25,0,2.5,'#e3000b'),box(260,290,-5,30,0,10,COL.bolt)]},
+};
+const iconCache={};
+function partIcon(k){return iconCache[k]||(iconCache[k]=render([solo(PART[k].icon())],{w:96,h:62,pad:.1}))}
+function partCard(k,q){const p=PART[k];return `<div class="pc">${p.b?`<span class="badge">${p.b}</span>`:''}${partIcon(k)}<div class="q">${q}x</div><div class="nm">${p.nm}</div><div class="nt">${p.nt}</div></div>`}
+
+/* ================= TOOLS ================= */
+const T=s=>`<svg viewBox="0 0 40 40" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linejoin="round">${s}</svg>`;
+const TOOL={
+  tape:['Tape measure',T('<rect x="5" y="9" width="22" height="22" rx="5" fill="#ffd500"/><circle cx="16" cy="20" r="5" fill="#fff"/><path d="M27 27h9v4h-9z" fill="#ddd"/>')],
+  marker:['Marker',T('<path d="M8 32l4-8L28 8l4 4-16 16z" fill="#e3000b"/><path d="M8 32l4-8 4 4z" fill="#1a1a1a"/>')],
+  square:['Square',T('<path d="M6 6h6v22h22v6H6z" fill="#cfd6dd"/>')],
+  saw:['Hacksaw',T('<path d="M4 26L24 8l6 6-20 18z" fill="#dfe5ea"/><path d="M8 25l2 2M11 22l2 2M14 19l2 2M17 16l2 2M20 13l2 2" stroke-width="1.5"/><path d="M24 8l6-4 6 6-6 4z" fill="#0062ad"/>')],
+  file:['File',T('<path d="M6 30L26 10l4 4-20 20z" fill="#9aa5b0"/><path d="M26 10l6-6 4 4-6 6z" fill="#c99a5c"/>')],
+  clamp:['Clamps or vice',T('<path d="M8 6h20v6H14v16h14v6H8z" fill="#0062ad"/><path d="M28 9v22" stroke-width="3"/>')],
+  spanner:['2 spanners 13 mm',T('<path d="M8 32L22 18" stroke="#9aa5b0" stroke-width="7" stroke-linecap="round"/><path d="M8 32L22 18" stroke-width="1"/><circle cx="26" cy="14" r="8" fill="#9aa5b0"/><path d="M24 6h5v8h-5z" fill="#fff"/>')],
+  mallet:['Rubber mallet',T('<rect x="7" y="6" width="24" height="12" rx="3" fill="#1a1a1a"/><path d="M17 18h4v17h-4z" fill="#c99a5c"/>')],
+  scissors:['Scissors',T('<circle cx="11" cy="29" r="5" fill="#e3000b"/><circle cx="25" cy="31" r="5" fill="#e3000b"/><path d="M14 25L30 5M22 27L18 5"/>')],
+  drill:['Drill',T('<path d="M4 9h22v11H4z" fill="#e3000b"/><path d="M10 20h9l-2 14h-6z" fill="#1a1a1a"/><path d="M26 14h10" stroke-width="3"/>')],
+  punch:['Centre punch',T('<path d="M18 4h5v24l-2.5 7-2.5-7z" fill="#9aa5b0"/><path d="M16 4h9v7h-9z" fill="#555"/>')],
+  pliers:['Pliers',T('<path d="M10 35L19 19M28 35L19 19" stroke="#e3000b" stroke-width="4" stroke-linecap="round"/><path d="M19 19L15 5M19 19L23 5" stroke-width="3"/>')],
+  knife:['Sharp knife',T('<path d="M6 30L24 12l6 2-16 20z" fill="#dfe5ea"/><path d="M24 12l8-8 4 4-6 6z" fill="#f07d00"/>')],
+  grease:['Grease',T('<rect x="10" y="11" width="20" height="24" rx="3" fill="#ffd500"/><rect x="13" y="5" width="14" height="6" fill="#1a1a1a"/>')],
+  lighter:['Lighter',T('<rect x="12" y="15" width="16" height="21" rx="3" fill="#0062ad"/><path d="M20 3c5 5 5 9 0 11-5-2-5-6 0-11z" fill="#f07d00"/>')],
+  stape:['Sticky tape',T('<circle cx="20" cy="20" r="13" fill="#fff6c8"/><circle cx="20" cy="20" r="6" fill="#fff"/><path d="M33 20h5"/>')],
+  etape:['Electrical tape',T('<circle cx="20" cy="20" r="13" fill="#1a1a1a"/><circle cx="20" cy="20" r="6" fill="#fff"/>')],
+  sand:['Sandpaper',T('<rect x="7" y="9" width="26" height="22" rx="2" fill="#d9b483"/><path d="M11 14h18M11 20h18M11 26h18" stroke-dasharray="1 3"/>')],
+  bricks:['4 bricks',T('<rect x="4" y="19" width="16" height="15" fill="#b4533a"/><rect x="20" y="19" width="16" height="15" fill="#b4533a"/><rect x="12" y="5" width="16" height="14" fill="#b4533a"/>')],
+  jigsaw:['Jigsaw',T('<path d="M6 12h22l4 6H6z" fill="#1a9c4a"/><path d="M12 18h4v15h-4z" fill="#dfe5ea"/><path d="M12 22l4 2M12 26l4 2M12 30l4 2" stroke-width="1"/>')],
+  pencil:['Pencil',T('<path d="M8 32l3-8L28 7l5 5-17 17z" fill="#ffd500"/><path d="M8 32l3-8 5 5z" fill="#c99a5c"/>')],
+  hammer:['Steel hammer',T('<rect x="6" y="6" width="22" height="9" rx="2" fill="#9aa5b0"/><path d="M15 15h4v20h-4z" fill="#c99a5c"/>')],
+  screwdriver:['Screwdriver',T('<path d="M18 4h4v14h-4z" fill="#9aa5b0"/><path d="M15 18h10l-1 17h-8z" fill="#e3000b"/>')],
+  board:['Scrap wood board',T('<path d="M4 26l12-12h20L24 26z" fill="#d9b483"/><path d="M4 26v5h20l12-12v-5" fill="#c99a5c"/>')],
+};
+function toolHTML(k){const [key,size]=k.split(':'),[nm,svg]=TOOL[key];return `<div class="tool">${svg}<span>${size?`${nm}<br>${size} mm bit`:nm}</span></div>`}
+const ADULT_SVG=`<svg viewBox="0 0 40 40"><circle cx="13" cy="8" r="5" fill="#fff"/><path d="M6 36V20a7 7 0 0114 0v16z" fill="#fff"/><circle cx="29" cy="15" r="4" fill="#fff"/><path d="M23 36V26a6 6 0 0112 0v10z" fill="#fff"/></svg>`;
+
+/* ================= STEPS ================= */
+const STAGES=[['Cut the parts','#e3000b'],['Drill the plates','#b0006a'],['Build the axle','#0062ad'],['Lay out the frame','#1a9c4a'],['Bolt the joints','#f07d00'],['Fit the wheels','#7b3fa0'],['Cradle and handle','#0d5257']];
+const marks=[-400,0,400].map(x=>({t:'line',a:[x,-34,156],b:[x,34,156]}));
+const tubeDrill=(j,i,label)=>{const [x,y]=HOLES[j][i];return{t:'drill',a:[x,y,320],b:[x,y,70],label}};
+const BOTH='Both sides';
+/* boat for the cradle and loading pictures: rounded bottom resting on the carpet */
+const hullSection=(dz=6)=>[[-600,530],...arcPts(-560,560,dz,24),[600,530]];
+const boatObj=(ghost=.45,order=70)=>solo(extrudeY(hullSection(),-1120,1325,COL.boat),{order,ghost});
+const tubeY=(len,col=COL.alu)=>box(-25,25,0,len,0,50,col,{hollow:[0,2]});
+const drillDown=(x,y,label,top=50,len=0)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],label});
+
+const STEPS=[
+ /* ---- cut ---- */
+ {st:0,cap:'Clamp tube A down. Measure <b>2200 mm</b> from one end. Mark a line all the way round. Cut on the line.',parts:[['Astock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
+  tip:'Ask the metal shop to cut tubes A and C and the flat bar for you. Then you can skip to step 4.',
+  solo:()=>({objs:[solo(tubeY(2200)),solo(box(-25,25,2200,2500,0,50,COL.off,{hollow:[0,2]}),{order:1})],
+    ann:[{t:'cut',axis:'y',c:[0,2200,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,2200,0],off:[110,0,0],label:'2200 mm'},{t:'text',p:[-160,2420,0],label:'spare bit',col:'#b3261e'}]})},
+ {st:0,cap:'Clamp a C tube. Measure <b>1250 mm</b>. Mark. Cut. Then do the other C tube.',parts:[['Cstock',2]],tools:['tape','marker','square','clamp','saw'],adult:1,mult:'Do both',
+  solo:()=>({objs:[solo(tubeY(1250)),solo(box(-25,25,1250,1500,0,50,COL.off,{hollow:[0,2]}),{order:1})],
+    ann:[{t:'cut',axis:'y',c:[0,1250,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,1250,0],off:[110,0,0],label:'1250 mm'}]})},
+ {st:0,cap:'Mark every <b>160 mm</b> along the flat bar. Cut on each mark. You need <b>8 plates</b>.',parts:[['Dstock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
+  solo:()=>({objs:[...Array.from({length:8},(_,i)=>solo(box(i*160,i*160+160,0,100,0,3,COL.plate),{off:[i*25,0,0]})),solo(box(1280,1400,0,100,0,3,COL.off),{off:[220,0,0]})],
+    ann:[{t:'dim',a:[0,0,3],b:[160,0,3],off:[0,-110,0],label:'160 mm'}]})},
+ {st:0,cap:'Clamp the hardwood. Measure <b>60 mm</b> from the end. Cut. Measure and cut again so you have <b>2 plugs</b>. Keep the rest for later.',parts:[['Lstock',1]],tools:['tape','marker','clamp','saw'],adult:1,
+  solo:()=>({objs:[solo([box(-21,21,0,60,0,42,COL.wood),box(-21,21,60,120,0,42,COL.wood)]),solo(box(-21,21,120,420,0,42,COL.wood),{order:1,ghost:.45})],
+    ann:[{t:'cut',axis:'y',c:[0,60,21],size:[70,70]},{t:'cut',axis:'y',c:[0,120,21],size:[70,70]},{t:'dim',a:[21,0,0],b:[21,60,0],off:[70,0,0],label:'60'},{t:'dim',a:[21,60,0],b:[21,120,0],off:[70,0,0],label:'60'},{t:'text',p:[0,330,90],label:'keep for step 34'}]})},
+ {st:0,cap:'Draw an X from corner to corner on the end of each plug. Clamp the plug standing up. Drill a <b>6 mm</b> hole through the middle of the X, then open it up to <b>20 mm</b>.',parts:[],partsNote:'The 2 plugs from step 4',tools:['marker','clamp','drill:6','drill:20','sand'],adult:1,mult:'Do both',
+  tip:'Use a 20 mm Forstner bit and go slowly. Then push the rod in. If it\'s tight, roll sandpaper round a pencil and sand inside the hole until the rod slides.',
+  solo:()=>{const q=[[-21,-21],[21,-21],[21,21],[-21,21]].map(([x,y])=>[x*Math.cos(.5)-y*Math.sin(.5),x*Math.sin(.5)+y*Math.cos(.5)]);
+    return{objs:[solo(prism(q,0,60,COL.wood))],ann:[{t:'line',a:[...q[0],60],b:[...q[2],60],col:'#1a1a1a',w:2.5},{t:'line',a:[...q[1],60],b:[...q[3],60],col:'#1a1a1a',w:2.5},{t:'drill',a:[0,0,220],b:[0,0,-15],label:'6 then 20 mm'}]}}},
+ {st:0,cap:'File every cut edge smooth. Write <b>FRONT</b> on one end of the long tube, and <b>TIP</b> and <b>FOOT</b> on the two ends of each brace.',parts:[],partsNote:'Every piece you cut',tools:['file','marker'],
+  solo:()=>({objs:[solo(tubeY(1250)),solo(box(120,280,-60,40,0,3,COL.plate),{order:1,hl:true})],ann:[{t:'text',p:[0,1180,90],label:'TIP'},{t:'text',p:[0,70,90],label:'FOOT'},{t:'text',p:[200,0,60],label:'smooth!'}]})},
+ /* ---- drill on the bench ---- */
+ {st:1,cap:'Cut out <b>Template C-LEFT</b>. Stack 2 plates on a scrap board. Tape the template on top, edges lined up. Clamp everything down.',parts:[['P',2]],tools:['scissors','stape','board','clamp'],
+  tip:'Print the templates from the <a onclick="goTpl()">Templates page</a> first.',
+  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none'})),solo(box(0,100,-160,0,6,6.4,COL.paper),{off:[0,0,90],hl:true,order:2})],ann:[...tplCrosses('CL',0,0,96.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,96.4]},{t:'arrow',a:[115,-80,95],b:[115,-80,15]}]})},
+ {st:1,cap:'Tap a dent on every red cross with the punch and hammer. Drill each one <b>4 mm</b>, then <b>8.5 mm</b>, through both plates. Drill the green dot <b>4.5 mm</b>.',parts:[],partsNote:'The clamped plates',tools:['punch','hammer','drill:4','drill:4.5','drill:8.5'],adult:1,
+  tip:'Write CL on both plates. Keep them together the same way up, writing on top.',
+  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none',paper:true}),{order:1})],ann:[...tplCrosses('CL',0,0,6.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,6.4]},...TPL.CL.holes.map(([x,y],i)=>({t:'drill',a:[x,-y,140],b:[x,-y,8],label:i?'':'8.5 mm'}))]})},
+ {st:1,cap:'Do the same with templates <b>C-RIGHT</b>, <b>M</b> and <b>T</b>. Write CR, M or T on each pair.',parts:[['P',6]],tools:['scissors','stape','clamp','punch','hammer','drill:4','drill:8.5','file','marker'],adult:1,
+  tip:'File off the sharp bits round every hole.',
+  solo:()=>({objs:[solo(platePair('CL',0,30)),solo(platePair('CR',130,30)),solo(platePair('M',260,30)),solo(platePair('T',390,0))],
+    ann:[{t:'text',p:[50,-50,60],label:'CL'},{t:'text',p:[180,-50,60],label:'CR'},{t:'text',p:[310,-50,60],label:'M'},{t:'text',p:[470,-50,60],label:'T'}]})},
+ {st:1,cap:'On each brace, draw a line down the middle of the top. Mark <b>30 mm</b> from the TIP end and <b>45 mm</b> from the FOOT end. Clamp it. Drill <b>4 mm</b>, then <b>10.5 mm</b>, straight through.',parts:[],partsNote:'Both brace tubes',tools:['tape','marker','square','clamp','punch','hammer','drill:4','drill:10.5'],adult:1,mult:'Do both',
+  tip:'The tube holes are a little bigger than the plate holes, so the bolts line up even if your marks are a hair out.',
+  solo:()=>({objs:[solo(tubeY(1250))],ann:[{t:'line',a:[0,20,51],b:[0,1230,51],col:'#1a1a1a',w:1.5,dash:'6 5'},drillDown(0,1220,'10.5 mm'),drillDown(0,45,''),{t:'text',p:[0,1250,-40],label:'TIP · 30'},{t:'text',p:[0,0,-40],label:'FOOT · 45'}]})},
+ {st:1,cap:'On the long tube, draw a line down the middle. Measure from the end <b>without</b> FRONT on it. Mark at <b>25</b>, <b>65</b>, <b>1167</b> and <b>1217 mm</b>. Drill each one <b>4 mm</b>, then <b>10.5 mm</b>, straight through.',parts:[],partsNote:'The long tube',tools:['tape','marker','clamp','punch','hammer','drill:4','drill:10.5'],adult:1,
+  solo:()=>({objs:[solo(tubeY(2200))],ann:[{t:'line',a:[0,10,51],b:[0,2190,51],col:'#1a1a1a',w:1.5,dash:'6 5'},drillDown(0,25,''),drillDown(0,65,'10.5 mm'),drillDown(0,1167,''),drillDown(0,1217,''),{t:'text',p:[0,40,-60],label:'25 · 65'},{t:'text',p:[0,1190,-60],label:'1167 · 1217'},{t:'text',p:[0,2200,110],label:'FRONT'}]})},
+ {st:1,cap:'Now the FRONT end. Drill an <b>8.5 mm</b> hole straight through, <b>40 mm</b> from the end. Turn the tube over. Drill <b>3.5 mm</b> through the bottom wall only, <b>105 mm</b> from the end.',parts:[],partsNote:'The long tube',tools:['tape','marker','clamp','punch','hammer','drill:4','drill:8.5','drill:3.5'],adult:1,
+  solo:()=>({objs:[solo(box(-25,25,1950,2200,0,50,COL.alu,{hollow:[0,2]}))],ann:[drillDown(0,2160,'8.5 mm'),{t:'drill',a:[0,2095,-170],b:[0,2095,3],label:'3.5 mm, bottom only'},{t:'dim',a:[25,2160,50],b:[25,2200,50],off:[70,0,0],label:'40'},{t:'dim',a:[25,2095,0],b:[25,2200,0],off:[140,0,0],label:'105'}]})},
+ {st:1,cap:'On the axle tube, drill a <b>3.5 mm</b> hole through the <b>top wall only</b>, <b>20 mm</b> from each end.',parts:[['B',1]],tools:['tape','marker','punch','hammer','drill:3.5'],adult:1,
+  tip:'These holes are for the screws that hold the plugs in.',
+  solo:()=>({objs:[solo(box(-500,500,-25,25,0,50,COL.alu,{hollow:[1,3]}))],ann:[{t:'drill',a:[480,0,220],b:[480,0,52],label:'3.5 mm, top only'},{t:'drill',a:[-480,0,220],b:[-480,0,52],label:''},{t:'dim',a:[480,25,50],b:[500,25,50],off:[0,80,0],label:'20'}]})},
+ {st:1,cap:'Mark the rod <b>110 mm</b> from one end. Slide on an axle washer, a wheel and another axle washer, pushed up to the mark. Mark the rod <b>4 mm</b> past the outer washer. Take them off, then do the other end.',parts:[['F',1],['K',2],['E',1]],tools:['tape','marker'],mult:'Both ends',
+  solo:()=>({objs:[solo(cyl('x',[0,0,0],10,0,400,COL.rod,{seg:16})),solo(box(270,290,-40,40,-40,40,COL.wood),{order:1}),solo([cyl('x',[0,0,0],20,290,293,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}),cyl('x',[0,0,0],130,295,370,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}),cyl('x',[0,0,0],20,371,374,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]})],{order:2})],
+    ann:[{t:'line',a:[378,-14,11],b:[378,14,11],w:4},{t:'text',p:[385,0,60],label:'4 mm'},{t:'dim',a:[290,0,-140],b:[400,0,-140],off:[0,0,0],label:'110 mm'},{t:'text',p:[280,0,90],label:'mark'}]})},
+ {st:1,cap:'Clamp the rod in a vice between two bits of wood. Punch each mark. Drill <b>2.5 mm</b>, then <b>4.5 mm</b>, straight through.',parts:[],partsNote:'The rod',tools:['clamp','punch','hammer','drill:2.5','drill:4.5'],adult:1,
+  tip:'Never hold the rod by hand while it\'s drilled. It\'s round and the bit will skid.',
+  solo:()=>({objs:[solo(cyl('x',[0,0,30],10,0,1220,COL.rod,{seg:16})),solo([box(1020,1150,-60,-10,0,60,COL.wood),box(1020,1150,10,60,0,60,COL.wood)],{order:1})],ann:[{t:'line',a:[1196,-14,41],b:[1196,14,41],w:4},{t:'drill',a:[1196,0,200],b:[1196,0,20],label:'2.5 then 4.5'},{t:'line',a:[24,-14,41],b:[24,14,41],w:4},{t:'text',p:[24,0,110],label:'other end too'}]})},
+ /* ---- axle tube ---- */
+ {st:2,cap:'Turn each plug so its hole points along the tube. Tap a plug into each end of the axle tube with the mallet. Stop when it\'s level with the end.',parts:[['L',2]],tools:['mallet','etape'],
+  tip:'Plug too loose? Wrap electrical tape around it first.',
+  view:()=>({ids:S.plugs,hl:['plugL','plugR'],off:{plugL:[-220,0,0],plugR:[220,0,0]},ann:[{t:'arrow',a:[-760,0,190],b:[-540,0,190]},{t:'arrow',a:[760,0,190],b:[540,0,190]}]})},
+ {st:2,cap:'Put the 3.5 mm bit through each small hole and drill <b>10 mm</b> into the plug. Drive in a screw.',parts:[['Z',2]],tools:['etape','drill:3.5','screwdriver'],adult:1,mult:BOTH,
+  tip:'Wrap tape round the bit 10 mm from the tip so you know when to stop.',
+  view:()=>({ids:S.plugScr,hl:['scrP'],off:{scrP:[0,0,120]},focus:[380,620,-80,80,60,330],ann:[{t:'arrow',a:[520,0,290],b:[490,0,170]}]})},
+ /* ---- layout ---- */
+ {st:3,cap:'Stand 4 bricks on their sides. Lay the axle tube across 2 of them.',parts:[],partsNote:'The axle tube with plugs',tools:['bricks'],
+  tip:'The bricks lift the frame so you can reach underneath.',
+  view:()=>({ids:S.layB,hl:BRICKS})},
+ {st:3,cap:'Mark the middle of the axle tube. Then make a mark <b>400 mm</b> each side of the middle.',parts:[],partsNote:'Nothing new',tools:['tape','marker'],
+  view:()=>({ids:S.layB,ann:[...marks,{t:'dim',a:[-400,25,155],b:[0,25,155],off:[0,120,0],label:'400'},{t:'dim',a:[0,25,155],b:[400,25,155],off:[0,120,0],label:'400'}]})},
+ {st:3,cap:'Lay the long tube on the other 2 bricks, FRONT end away from the axle tube. Centre its back end on the middle mark and push it against the axle tube.',parts:[['A',1]],tools:['square'],
+  view:()=>({ids:S.spine,hl:['A'],off:{A:[0,320,0]},ann:[...marks,{t:'arrow',a:[90,380,190],b:[90,60,190]}]})},
+ {st:3,cap:'Put in both braces. Each FOOT goes on a 400 mm mark. Each TIP touches the long tube with its hole next to the long tube\'s front holes.',parts:[['C',2]],
+  view:()=>({ids:S.frame,hl:['braceL','braceR'],ann:[...marks,{t:'text',p:[-400,25,240],label:'FOOT'},{t:'text',p:[-90,YT,240],label:'TIP'}]})},
+ /* ---- joints ---- */
+ {st:4,cap:'Take the 2 <b>T</b> plates. Slide one under the front joint and put one on top, both writing up. Line up all the holes. Clamp them.',parts:[['P',2]],tools:['clamp'],
+  tip:'Look down each hole. You should see straight through the tube. If not, wiggle the braces until you can.',
+  view:()=>({ids:S.tee,hl:plates('tee'),off:{teeT:[0,0,170],teeB:[0,0,-170]},focus:F.tee,ann:[{t:'arrow',a:[110,YT,330],b:[110,YT,180]},{t:'arrow',a:[110,YT,-80],b:[110,YT,80]}]})},
+ {st:4,cap:'A grown-up dabs paste on each bolt. Put a washer on each bolt and push it down through a hole. Underneath, add a washer, then a nut. Tighten until snug, then stop.',parts:[['G',4],['W',8],['N',4],['X',1]],tools:['spanner'],
+  tip:'Lock nuts stay put by themselves. Don\'t squash the tube.',
+  view:()=>({ids:S.teeB,hl:bolts('tee'),off:{...offAll(tops('tee'),[0,0,190]),...offAll(bots('tee'),[0,0,-170])},focus:F.tee,ann:[{t:'arrow',a:[70,YF-25,330],b:[70,YF-25,190]},{t:'arrow',a:[70,YF-25,-60],b:[70,YF-25,80]}]})},
+ {st:4,cap:'At each back corner: one plate under, one on top, then clamp. <b>CL</b> plates go on the left corner, <b>CR</b> on the right. Both plates writing up.',parts:[['P',4]],tools:['clamp'],mult:BOTH,
+  tip:'Left and right mean as you stand behind the wheels looking at the handle. Don\'t flip the bottom plate over, or its holes won\'t line up.',
+  view:()=>({ids:S.corners,hl:[...plates('cornerL'),...plates('cornerR')],off:{cornerLT:[0,0,170],cornerLB:[0,0,-170],cornerRT:[0,0,170],cornerRB:[0,0,-170]},focus:F.corner,ann:[{t:'arrow',a:[500,25,330],b:[500,25,180]},{t:'arrow',a:[500,25,-80],b:[500,25,80]}]})},
+ {st:4,cap:'Bolt each corner: 5 bolts. 4 of them pass just in front of and behind the axle tube. Washer, bolt, then washer and nut underneath.',parts:[['G',10],['W',20],['N',10],['X',1]],tools:['spanner'],mult:BOTH,
+  view:()=>({ids:S.cornersB,hl:[...bolts('cornerL'),...bolts('cornerR')],off:{...offAll([...tops('cornerL'),...tops('cornerR')],[0,0,190]),...offAll([...bots('cornerL'),...bots('cornerR')],[0,0,-170])},focus:F.corner,ann:[{t:'arrow',a:[500,40,330],b:[500,40,190]}]})},
+ {st:4,cap:'Put the 3.5 mm bit through the small hole at the <b style="color:#1a9c4a">green dot</b>. Drill just through the top of the axle tube. Drive in a screw.',parts:[['Z',2]],tools:['drill:3.5','screwdriver'],adult:1,mult:BOTH,
+  tip:'This screw stops the axle tube sliding sideways. The rod isn\'t in yet, so there\'s nothing to hit.',
+  view:()=>({ids:S.cornersS,hl:['scrC'],off:{scrC:[0,0,120]},focus:F.corner,ann:[{t:'drill',a:[420,0,320],b:[420,0,150],label:'3.5 mm'}]})},
+ {st:4,cap:'Take the 2 <b>M</b> plates. Slide one under the middle joint and put one on top, both writing up. Line up the holes. Clamp them.',parts:[['P',2]],tools:['clamp'],
+  view:()=>({ids:S.mid,hl:plates('middle'),off:{middleT:[0,0,170],middleB:[0,0,-170]},focus:F.middle,ann:[{t:'arrow',a:[80,30,330],b:[80,30,180]},{t:'arrow',a:[80,30,-80],b:[80,30,80]}]})},
+ {st:4,cap:'Bolt the middle joint: 6 bolts, the same way as before.',parts:[['G',6],['W',12],['N',6],['X',1]],tools:['spanner'],
+  view:()=>({ids:S.midB,hl:bolts('middle'),off:{...offAll(tops('middle'),[0,0,190]),...offAll(bots('middle'),[0,0,-170])},focus:F.middle,ann:[{t:'arrow',a:[80,30,330],b:[80,30,190]}]})},
+ /* ---- wheels ---- */
+ {st:5,cap:'Slide the rod through both plugs. Stop when the same amount sticks out each side, <b>110 mm</b>.',parts:[],partsNote:'The drilled rod',tools:['tape'],
+  view:()=>({ids:S.rod,hl:RODS,ann:[{t:'arrow',a:[950,0,230],b:[350,0,230]},{t:'dim',a:[-ROD_END,0,130],b:[-500,0,130],off:[0,0,-110],label:'110'},{t:'dim',a:[500,0,130],b:[ROD_END,0,130],off:[0,0,-110],label:'110'}]})},
+ {st:5,cap:'Smear grease inside each wheel\'s hole. Slide on an axle washer, then a wheel, then another axle washer.',parts:[['K',4],['E',2]],tools:['grease'],mult:BOTH,
+  view:()=>({ids:S.wheels.filter(i=>i!=='rodTip'),hl:WHEELS,off:{wRin:[130,0,0],wheelR:[300,0,0],wRout:[460,0,0],wLin:[-130,0,0],wheelL:[-300,0,0],wLout:[-460,0,0]},focus:F.wheel,ann:[{t:'arrow',a:[1200,0,130],b:[1080,0,130]}]})},
+ {st:5,cap:'Push a split pin through the hole in the rod. Bend its legs apart with the pliers.',parts:[['J',2]],tools:['pliers'],mult:BOTH,
+  view:()=>({ids:S.pins,hl:['pinL','pinR'],off:{pinR:[0,0,110],pinL:[0,0,110]},focus:F.rodEnd,ann:[{t:'arrow',a:[608,0,290],b:[608,0,180]}]}),
+  inset:()=>({objs:[solo(cyl('x',RODC,10,560,ROD_END,COL.rod,{seg:16})),solo(cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}),{order:1}),solo(pinBent(1),{order:2,hl:true})],focus:[560,625,-30,30,90,165],label:'Legs bent like this'})},
+ /* ---- hull cradle ---- */
+ {st:6,cap:'Turn the boat upside down on grass. Measure <b>1.3 m</b> back from the bow and draw a line across the hull. Hold cardboard across the hull on the line. Trim it until it follows the curve, from the middle out to <b>400 mm</b> each side.',parts:[['Card',1]],tools:['tape','pencil','scissors'],
+  tip:'Do this with a grown-up. The cardboard is your pattern for the cradle, so take your time getting it snug.',
+  solo:()=>{const up=x=>530-(hullZ(x)-HULL_Z0);const sec=[[-600,0],[600,0],[600,530-(hullZ(560)-HULL_Z0)],...Array.from({length:25},(_,i)=>{const x=560-1120*i/24;return[x,up(x)]}),[-600,530-(hullZ(560)-HULL_Z0)]];
+    const card=[...Array.from({length:17},(_,i)=>{const x=-400+800*i/16;return[x,up(x)]}).reverse(),[-400,up(0)+70],[400,up(0)+70]].reverse();
+    return{objs:[solo(extrudeY(sec,0,700,COL.boat)),solo(extrudeY(card,330,334,'#c8a46a'),{order:1,hl:true})],ann:[{t:'text',p:[0,332,up(0)+120],label:'trim to fit'},{t:'line',a:[-560,350,up(0)+2],b:[560,350,up(0)+2],col:'#1a1a1a',w:2,dash:'6 5'}]}}},
+ {st:6,cap:'Cut 2 pieces of pine board, <b>300 mm</b> long. Trace the cardboard curve onto each one. A grown-up cuts along the curve with a jigsaw. Sand the edges.',parts:[['Qstock',1]],tools:['tape','pencil','clamp','jigsaw','sand'],adult:1,
+  tip:'Use the right half of the pattern for one block and the left half for the other. Keep the offcut for the bow block.',
+  solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(extrudeY([...arcPts(60,360),[360,295],[60,295]],-22.5,22.5,COL.off),{order:1,off:[0,0,40]}),solo(extrudeY([[-360,155],[-60,155],...arcPts(60,360).map(([x,z])=>[-x,z])].map(([x,z])=>[x,z]),-22.5,22.5,COL.pine),{off:[-40,0,0]})],ann:[{t:'text',p:[210,0,340],label:'offcut'}]})},
+ {st:6,cap:'Cut 4 cleats, <b>250 mm</b> long, from the leftover hardwood. Screw 2 under each block, one on each side, so the axle tube fits snugly between them.',parts:[['Cl',4],['Ws',12]],tools:['tape','saw','clamp','drill:3.5','screwdriver'],adult:1,mult:'Do both',
+  tip:'Hold a scrap of the axle tube between the cleats as a spacer while you screw them on.',
+  solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(box(85,335,25,67,128,170,COL.wood),{order:1,hl:true,off:[0,90,0]}),solo(box(85,335,-67,-25,128,170,COL.wood),{order:0,hl:true,off:[0,-90,0]}),solo(box(150,280,-25,25,105,155,COL.alu,{hollow:[1,3]}),{order:-1,ghost:.35})],ann:[{t:'arrow',a:[210,180,150],b:[210,75,150]}]})},
+ {st:6,cap:'A grown-up glues a strip of carpet over the curved top of each block and down its sides.',parts:[['Kc',2],['U',1]],tools:['scissors'],adult:1,
+  tip:'Glue outside or with the door open. Fold the carpet neatly at the ends.',
+  view:()=>({ids:[...CRADLE],hl:['carpetL','carpetR'],off:{carpetL:[0,0,90],carpetR:[0,0,90]},ann:[{t:'arrow',a:[210,0,400],b:[210,0,300]}]})},
+ {st:6,cap:'Cut the webbing into <b>3 block straps</b> (900 mm) and <b>1 long strap</b> (800 mm). A grown-up melts each cut end so it can\'t fray.',parts:[['Mstock',1]],tools:['tape','scissors','lighter'],adult:1,
+  solo:()=>({objs:[...Array.from({length:3},(_,i)=>solo(box(0,900,i*45,i*45+25,0,2.5,COL.strap))),solo(box(0,800,180,205,0,2.5,COL.strap))],ann:[{t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'dim',a:[0,205,3],b:[800,205,3],off:[0,60,0],label:'800'}]})},
+ {st:6,cap:'Sit each cradle block on the axle tube, between the middle plates and a corner plate. The cleats hug the tube. The high ends of the curve go outwards.',parts:[['Cb',2]],
+  view:()=>({ids:S.cradle,hl:CRADLE,off:offAll(CRADLE,[0,0,140]),focus:F.cradle,ann:[{t:'arrow',a:[-210,0,470],b:[-210,0,320]},{t:'arrow',a:[210,0,470],b:[210,0,320]}]})},
+ {st:6,cap:'Wrap a block strap over each block and under the tube. Tie the ends in a double knot underneath.',parts:[['Ms',2]],
+  view:()=>({ids:S.cStraps,hl:['cStraps','cStrapsUnder'],focus:F.cradle})},
+ {st:6,cap:'Push the eye bolt down through the hole at the FRONT of the long tube, with a washer. Underneath: washer, then nut.',parts:[['O',1],['W',2],['N',1]],tools:['spanner'],
+  view:()=>({ids:S.eye,hl:['eye','eyeB'],off:{eye:[0,0,170],eyeB:[0,0,-150]},focus:F.front,ann:[{t:'arrow',a:[60,EYE_Y,360],b:[60,EYE_Y,200]}]})},
+ {st:6,cap:'Screw the rubber foot into the small hole under the front of the long tube. It takes the weight when the dolly rests on its front.',parts:[['R',1],['Z',1]],tools:['screwdriver'],
+  view:()=>({ids:S.foot,hl:['foot'],off:{foot:[0,0,-90]},focus:[-150,150,2050,2300,-40,260],ann:[{t:'arrow',a:[60,2120,-10],b:[60,2120,70]}]})},
+ {st:6,cap:'Slide a <b>120 mm</b> piece of old garden hose onto the long strap. Thread the strap through the eye and tie the ends with a double knot. That\'s your handle.',parts:[['Ml',1]],tools:['knife'],
+  tip:'The hose makes a comfy grip so the strap doesn\'t dig into your hand.',
+  view:()=>({ids:S.handle,hl:['handle'],focus:F.front})},
+ {st:6,cap:'Lift the dolly off the bricks and gently set the boat on the cradle. Measure the gap between the hull and the long tube, <b>300 mm</b> behind the front joint. Cut the bow block to that height from the pine offcut. Screw on 2 cleats.',parts:[['Cl',2],['Ws',6]],tools:['tape','pencil','saw','drill:3.5','screwdriver'],adult:1,
+  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-700,700,-300,1500,0,560],extra:[boatObj(.35)],ann:[{t:'dim',a:[0,(BOW_Y0+BOW_Y1)/2,155],b:[0,(BOW_Y0+BOW_Y1)/2,HULL_Z0+6],off:[220,0,0],label:'measure'}]})},
+ {st:6,cap:'Glue carpet on top of the bow block. Sit it on the long tube under the hull and strap it down like the cradle blocks.',parts:[['Bb',1],['Kc',1],['Ms',1]],adult:1,
+  view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],focus:F.bow})},
+ {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
+  view:()=>({ids:FINAL})},
+];
+
+/* ================= PAGES ================= */
+const PAGES=['cover','start','parts',...STEPS.map((_,i)=>'s'+i),'loading','test','templates','done','grownups'];
+let pageIdx=0;
+const fullModel=()=>render(scene(FINAL),{w:760,h:480});
+
+function pCover(){return `<div class="cover"><div>
+  <div class="setno"><span>SET 2200</span><span class="y">12+ with a grown-up</span><span>Boats up to 80 kg</span></div>
+  <h1>Boat<br>Dolly</h1>
+  <p class="sub" style="max-width:420px">Build a trolley for wheeling a small boat down to the water.</p>
+  <div class="facts"><div class="fact"><small>Steps</small>${STEPS.length}</div><div class="fact"><small>Builders</small>2</div><div class="fact"><small>Time</small>About 2 days</div></div>
+  <button class="btn y" onclick="go(1)">Start ›</button><button class="btn o" onclick="showTab('cart')">Shopping trolley</button>
+</div><div class="art">${fullModel()}</div></div>`}
+
+function pStart(){return `<h2 class="pt">Before you start</h2><p class="sub">Read this page with your grown-up.</p>
+<div class="cards">
+  <div class="card adultc"><h3>Grown-up steps</h3><div class="adult" style="display:inline-flex">${ADULT_SVG} GROWN-UP</div>
+    <p>Steps with this badge use a saw, drill, knife, glue or flame. A grown-up does those. You measure, mark and set up the clamps.</p></div>
+  <div class="card warnc"><h3>Never hold the part</h3><p>Nobody holds a part while it's being cut or drilled. <b>Clamp it</b> or put it in a vice, and keep your hands well back.</p></div>
+  <div class="card"><h3>Wear this</h3><div class="gear"><div><span>🥽</span>Safety glasses</div><div><span>🎧</span>Ear muffs</div><div><span>🧤</span>Gloves</div></div>
+    <p style="margin-top:10px">Glasses on the whole time. Gloves for carrying metal, but <b>take them off before drilling</b>: a glove can get caught and pull your hand in.</p></div>
+  <div class="card"><h3>How to read the steps</h3><p>The blue box shows everything you need for that step. <b>"Both sides"</b> means the box already includes parts for both sides. Parts outlined in yellow in the picture are new.</p></div>
+  <div class="card"><h3>Print the templates</h3><p>Four paper templates show exactly where to drill the plates. Print them at 100% size.</p><button class="btn" onclick="goTpl()">Go to templates</button></div>
+</div>
+<h3 style="margin:22px 0 10px">Tools you need</h3>
+<div class="toolgrid">${['tape','marker','pencil','square','saw','jigsaw','file','clamp','punch','hammer','drill','screwdriver','spanner','mallet','pliers','scissors','knife','stape','etape','sand','grease','lighter','bricks','board'].map(toolHTML).join('')}</div>
+<p class="sub" style="margin-top:10px">Drill bits: 2.5, 3.5, 4, 4.5, 6, 8.5 and 10.5 mm, plus a 20 mm Forstner bit. You'll also need some cardboard for the hull pattern. A few drops of oil help when drilling aluminium. You'll also need a 120 mm piece of old garden hose.</p>`}
+
+function pParts(){
+  const bag=(t,items)=>`<div class="bag"><h3>${t}</h3><div class="bagrow">${items.map(([k,q])=>partCard(k,q)).join('')}</div></div>`;
+  return `<h2 class="pt">All the parts</h2><p class="sub">This is what you'll have once the cutting is done. The letter on each part matches the shopping trolley.</p>
+  ${bag('Bag 1 · Metal',[['A',1],['B',1],['C',2],['P',8],['F',1]])}
+  ${bag('Bag 2 · Wheels',[['E',2],['K',4],['J',2],['L',2]])}
+  ${bag('Bag 3 · Nuts and bolts',[['G',20],['N',21],['W',42],['Z',5],['O',1],['R',1],['X',1]])}
+  ${bag('Bag 4 · Hull cradle',[['Cb',2],['Bb',1],['Cl',6],['Ws',18],['Kc',3],['U',1]])}
+  ${bag('Bag 5 · Straps',[['Ms',3],['Ml',1],['S',1]])}`;
+}
+
+function pStep(i){
+  const s=STEPS[i],[stName,stCol]=STAGES[s.st];
+  let main,mini='',inset='';
+  if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann})}
+  else{const v=s.view();main=render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann});
+    if(v.focus)mini=`<div class="mini">${render(scene(v.ids,{ghost:v.ghost}),{w:168,h:110,ring:v.focus,pad:.12})}</div>`}
+  if(s.inset){const v=s.inset();inset=`<div class="inset"><span>${v.label}</span>${render(v.objs,{focus:v.focus,ann:v.ann,w:230,h:150})}</div>`}
+  const parts=s.parts.length?`<div class="callout"><h4>You need</h4><div class="bagrow">${s.parts.map(([k,q])=>partCard(k,q)).join('')}</div></div>`:`<div class="callout none">${s.partsNote}</div>`;
+  return `<div class="stagebar" style="background:${stCol}"></div>
+  <div class="step"><div>
+    <div class="stage" style="color:${stCol}">${stName}</div>
+    <div class="stepnum">${i+1}</div>
+    ${s.adult?`<div class="adult">${ADULT_SVG} GROWN-UP</div>`:''}
+    ${parts}
+    ${s.tools?`<div class="tools">${s.tools.map(toolHTML).join('')}</div>`:''}
+  </div><div>
+    <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}</div>
+    <p class="caption">${s.cap}</p>
+    ${s.checks?`<ul class="checks">${s.checks.map(c=>`<li><label><input type="checkbox"> ${c}</label></li>`).join('')}</ul>`:''}
+    ${s.tip?`<div class="tip"><span class="bang">!</span><span>${s.tip}</span></div>`:''}
+  </div></div>`;
+}
+
+function pLoading(){
+  const boat=boatObj(.45,70);
+  const tie=solo([],{order:71,paths:[{pts:[[-640,0,150],[-640,0,530],[640,0,530],[640,0,150]],col:'#e3000b'}]});
+  const art=render([...scene(FINAL),boat,tie],{w:720,h:380,ann:[{t:'text',p:[0,120,520],label:'heaviest part here'},{t:'text',p:[700,0,330],label:'tie-down strap',col:'#e3000b'}]});
+  return `<div class="stagebar" style="background:#0d5257"></div><h2 class="pt">Loading your boat</h2><p class="sub">Read this with your grown-up before the first trip.</p>
+  <div class="art" style="margin-bottom:16px">${art}</div>
+  <div class="cards">
+    <div class="card warnc"><h3>80 kg maximum</h3><p>That's the boat plus everything in it. A Sabot hull is well under this. Take the sails, rudder and gear out before you move it.</p></div>
+    <div class="card"><h3>Balance it</h3><p>Put the boat on so its heaviest part sits a little <b>in front of</b> the wheels. Lift the handle: it should feel light, but never try to flip up.</p></div>
+    <div class="card"><h3>Strap it on</h3><p>Run the tie-down strap over the boat and under the axle tube on each side. Pull it snug.</p></div>
+    <div class="card"><h3>Slopes and ramps</h3><p>Keep hold of the handle the whole time. Never let the dolly roll by itself. Go slowly downhill.</p></div>
+    <div class="card"><h3>Round hulls like a Sabot</h3><p>The cradle blocks are cut to fit your boat's curve, 1.3 m back from the bow. Put the boat on so that spot sits on the blocks. If you get a different boat, make a new pattern and new blocks.</p></div>
+    <div class="card"><h3>Soft sand</h3><p>Narrow wheels sink in soft sand. Go slowly, take a helper, and carry gear separately.</p></div>
+    <div class="card"><h3>After every trip</h3><p>Hose it down with fresh water. Stand it up on the handle end so water drains out of the tubes.</p></div>
+  </div>`;
+}
+function pTest(){return `<div class="stagebar" style="background:#0d5257"></div><h2 class="pt">Test it before the boat</h2><p class="sub">A grown-up runs this test once, before the dolly carries a real boat. Use 20 kg bags of sand from the hardware store.</p>
+  <table class="lt"><tr><th>Load</th><th>Do this</th><th>Check</th></tr>
+  <tr><td><b>20 kg</b> (1 bag)</td><td>Strap it on the pads. Roll 10 m on flat ground and back.</td><td>Wheels spin, nothing rubs or clicks.</td></tr>
+  <tr><td><b>40 kg</b> (2 bags)</td><td>Roll 10 m, then up and down a small kerb or slope.</td><td>No joint moves. Bolts still snug.</td></tr>
+  <tr><td><b>80 kg</b> (4 bags)</td><td>Roll 10 m. Lift the handle and put it down 5 times.</td><td>Rod still straight where it leaves the tube. Nothing bent.</td></tr></table>
+  <div class="tip"><span class="bang">!</span><span>If anything bends, slips or clicks, stop. Fix it before the dolly carries a boat.</span></div>`}
+
+/* 1:1 drilling templates */
+function miniMap(jx,jy,ox,oy){return `<g transform="translate(${ox} ${oy})"><rect width="24" height="26" fill="#fff" stroke="#000" stroke-width=".3"/><path d="M2 22h20M12 22V2M12 9L5 22M12 9l7 13" stroke="#000" stroke-width=".8" fill="none"/><circle cx="${jx}" cy="${jy}" r="2.4" fill="#e3000b"/><text x="12" y="25.4" font-size="2.6" text-anchor="middle">handle at top</text></g>`}
+function tplSVG(id,t,label,title,tubes,map){
+  const {w,h,holes,thru,screw}=TPL[t];
+  const cross=holes.map(([x,y],i)=>{const c='#e3000b';return `<circle cx="${x}" cy="${y}" r="4.25" fill="#fff" stroke="${c}" stroke-width=".7"/><path d="M${x-7} ${y}h14M${x} ${y-7}v14" stroke="${c}" stroke-width=".4"/>`}).join('');
+  const dot=screw?`<circle cx="${screw[0]}" cy="${screw[1]}" r="2.5" fill="#1a9c4a"/>`:'';
+  const shapes=tubes.map(p=>`<polygon points="${p.map(q=>q.join(',')).join(' ')}" fill="#dfe6ec" stroke="#555" stroke-width=".4" stroke-dasharray="2 1" clip-path="url(#${id})"/>`).join('');
+  const ruler=`<path d="M3 ${h-3}h50M3 ${h-5}v4M28 ${h-4.5}v3M53 ${h-5}v4" stroke="#000" stroke-width=".4"/><text x="55" y="${h-2.2}" font-size="2.8">50 mm</text>`;
+  return `<div class="tpl"><h4>${title}</h4><svg width="${w}mm" height="${h}mm" viewBox="0 0 ${w} ${h}"><defs><clipPath id="${id}"><rect width="${w}" height="${h}"/></clipPath></defs>
+  <rect x=".25" y=".25" width="${w-.5}" height="${h-.5}" fill="#fff" stroke="#000" stroke-width=".5"/>${shapes}
+  <text x="${w/2}" y="${h/2+6}" font-size="${label.length>2?13:22}" font-weight="900" text-anchor="middle" fill="#000" opacity=".12">${label}</text>
+  <text x="3" y="6" font-size="4" font-weight="800">↑ FRONT · ${label} · THIS SIDE UP</text>
+  ${miniMap(...map)}${ruler}${cross}${dot}</svg></div>`;
+}
+function pTemplates(){
+  const far=(p,d,l)=>[p[0]+d[0]*l,p[1]+d[1]*l];
+  const bT=[[55,50],[55-50*CA,50-50*SA]],dT=[-SA,CA],braceT=[bT[0],bT[1],far(bT[1],dT,320),far(bT[0],dT,320)];
+  const fx=(p,w)=>p.map(([x,y])=>[w-x,y]);
+  const cF=[[70,85],[70-50*CA,85-50*SA]],dC=[SA,-CA],braceC=[cF[0],cF[1],far(cF[1],dC,220),far(cF[0],dC,220)];
+  const bandC=[[0,85],[100,85],[100,135],[0,135]];
+  return `<h2 class="pt">Drilling templates</h2><p class="sub">Print this page at <b>100% size</b> (turn off "fit to page"). Check that the 50 mm line on each template measures exactly 50 mm. Cut out each template and tape it on top of a stack of 2 plates, edges lined up, writing facing up.</p>
+  <p class="sub"><b style="color:#e3000b">Red cross</b>: drill 8.5 mm through both plates. <b style="color:#1a9c4a">Green dot</b>: drill 4.5 mm; a screw goes here in step 26. Grey shapes show where the tubes will sit. Left and right are as you stand behind the wheels looking at the handle.</p>
+  <button class="btn noprint" onclick="window.print()">Print templates</button>
+  <div class="tpls" style="margin-top:14px">
+    ${tplSVG('tT','T','T','Template T · front joint',[[[55,0],[105,0],[105,100],[55,100]],braceT,fx(braceT,160)],[12,9,133,8])}
+    ${tplSVG('tCL','CL','C-LEFT','Template C-LEFT · left back corner',[bandC,braceC],[5,22,73,8])}
+    ${tplSVG('tCR','CR','C-RIGHT','Template C-RIGHT · right back corner',[bandC,fx(braceC,100)],[19,22,3,8])}
+    ${tplSVG('tM','M','M','Template M · middle joint',[bandC,[[25,0],[75,0],[75,85],[25,85]]],[12,22,73,8])}
+  </div>
+  <div class="ruler"><span>This line should measure 100 mm</span></div>`;
+}
+function pDone(){return `<div class="cover"><div>
+  <div class="setno"><span>FINISHED</span></div>
+  <h1>You built it!</h1>
+  <p class="sub">Take a photo. Then look after it:</p>
+  <ul class="checks" style="font-size:18px">
+    <li>🚿 Hose it with fresh water after every beach trip, then stand it on its handle end to drain.</li>
+    <li>🔧 Check the nuts and split pins every few trips.</li>
+    <li>🐢 Go slowly the first time you load a boat.</li>
+  </ul>
+  <button class="btn o" onclick="go(0)">Back to cover</button></div><div class="art">${fullModel()}</div></div>`}
+function pGrown(){
+  const N=[
+    ['Where to buy the metal','Bunnings\' Metal Mate range has 50 x 50 square tube only in 1.5 mm wall and 1 m lengths, no 100 mm flat bar, and no 20 mm round bar. Buy A, B, C, D and F from an aluminium supplier. Ask for 6061-T6 for the rod if you can, and have them cut to length.'],
+    ['The axle rod is never drilled','An earlier version bolted through the rod. That cuts its bending strength by about two thirds right where the load is highest. Now the rod sits in plugs, the wheels and split pins stop it sliding out, and the axle-tube joints clamp the tube with bolts that pass in front of and behind it. Only the split-pin holes are near the rod ends, where bending is lowest.'],
+    ['Why 80 kg','Each brace is held by one M8 bolt at each end, through hollow tube with no crush sleeve. That\'s fine for kayaks and light dinghies. For heavier boats use longer gusset plates with 2 bolts per brace end, and crush sleeves (short tube spacers) inside the tube at every bolt.'],
+    ['Everything is drilled on the bench','Every hole is drilled before assembly. Plate holes are 8.5 mm, drilled as matched pairs from the 1:1 templates. Tube holes are measured from the tube ends and drilled 10.5 mm, so bench-drilled holes still line up with about ±1 mm of measuring error. The plates then hold each bolt snugly. The cost is up to about 1 mm of slip in a joint before the bolt takes the load, which is fine for a dolly. The only drilling in the frame is a 3.5 mm pilot for each corner screw, done before the rod goes in.'],
+    ['Cradle for a round hull','A Sabot has a rounded bottom, so a flat pad would let it roll. Two pine cradle blocks are traced from the actual hull 1.3 m behind the bow and covered in marine carpet. Hardwood cleats hug the axle tube so the blocks can\'t tip or slide, and the plates stop them moving sideways. The blocks sit on bare tube between the plates, so no bolt head is under the hull. A bow block, cut to the measured gap, supports the hull further forward.'],
+    ['What stops things sliding','The clamp bolts touch the front and back faces of the axle tube, so it can\'t move fore and aft. A short screw at each corner (the green dot) goes through the top plate into the tube wall, so it can\'t slide sideways. A screw through the tube into each plug stops the plugs being pushed inward by the wheel washers. The split pins sit 4 mm past the outer washer, leaving about 2 mm of side play.'],
+    ['Why the brace ends are cut square','The braces meet the other tubes at about 17.5°. An angled cut would leave a 166 mm sliver, too hard to cut accurately. The plates and bolts carry the load, not the brace ends, so a small gap at the tip doesn\'t matter.'],
+    ['Changed from the original picklist','Braces are 50 x 50 x 3 tube, so all the tubes match and the plates clamp flat. Flat bar is 1.4 m for 8 plates. The rod is 1220 mm. The flat carpet pad became a shaped cradle (pine blocks, hardwood cleats, marine carpet). Added: plugs, 20 mm axle washers, screws, an eye bolt, a rubber foot, glue, a tie-down strap and barrier paste. There are now 20 bolts.'],
+    ['Wheels','Check them in the shop. The bore must slide onto a 20 mm rod (many are 5/8" or 3/4"). Hub no wider than 75 mm. Plastic rim, not steel. Rated at least 100 kg each.'],
+    ['Corrosion','Stainless touching aluminium corrodes the aluminium in salt water. Tef-Gel on every bolt, nylon axle washers if you can get them, a fresh-water rinse, and draining the tubes all help. Avoid Duralac: it contains barium chromate.'],
+    ['Not load-tested','These steps came from a parts list and sketches, not a tested design. Run the load test page before the dolly carries a boat.'],
+  ];
+  return `<h2 class="pt">For grown-ups</h2><p class="sub">How the design works, what changed and why.</p><div class="gnotes">${N.map(([h,p])=>`<div class="gn"><h3>${h}</h3><p>${p}</p></div>`).join('')}</div>`;
+}
+function renderPage(){
+  const id=PAGES[pageIdx];
+  const R={cover:pCover,start:pStart,parts:pParts,loading:pLoading,test:pTest,templates:pTemplates,done:pDone,grownups:pGrown};
+  const html=R[id]?R[id]():pStep(+id.slice(1));
+  document.getElementById('page').innerHTML=html+`<div class="pageno">${pageIdx+1} / ${PAGES.length}</div>`;
+  document.getElementById('prev').disabled=pageIdx===0;
+  document.getElementById('next').disabled=pageIdx===PAGES.length-1;
+  const lab={cover:'★',start:'!',parts:'P',loading:'L',test:'kg',templates:'T',done:'✓',grownups:'G'};
+  document.getElementById('dots').innerHTML=PAGES.map((p,i)=>`<button class="dot ${i===pageIdx?'on':''}" onclick="go(${i})">${lab[p]||(+p.slice(1)+1)}</button>`).join('');
+}
+function go(i){pageIdx=Math.max(0,Math.min(PAGES.length-1,i));renderPage();window.scrollTo({top:0,behavior:'smooth'})}
+function goTpl(){showTab('book');go(PAGES.indexOf('templates'))}
+document.getElementById('prev').onclick=()=>go(pageIdx-1);
+document.getElementById('next').onclick=()=>go(pageIdx+1);
+document.addEventListener('keydown',e=>{if(document.getElementById('booklet').style.display==='none'||e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go(pageIdx+1);if(e.key==='ArrowLeft')go(pageIdx-1)});
+
+/* ================= TROLLEY ================= */
+const STORES={metal:['Aluminium supplier','Ask them to cut to length'],bunnings:['Bunnings',''],marine:['Marine store','e.g. a chandlery']};
+const SHOP={
+  A:{store:'metal',cat:'Backbone',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'2200 mm (or 2.5 m and cut it yourself)',qty:1,price:110,icon:'Astock'},
+  B:{store:'metal',cat:'Axle beam',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'1000 mm',qty:1,price:50,icon:'B'},
+  C:{store:'metal',cat:'Braces',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'1250 mm each',qty:2,price:62,icon:'Cstock',status:'changed',why:'Was 40 x 40 x 2.0 mm. Matching the 50 mm tubes lets the plates clamp flat.'},
+  D:{store:'metal',cat:'Plates',name:'Aluminium flat bar 100 x 3 mm',size:'1.4 m (makes 8 plates of 160 mm)',qty:1,price:45,icon:'Dstock',status:'changed',why:'Was 1.0 m. The build needs 8 plates.'},
+  F:{store:'metal',cat:'Axle',name:'Aluminium round bar 20 mm, 6061-T6 if available',size:'1220 mm',qty:1,price:55,icon:'F',status:'changed',why:'Was 1.2 m. 20 mm longer so the split-pin holes sit well clear of the ends.'},
+  E:{store:'bunnings',cat:'Wheels',name:'260 mm solid puncture-proof wheel, plastic rim',size:'20 mm bore · hub ≤ 75 mm · rated ≥ 100 kg',qty:2,price:29,aisle:'Castors & wheels',icon:'E',why:'Slide each wheel onto the rod in the shop if you can. Many wheels have a 5/8" or 3/4" bore that won\'t fit.'},
+  G:{store:'bunnings',cat:'Fasteners',name:'M8 x 75 mm stainless hex bolt (316 if available)',size:'20 needed',qty:20,price:1.6,aisle:'Fasteners',icon:'G',status:'changed',why:'Was a pack of 10–12. The new joints use 20.'},
+  H:{store:'bunnings',cat:'Fasteners',name:'M8 stainless nyloc (lock) nut',size:'21 needed',qty:21,price:.6,aisle:'Fasteners',icon:'N'},
+  W:{store:'bunnings',cat:'Fasteners',name:'M8 stainless penny washer, about 30 mm wide',size:'42 needed',qty:42,price:.4,aisle:'Fasteners',icon:'W'},
+  Z:{store:'bunnings',cat:'Fasteners',name:'Stainless pan-head self-tapping screws, 8g x 12 mm',size:'Small pack (5 needed)',qty:1,price:6,aisle:'Fasteners',icon:'Z',status:'added',why:'Stop the axle tube sliding sideways and the plugs sliding in, and hold the rubber foot.'},
+  R:{store:'bunnings',cat:'Hardware',name:'Screw-on rubber foot or buffer, about 30 mm tall',size:'1 needed',qty:1,price:4,aisle:'Furniture fittings',icon:'R',status:'added',why:'Takes the weight when the dolly rests on its front, instead of the eye-bolt nut.'},
+  O:{store:'bunnings',cat:'Handle',name:'M8 stainless eye bolt, at least 70 mm thread',size:'1 needed',qty:1,price:9,aisle:'Fasteners',icon:'O',status:'added',why:'A smooth eye for the handle strap. A strap through a drilled hole would wear through.'},
+  K:{store:'bunnings',cat:'Axle',name:'M20 stainless flat washer',size:'4 needed',qty:4,price:2.5,aisle:'Fasteners',icon:'K',status:'added',why:'The M8 washers won\'t fit the 20 mm axle. Nylon M20 washers are better against corrosion but usually have to be ordered online.'},
+  J:{store:'bunnings',cat:'Retainers',name:'Stainless split pins 4.0 mm',size:'Pack',qty:1,price:7,aisle:'Fasteners',icon:'J'},
+  L:{store:'bunnings',cat:'Plugs + cleats',name:'42 x 42 mm DAR hardwood',size:'1.8 m (2 plugs + 6 cleats)',qty:1,price:24,aisle:'Timber',icon:'Lstock',status:'added',why:'Makes the 2 axle plugs and the 6 cleats that hold the cradle blocks on the tubes.'},
+  Q:{store:'bunnings',cat:'Hull cradle',name:'140 x 45 mm treated pine (H3)',size:'1.2 m',qty:1,price:14,aisle:'Timber',icon:'Qstock',status:'added',why:'Cut into 2 cradle blocks shaped to your hull, plus a bow block.'},
+  V:{store:'bunnings',cat:'Hull cradle',name:'Stainless wood screws, about 65 mm (10g)',size:'18 needed',qty:18,price:.5,aisle:'Fasteners',icon:'Ws',status:'added',why:'Fix the cleats to the cradle and bow blocks.'},
+  I:{store:'bunnings',cat:'Padding',name:'Marine carpet (e.g. Moroday)',size:'1 m length (cut 3 strips 120 mm wide)',qty:1,price:20,aisle:'Marine / Outdoor',icon:'Kc',why:'Covers the cradle and bow blocks so they\'re kind to the hull.'},
+  M:{store:'bunnings',cat:'Webbing',name:'25 mm polyester webbing',size:'4 m',qty:1,price:14,aisle:'Rope & chain',icon:'Mstock',status:'changed',why:'Split out from item I. Makes 3 block straps (900 mm) and the handle loop (800 mm).'},
+  U:{store:'bunnings',cat:'Glue',name:'Contact adhesive (outdoor)',size:'Small tin',qty:1,price:12,aisle:'Adhesives',icon:'U',status:'added'},
+  S:{store:'bunnings',cat:'Tie-down',name:'Cam buckle tie-down strap',size:'About 3 m',qty:1,price:12,aisle:'Trailer',icon:'Mstock',status:'added',why:'Holds the boat on the dolly. See "Loading your boat".'},
+  N:{store:'marine',cat:'Corrosion',name:'Tef-Gel anti-corrosion paste',size:'Small tube',qty:1,price:30,aisle:'Chandlery',icon:'X',status:'added',why:'Goes on every bolt to stop stainless eating the aluminium. Grown-ups only.'},
+};
+const cart={};Object.entries(SHOP).forEach(([r,p])=>cart[r]={qty:p.qty,price:p.price,picked:false});
+let storeMode=false;
+const money=n=>'$'+n.toFixed(2);
+const stepsUsing=letter=>STEPS.map((s,i)=>s.parts.some(([k])=>PART[k].b===letter)?i:-1).filter(i=>i>=0);
+function itemHTML(ref,p){
+  const c=cart[ref],used=stepsUsing(ref);
+  const ctl=storeMode
+    ?`<div class="ctl"><div class="aisle">${p.aisle||STORES[p.store][0]}</div><div style="font-weight:800">Qty ${c.qty}</div><label class="pick"><input type="checkbox" ${c.picked?'checked':''} onchange="pick('${ref}',this.checked)"> Got it</label></div>`
+    :`<div class="ctl"><div class="price">${money(c.price*c.qty)}<small>est. $<input class="priceedit" type="number" min="0" step="0.1" value="${c.price}" onchange="setPrice('${ref}',this.value)" aria-label="Unit price for ${ref}"> each</small></div>
+      <div class="qty"><button onclick="setQty('${ref}',-1)" aria-label="Decrease">−</button><span>${c.qty}</span><button onclick="setQty('${ref}',1)" aria-label="Increase">+</button></div></div>`;
+  return `<div class="item ${c.picked&&storeMode?'picked':''}"><div class="thumb"><span class="badge">${ref}</span>${partIcon(p.icon)}</div>
+    <div><div class="cat">${p.cat}${p.status?`<span class="st ${p.status}">${p.status.toUpperCase()}</span>`:''}</div>
+      <div class="iname">${p.name}</div><div class="isize">${p.size}</div>
+      ${used.length?`<div class="used">Used in step ${used.map(i=>`<a onclick="jump(${i})">${i+1}</a>`).join('')}</div>`:''}
+      ${p.why?`<div class="flag">${p.why}</div>`:''}</div>${ctl}</div>`;
+}
+function renderCart(){
+  document.getElementById('items').innerHTML=Object.entries(STORES).map(([k,[nm,note]])=>`<h2 class="storeh">${nm}${note?` <small>${note}</small>`:''}</h2>`+Object.entries(SHOP).filter(([,p])=>p.store===k).map(([r,p])=>itemHTML(r,p)).join('')).join('');
+  const live=Object.entries(cart).filter(([,c])=>c.qty>0);
+  const units=live.reduce((a,[,c])=>a+c.qty,0),total=live.reduce((a,[,c])=>a+c.qty*c.price,0),picked=live.filter(([,c])=>c.picked).length;
+  document.getElementById('sLines').textContent=live.length;
+  document.getElementById('sUnits').textContent=units;
+  document.getElementById('sPicked').textContent=`${picked} / ${live.length}`;
+  document.getElementById('sBar').style.width=(live.length?picked/live.length*100:0)+'%';
+  document.getElementById('sTotal').textContent=money(total);
+  document.getElementById('cartCount').textContent=live.length;
+}
+function setQty(r,d){cart[r].qty=Math.max(0,cart[r].qty+d);renderCart()}
+function setPrice(r,v){cart[r].price=Math.max(0,parseFloat(v)||0);renderCart()}
+function pick(r,v){cart[r].picked=v;renderCart()}
+function jump(i){showTab('book');go(PAGES.indexOf('s'+i))}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1600)}
+function setMode(v){storeMode=v;document.getElementById('m-store').classList.toggle('on',v);document.getElementById('m-shop').classList.toggle('on',!v);renderCart()}
+document.getElementById('m-shop').onclick=()=>setMode(false);
+document.getElementById('m-store').onclick=()=>setMode(true);
+document.getElementById('copyBtn').onclick=()=>{
+  const txt='Boat Dolly: shopping list\n'+Object.entries(STORES).map(([k,[nm]])=>`\n${nm}\n`+Object.entries(cart).filter(([r,c])=>SHOP[r].store===k&&c.qty>0).map(([r,c])=>`[ ] ${r}  ${c.qty} x ${SHOP[r].name} (${SHOP[r].size})  ~${money(c.qty*c.price)}`).join('\n')).join('\n')+`\n\nEst. total ${document.getElementById('sTotal').textContent} (placeholder prices)`;
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('List copied'),()=>prompt('Copy your list:',txt));
+};
+document.getElementById('toBook').onclick=()=>showTab('book');
+function showTab(t){
+  const book=t==='book';
+  document.getElementById('booklet').style.display=book?'block':'none';
+  document.getElementById('cart').style.display=book?'none':'block';
+  document.getElementById('tab-book').setAttribute('aria-selected',book);
+  document.getElementById('tab-cart').setAttribute('aria-selected',!book);
+  if(!book)renderCart();
+  window.scrollTo({top:0});
+}
+document.getElementById('tab-book').onclick=()=>showTab('book');
+document.getElementById('tab-cart').onclick=()=>showTab('cart');
+const deep=location.hash.match(/p=(\d+)/);if(deep)pageIdx=Math.max(0,Math.min(PAGES.length-1,+deep[1]-1));
+renderPage();renderCart();
+if(location.hash==='#trolley')showTab('cart');
+</script>
+</body>
+</html>
