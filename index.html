@@ -98,6 +98,9 @@ h2.pt{font-size:30px;margin:4px 0 6px;letter-spacing:-.02em}
 .inset{position:absolute;left:10px;bottom:10px;width:230px;background:#fff;border:3px solid var(--blue);border-radius:12px;padding:2px}
 .inset span{position:absolute;top:4px;left:8px;font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.06em}
 .mult{position:absolute;left:14px;top:12px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;font-weight:900;font-size:22px;padding:4px 14px;transform:rotate(-3deg)}
+.steplink{margin-left:8px;font-size:11px;font-weight:800;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 8px;text-transform:none;letter-spacing:0}
+.steplink:hover{color:var(--ink);border-color:var(--ink)}
+.animbtn{position:absolute;right:10px;bottom:10px;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px}
 .caption{font-size:21px;line-height:1.4;font-weight:600;margin:16px 4px 0}
 .tip{display:flex;gap:10px;align-items:flex-start;margin-top:12px;background:#fff7d1;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.4}
 .tip .bang{flex:none;width:30px;height:30px;background:var(--yellow);border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:900}
@@ -276,6 +279,9 @@ function rodBetween(p,q,r,col,seg=10){const d=norm(sub(q,p));const u=norm(Math.a
   return ringsFaces(ring(p),ring(q),col,true)}
 const ptsStr=(ps,off)=>ps.map(p=>proj(off?add(p,off):p).map(v=>v.toFixed(1)).join(',')).join(' ');
 const NS='vector-effect="non-scaling-stroke"';
+const ANIM_DUR=4.5;
+let ANIM_ON=!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+function toggleAnim(){ANIM_ON=!ANIM_ON;renderPage()}
 
 function render(objs,o={}){
   const W=o.w||720,H=o.h||430,list=objs.slice().sort((a,b)=>a.order-b.order);
@@ -285,39 +291,72 @@ function render(objs,o={}){
   else{list.forEach(ob=>{ob.solids.forEach(s=>s.faces.forEach(f=>f.p.forEach(p=>grow(proj(add(p,ob.off))))));(ob.paths||[]).forEach(pa=>pa.pts.forEach(p=>grow(proj(add(p,ob.off)))))});(o.ann||[]).forEach(a=>[a.a,a.b,a.p].filter(Boolean).forEach(p=>grow(proj(p))))}
   let bw=x1-x0,bh=y1-y0;const pad=Math.max(bw,bh)*(o.pad??.07);x0-=pad;y0-=pad;bw+=2*pad;bh+=2*pad;
   if(bw/bh<W/H){const nw=bh*W/H;x0-=(nw-bw)/2;bw=nw}else{const nh=bw*H/W;y0-=(nh-bh)/2;bh=nh}
-  const s=bw/W;let out='';
-  for(const ob of list){
+  const s=bw/W;let out='',overlay='';
+  const ANIMATE=!!o.animate&&ANIM_ON,ZERO=[0,0,0];
+  const drawBody=(ob,solids,off)=>{
     let under='',body='';
-    for(const sd of ob.solids)for(const f of sd.faces){
+    for(const sd of solids)for(const f of sd.faces){
       if(f.n[0]+f.n[1]+f.n[2]<=1e-6)continue;
       const k=.6+.4*Math.max(0,f.n[0]*LIGHT[0]+f.n[1]*LIGHT[1]+f.n[2]*LIGHT[2]);
-      const pts=ptsStr(f.p,ob.off),fill=shade(f.col,k);
+      const pts=ptsStr(f.p,off),fill=shade(f.col,k);
       body+=`<polygon points="${pts}" fill="${fill}" stroke="${f.seam?fill:'#1d2329'}" stroke-width="${f.seam?1:1.2}" stroke-linejoin="round" ${NS}/>`;
       if(ob.hl)under+=`<polygon points="${pts}" fill="#ffd500" stroke="#ffd500" stroke-width="10" stroke-linejoin="round" ${NS}/>`;
-      (f.extra||[]).forEach(e=>body+=`<polygon points="${ptsStr(e.p,ob.off)}" fill="${e.col===BG?BG:shade(e.col,k)}" stroke="#1d2329" stroke-width="1" ${NS}/>`);
+      (f.extra||[]).forEach(e=>body+=`<polygon points="${ptsStr(e.p,off)}" fill="${e.col===BG?BG:shade(e.col,k)}" stroke="#1d2329" stroke-width="1" ${NS}/>`);
     }
-    (ob.paths||[]).forEach(pa=>{const p=ptsStr(pa.pts,ob.off);
+    (ob.paths||[]).forEach(pa=>{const p=ptsStr(pa.pts,off);
       if(ob.hl)under+=`<polyline points="${p}" fill="none" stroke="#ffd500" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" ${NS}/>`;
       body+=`<polyline points="${p}" fill="none" stroke="#1d2329" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" ${NS}/><polyline points="${p}" fill="none" stroke="${pa.col}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" ${NS}/>`});
-    out+=`<g${ob.ghost?` opacity="${ob.ghost===true?.2:ob.ghost}"`:''}>${under}${body}</g>`;
+    return under+body;
+  };
+  for(const ob of list){
+    const op=ob.ghost?` opacity="${ob.ghost===true?.2:ob.ghost}"`:'';
+    const moving=ANIMATE&&ob.anim&&(ob.off[0]||ob.off[1]||ob.off[2]);
+    if(!moving){out+=`<g${op}>${drawBody(ob,ob.solids,ob.off)}</g>`;continue}
+    /* cycle: hold exploded -> slide into place -> hold assembled. Stagger shifts each part a little later. */
+    const [dx,dy]=proj(ob.off),f=n=>n.toFixed(3),t0=.12+ob.stagger/ANIM_DUR,t1=.5+ob.stagger/ANIM_DUR;
+    const rep=`dur="${ANIM_DUR}s" repeatCount="indefinite"`;
+    out+=`<g${op}><g><animateTransform attributeName="transform" type="translate" values="${f(dx)} ${f(dy)};${f(dx)} ${f(dy)};0 0;0 0" keyTimes="0;${f(t0)};${f(t1)};1" calcMode="spline" keySplines="0 0 1 1;.5 0 .2 1;0 0 1 1" ${rep}/>`+
+      `<animate attributeName="opacity" values="1;0" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>${drawBody(ob,ob.movingSolids||ob.solids,ZERO)}</g>`+
+      `<g opacity="0"><animate attributeName="opacity" values="0;1" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>${drawBody(ob,ob.finalSolids||ob.solids,ZERO)}</g></g>`;
+    if(ob.spin){/* tightening: a marching dashed ring round the bolt head or nut, just after it lands */
+      const c=centroid((ob.finalSolids||ob.solids).flatMap(sd=>sd.faces.flatMap(fc=>fc.p)));
+      const ring=circ(c,20,'z',28).map(p=>proj(p));
+      const d='M'+ring.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')+'Z';
+      overlay+=`<path d="${d}" fill="none" stroke="#e3000b" stroke-width="${f(2.6*s)}" stroke-dasharray="${f(5*s)} ${f(4*s)}" opacity="0">`+
+        `<animate attributeName="opacity" values="0;1;0" keyTimes="0;${f(t1)};${f(Math.min(t1+.3,.97))}" calcMode="discrete" ${rep}/>`+
+        `<animate attributeName="stroke-dashoffset" values="0;${f(-18*s)}" dur=".45s" repeatCount="indefinite"/></path>`;
+    }
   }
-  out+=(o.ann||[]).map(a=>annSVG(a,s)).join('');
+  out+=overlay+(o.ann||[]).map(a=>annSVG(a,s,ANIMATE)).join('');
   if(o.ring){const [a,b,c,d,e,f]=o.ring,C=proj([(a+b)/2,(c+d)/2,(e+f)/2]);out+=`<circle cx="${C[0]}" cy="${C[1]}" r="${16*s}" fill="none" stroke="#e3000b" stroke-width="3.5" ${NS}/>`}
   return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${bw.toFixed(1)} ${bh.toFixed(1)}" preserveAspectRatio="xMidYMid meet" role="img">${out}</svg>`;
 }
-function annSVG(a,s){
+/* a twist drill bit (with a red chuck) that travels from A to B along a drill line, on the same loop as the parts */
+function drillBit(A,B,s){
+  const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]];
+  const len=52*s,w=9*s,pt=(a,b)=>[a*u[0]+b*n[0],a*u[1]+b*n[1]].map(v=>v.toFixed(2)).join(',');
+  const body=[pt(0,0),pt(-11*s,w/2),pt(-len,w/2),pt(-len,-w/2),pt(-11*s,-w/2)].join(' ');
+  const flutes=[18,28,38].map(k=>`<line x1="${pt(-k*s,w/2).split(',')[0]}" y1="${pt(-k*s,w/2).split(',')[1]}" x2="${pt(-(k+7)*s,-w/2).split(',')[0]}" y2="${pt(-(k+7)*s,-w/2).split(',')[1]}" stroke="#55606b" stroke-width="1.2" ${NS}/>`).join('');
+  const chuck=[pt(-len,w*.9),pt(-len-16*s,w*.9),pt(-len-16*s,-w*.9),pt(-len,-w*.9)].join(' ');
+  const f=v=>v.toFixed(1);
+  return `<g><animateTransform attributeName="transform" type="translate" values="${f(A[0])} ${f(A[1])};${f(A[0])} ${f(A[1])};${f(B[0])} ${f(B[1])};${f(B[0])} ${f(B[1])}" keyTimes="0;.15;.62;1" calcMode="spline" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1" dur="${ANIM_DUR}s" repeatCount="indefinite"/>`+
+    `<polygon points="${chuck}" fill="#e3000b" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#b8c2cc" stroke="#1d2329" stroke-width="1.2" ${NS}/>${flutes}</g>`;
+}
+function annSVG(a,s,anim){
+  const fade=anim?`<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.32;.48;1" dur="${ANIM_DUR}s" repeatCount="indefinite"/>`:'';
+  const march=anim?'<animate attributeName="stroke-dashoffset" values="26;0" dur=".7s" repeatCount="indefinite"/>':'';
   const ln=(p,q,st)=>{const A=proj(p),B=proj(q);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" ${st} ${NS}/>`};
   const head=(A,B,col,sz)=>{const g=Math.atan2(B[1]-A[1],B[0]-A[0]),h=sz*s;return `<polygon points="${B[0]},${B[1]} ${B[0]-h*Math.cos(g-.45)},${B[1]-h*Math.sin(g-.45)} ${B[0]-h*Math.cos(g+.45)},${B[1]-h*Math.sin(g+.45)}" fill="${col}" stroke="#fff" stroke-width="1.5" ${NS}/>`};
   const tag=(p,txt,col='#1a1a1a',bg='#fff')=>{const [x,y]=proj(p),fs=16*s,w=(txt.length*9.2+16)*s,h=26*s;return `<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="${7*s}" fill="${bg}" stroke="${col==='#fff'?bg:col}" stroke-width="2" ${NS}/><text x="${x}" y="${y+fs*.36}" font-size="${fs}" text-anchor="middle" font-weight="800" fill="${col}" font-family="Helvetica Neue,Arial,sans-serif">${txt}</text>`};
   switch(a.t){
     case 'arrow':{const A=proj(a.a),B=proj(a.b),g=Math.atan2(B[1]-A[1],B[0]-A[0]),E=[B[0]-10*s*Math.cos(g),B[1]-10*s*Math.sin(g)];
-      return `<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}`}
+      return `<g>${fade}<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}</g>`}
     case 'line':return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
     case 'dim':{const o=a.off||[0,0,0],A=add(a.a,o),B=add(a.b,o),M=proj(mid(A,B));
       return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+tag(mid(A,B),a.label)}
-    case 'drill':{const A=proj(a.a),B=proj(a.b);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}/>`+head(A,B,'#e3000b',15)+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
+    case 'drill':{const A=proj(a.a),B=proj(a.b);return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}>${march}</line>`+head(A,B,'#e3000b',15)+(anim?drillBit(A,B,s):'')+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
     case 'cut':{const [w,h]=a.size,c=a.c,q=a.axis==='y'?[[c[0]-w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]+h/2],[c[0]-w/2,c[1],c[2]+h/2]]:[[c[0],c[1]-w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]+h/2],[c[0],c[1]-w/2,c[2]+h/2]];
-      return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}/>`}
+      return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}>${anim?'<animate attributeName="opacity" values="1;.35;1" dur="1.1s" repeatCount="indefinite"/>':''}</polygon>`}
     case 'cross':{const p=a.p,r=a.r||9,c=a.col||'#e3000b';return ln([p[0]-r,p[1],p[2]],[p[0]+r,p[1],p[2]],`stroke="${c}" stroke-width="2.5"`)+ln([p[0],p[1]-r,p[2]],[p[0],p[1]+r,p[2]],`stroke="${c}" stroke-width="2.5"`)}
     case 'dot':{const [x,y]=proj(a.p);return `<circle cx="${x}" cy="${y}" r="${6*s}" fill="${a.col||'#1a9c4a'}" stroke="#fff" stroke-width="1.5" ${NS}/>`}
     case 'text':return tag(a.p,a.label,a.col,a.bg);
@@ -419,12 +458,15 @@ const bolts=j=>HOLES[j].flatMap((_,i)=>[`${j}${i}t`,`${j}${i}b`]);
 const tops=j=>HOLES[j].map((_,i)=>`${j}${i}t`),bots=j=>HOLES[j].map((_,i)=>`${j}${i}b`);
 const plates=j=>[j+'T',j+'B'];
 function scene(ids,{hl=[],off={},ghost=[]}={}){
+  let k=0;
   return ids.map(id=>{const m=M[id],d=off[id];let solids=m.solids;
     if(d&&m.whenOff)solids=m.whenOff;else if(!d&&m.placed)solids=m.placed;
-    return{order:m.order,solids,paths:m.paths,off:d||[0,0,0],hl:hl.includes(id),ghost:ghost.includes(id)}});
+    const ob={order:m.order,solids,paths:m.paths,off:d||[0,0,0],hl:hl.includes(id),ghost:ghost.includes(id)};
+    if(d){ob.anim=true;ob.movingSolids=m.whenOff||m.solids;ob.finalSolids=m.placed||m.solids;ob.stagger=Math.min(k++*0.08,0.6);ob.spin=/\d[tb]$/.test(id)||id==='eye'||id==='eyeB'||id==='scrC'||id==='scrP';}
+    return ob});
 }
 const offAll=(ids,d)=>Object.fromEntries(ids.map(i=>[i,d]));
-const solo=(solids,o={})=>({order:o.order||0,solids:[].concat(solids),off:o.off||[0,0,0],hl:!!o.hl,ghost:o.ghost,paths:o.paths});
+const solo=(solids,o={})=>({order:o.order||0,solids:[].concat(solids),off:o.off||[0,0,0],hl:!!o.hl,ghost:o.ghost,paths:o.paths,anim:!!o.anim,stagger:o.stagger||0});
 
 /* build-up states */
 const BRICKS=['brickB1','brickB2','brickS1','brickS2'];
@@ -578,7 +620,7 @@ const STEPS=[
  /* ---- drill on the bench ---- */
  {st:1,cap:'Cut out <b>Template C-LEFT</b>. Stack 2 plates on a scrap board. Tape the template on top, edges lined up. Clamp everything down.',parts:[['P',2]],tools:['scissors','stape','board','clamp'],
   tip:'Print the templates from the <a onclick="goTpl()">Templates page</a> first.',
-  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none'})),solo(box(0,100,-160,0,6,6.4,COL.paper),{off:[0,0,90],hl:true,order:2})],ann:[...tplCrosses('CL',0,0,96.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,96.4]},{t:'arrow',a:[115,-80,95],b:[115,-80,15]}]})},
+  solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none'})),solo(box(0,100,-160,0,6,6.4,COL.paper),{off:[0,0,90],hl:true,order:2,anim:true})],ann:[...tplCrosses('CL',0,0,96.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,96.4]},{t:'arrow',a:[115,-80,95],b:[115,-80,15]}]})},
  {st:1,cap:'Tap a dent on every red cross with the punch and hammer. Drill each one <b>4 mm</b>, then <b>8.5 mm</b>, through both plates. Drill the green dot <b>4.5 mm</b>.',parts:[],partsNote:'The clamped plates',tools:['punch','hammer','drill:4','drill:4.5','drill:8.5'],adult:1,
   tip:'Write CL on both plates. Keep them together the same way up, writing on top.',
   solo:()=>({objs:[solo(box(-30,130,-190,30,-18,0,COL.wood)),solo(platePair('CL',0,0,{holes:'none',paper:true}),{order:1})],ann:[...tplCrosses('CL',0,0,6.4).map(c=>({...c,col:'#e3000b'})),{t:'dot',p:[50,-110,6.4]},...TPL.CL.holes.map(([x,y],i)=>({t:'drill',a:[x,-y,140],b:[x,-y,8],label:i?'':'8.5 mm'}))]})},
@@ -618,7 +660,7 @@ const STEPS=[
  {st:3,cap:'Lay the long tube on the other 2 bricks, FRONT end away from the axle tube. Centre its back end on the middle mark and push it against the axle tube.',parts:[['A',1]],tools:['square'],
   view:()=>({ids:S.spine,hl:['A'],off:{A:[0,320,0]},ann:[...marks,{t:'arrow',a:[90,380,190],b:[90,60,190]}]})},
  {st:3,cap:'Put in both braces. Each FOOT goes on a 400 mm mark. Each TIP touches the long tube with its hole next to the long tube\'s front holes.',parts:[['C',2]],
-  view:()=>({ids:S.frame,hl:['braceL','braceR'],ann:[...marks,{t:'text',p:[-400,25,240],label:'FOOT'},{t:'text',p:[-90,YT,240],label:'TIP'}]})},
+  view:()=>({ids:S.frame,hl:['braceL','braceR'],off:{braceL:[-220,160,0],braceR:[220,160,0]},ann:[...marks,{t:'text',p:[-400,25,240],label:'FOOT'},{t:'text',p:[-90,YT,240],label:'TIP'}]})},
  /* ---- joints ---- */
  {st:4,cap:'Take the 2 <b>T</b> plates. Slide one under the front joint and put one on top, both writing up. Line up all the holes. Clamp them.',parts:[['P',2]],tools:['clamp'],
   tip:'Look down each hole. You should see straight through the tube. If not, wiggle the braces until you can.',
@@ -640,7 +682,7 @@ const STEPS=[
   view:()=>({ids:S.midB,hl:bolts('middle'),off:{...offAll(tops('middle'),[0,0,190]),...offAll(bots('middle'),[0,0,-170])},focus:F.middle,ann:[{t:'arrow',a:[80,30,330],b:[80,30,190]}]})},
  /* ---- wheels ---- */
  {st:5,cap:'Slide the rod through both plugs. Stop when the same amount sticks out each side, <b>110 mm</b>.',parts:[],partsNote:'The drilled rod',tools:['tape'],
-  view:()=>({ids:S.rod,hl:RODS,ann:[{t:'arrow',a:[950,0,230],b:[350,0,230]},{t:'dim',a:[-ROD_END,0,130],b:[-500,0,130],off:[0,0,-110],label:'110'},{t:'dim',a:[500,0,130],b:[ROD_END,0,130],off:[0,0,-110],label:'110'}]})},
+  view:()=>({ids:S.rod,hl:RODS,off:offAll(RODS,[760,0,0]),ann:[{t:'arrow',a:[950,0,230],b:[350,0,230]},{t:'dim',a:[-ROD_END,0,130],b:[-500,0,130],off:[0,0,-110],label:'110'},{t:'dim',a:[500,0,130],b:[ROD_END,0,130],off:[0,0,-110],label:'110'}]})},
  {st:5,cap:'Smear grease inside each wheel\'s hole. Slide on an axle washer, then a wheel, then another axle washer.',parts:[['K',4],['E',2]],tools:['grease'],mult:BOTH,
   view:()=>({ids:S.wheels.filter(i=>i!=='rodTip'),hl:WHEELS,off:{wRin:[130,0,0],wheelR:[300,0,0],wRout:[460,0,0],wLin:[-130,0,0],wheelL:[-300,0,0],wLout:[-460,0,0]},focus:F.wheel,ann:[{t:'arrow',a:[1200,0,130],b:[1080,0,130]}]})},
  {st:5,cap:'Push a split pin through the hole in the rod. Bend its legs apart with the pliers.',parts:[['J',2]],tools:['pliers'],mult:BOTH,
@@ -657,7 +699,7 @@ const STEPS=[
   solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(extrudeY([...arcPts(60,360),[360,295],[60,295]],-22.5,22.5,COL.off),{order:1,off:[0,0,40]}),solo(extrudeY([[-360,155],[-60,155],...arcPts(60,360).map(([x,z])=>[-x,z])].map(([x,z])=>[x,z]),-22.5,22.5,COL.pine),{off:[-40,0,0]})],ann:[{t:'text',p:[210,0,340],label:'offcut'}]})},
  {st:6,cap:'Cut 4 cleats, <b>250 mm</b> long, from the leftover hardwood. Screw 2 under each block, one on each side, so the axle tube fits snugly between them.',parts:[['Cl',4],['Ws',12]],tools:['tape','saw','clamp','drill:3.5','screwdriver'],adult:1,mult:'Do both',
   tip:'Hold a scrap of the axle tube between the cleats as a spacer while you screw them on.',
-  solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(box(85,335,25,67,128,170,COL.wood),{order:1,hl:true,off:[0,90,0]}),solo(box(85,335,-67,-25,128,170,COL.wood),{order:0,hl:true,off:[0,-90,0]}),solo(box(150,280,-25,25,105,155,COL.alu,{hollow:[1,3]}),{order:-1,ghost:.35})],ann:[{t:'arrow',a:[210,180,150],b:[210,75,150]}]})},
+  solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(box(85,335,25,67,128,170,COL.wood),{order:1,hl:true,off:[0,90,0],anim:true}),solo(box(85,335,-67,-25,128,170,COL.wood),{order:0,hl:true,off:[0,-90,0],anim:true,stagger:.15}),solo(box(150,280,-25,25,105,155,COL.alu,{hollow:[1,3]}),{order:-1,ghost:.35})],ann:[{t:'arrow',a:[210,180,150],b:[210,75,150]}]})},
  {st:6,cap:'A grown-up glues a strip of carpet over the curved top of each block and down its sides.',parts:[['Kc',2],['U',1]],tools:['scissors'],adult:1,
   tip:'Glue outside or with the door open. Fold the carpet neatly at the ends.',
   view:()=>({ids:[...CRADLE],hl:['carpetL','carpetR'],off:{carpetL:[0,0,90],carpetR:[0,0,90]},ann:[{t:'arrow',a:[210,0,400],b:[210,0,300]}]})},
@@ -677,7 +719,7 @@ const STEPS=[
  {st:6,cap:'Lift the dolly off the bricks and gently set the boat on the cradle. Measure the gap between the hull and the long tube, <b>300 mm</b> behind the front joint. Cut the bow block to that height from the pine offcut. Screw on 2 cleats.',parts:[['Cl',2],['Ws',6]],tools:['tape','pencil','saw','drill:3.5','screwdriver'],adult:1,
   view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-700,700,-300,1500,0,560],extra:[boatObj(.35)],ann:[{t:'dim',a:[0,(BOW_Y0+BOW_Y1)/2,155],b:[0,(BOW_Y0+BOW_Y1)/2,HULL_Z0+6],off:[220,0,0],label:'measure'}]})},
  {st:6,cap:'Glue carpet on top of the bow block. Sit it on the long tube under the hull and strap it down like the cradle blocks.',parts:[['Bb',1],['Kc',1],['Ms',1]],adult:1,
-  view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],focus:F.bow})},
+  view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-160,160,680,1060,90,420]})},
  {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
   view:()=>({ids:FINAL})},
 ];
@@ -722,20 +764,20 @@ function pParts(){
 function pStep(i){
   const s=STEPS[i],[stName,stCol]=STAGES[s.st];
   let main,mini='',inset='';
-  if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann})}
-  else{const v=s.view();main=render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann});
+  if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann,animate:true})}
+  else{const v=s.view();main=render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann,animate:true});
     if(v.focus)mini=`<div class="mini">${render(scene(v.ids,{ghost:v.ghost}),{w:168,h:110,ring:v.focus,pad:.12})}</div>`}
   if(s.inset){const v=s.inset();inset=`<div class="inset"><span>${v.label}</span>${render(v.objs,{focus:v.focus,ann:v.ann,w:230,h:150})}</div>`}
   const parts=s.parts.length?`<div class="callout"><h4>You need</h4><div class="bagrow">${s.parts.map(([k,q])=>partCard(k,q)).join('')}</div></div>`:`<div class="callout none">${s.partsNote}</div>`;
   return `<div class="stagebar" style="background:${stCol}"></div>
   <div class="step"><div>
-    <div class="stage" style="color:${stCol}">${stName}</div>
+    <div class="stage" style="color:${stCol}">${stName} <a class="steplink noprint" href="${pageToHash(PAGES.indexOf('s'+i))}" onclick="event.preventDefault();copyStepLink()" title="Copy a link to this step">🔗 link</a></div>
     <div class="stepnum">${i+1}</div>
     ${s.adult?`<div class="adult">${ADULT_SVG} GROWN-UP</div>`:''}
     ${parts}
     ${s.tools?`<div class="tools">${s.tools.map(toolHTML).join('')}</div>`:''}
   </div><div>
-    <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}</div>
+    <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}<button class="animbtn noprint" onclick="toggleAnim()" aria-label="${ANIM_ON?'Pause':'Play'} animation">${ANIM_ON?'❚❚ Pause':'▶ Play'}</button></div>
     <p class="caption">${s.cap}</p>
     ${s.checks?`<ul class="checks">${s.checks.map(c=>`<li><label><input type="checkbox"> ${c}</label></li>`).join('')}</ul>`:''}
     ${s.tip?`<div class="tip"><span class="bang">!</span><span>${s.tip}</span></div>`:''}
@@ -832,7 +874,7 @@ function renderPage(){
   const lab={cover:'★',start:'!',parts:'P',loading:'L',test:'kg',templates:'T',done:'✓',grownups:'G'};
   document.getElementById('dots').innerHTML=PAGES.map((p,i)=>`<button class="dot ${i===pageIdx?'on':''}" onclick="go(${i})">${lab[p]||(+p.slice(1)+1)}</button>`).join('');
 }
-function go(i){pageIdx=Math.max(0,Math.min(PAGES.length-1,i));renderPage();window.scrollTo({top:0,behavior:'smooth'})}
+function go(i){pageIdx=Math.max(0,Math.min(PAGES.length-1,i));renderPage();setHash(pageToHash(pageIdx));window.scrollTo({top:0,behavior:'smooth'})}
 function goTpl(){showTab('book');go(PAGES.indexOf('templates'))}
 document.getElementById('prev').onclick=()=>go(pageIdx-1);
 document.getElementById('next').onclick=()=>go(pageIdx+1);
@@ -904,20 +946,44 @@ document.getElementById('copyBtn').onclick=()=>{
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('List copied'),()=>prompt('Copy your list:',txt));
 };
 document.getElementById('toBook').onclick=()=>showTab('book');
-function showTab(t){
-  const book=t==='book';
+let tab='book';
+function showTab(t,{fromHash=false}={}){
+  const book=t==='book';tab=book?'book':'cart';
   document.getElementById('booklet').style.display=book?'block':'none';
   document.getElementById('cart').style.display=book?'none':'block';
   document.getElementById('tab-book').setAttribute('aria-selected',book);
   document.getElementById('tab-cart').setAttribute('aria-selected',!book);
   if(!book)renderCart();
+  if(!fromHash)setHash(book?pageToHash(pageIdx):'#/trolley');
   window.scrollTo({top:0});
 }
 document.getElementById('tab-book').onclick=()=>showTab('book');
 document.getElementById('tab-cart').onclick=()=>showTab('cart');
-const deep=location.hash.match(/p=(\d+)/);if(deep)pageIdx=Math.max(0,Math.min(PAGES.length-1,+deep[1]-1));
+
+/* ---------- hash routes: #/step/12, #/parts, #/templates, #/trolley … (old #p=N links still work) ---------- */
+const ROUTES={cover:'cover',start:'before-you-start',parts:'parts',loading:'loading',test:'load-test',templates:'templates',done:'done',grownups:'for-grown-ups'};
+function pageToHash(i){const p=PAGES[i];return /^s\d+$/.test(p)?`#/step/${+p.slice(1)+1}`:`#/${ROUTES[p]}`}
+function hashToRoute(h){
+  let m=h.match(/^#\/step\/(\d+)\/?$/);if(m){const i=PAGES.indexOf('s'+(+m[1]-1));return i>=0?{tab:'book',page:i}:null}
+  if(/^#\/?trolley\/?$/.test(h))return{tab:'cart'};
+  m=h.match(/^#\/([\w-]+)\/?$/);if(m){const key=Object.keys(ROUTES).find(k=>ROUTES[k]===m[1]);return key?{tab:'book',page:PAGES.indexOf(key)}:null}
+  m=h.match(/p=(\d+)/);if(m)return{tab:'book',page:Math.max(0,Math.min(PAGES.length-1,+m[1]-1))};
+  return null;
+}
+function setHash(h){if(location.hash!==h)location.hash=h}
+function applyHash(){
+  const r=hashToRoute(location.hash||'');if(!r)return;
+  if(r.tab==='cart'){if(tab!=='cart')showTab('cart',{fromHash:true});return}
+  if(tab!=='book')showTab('book',{fromHash:true});
+  if(r.page!==pageIdx){pageIdx=r.page;renderPage();window.scrollTo({top:0})}
+}
+function copyStepLink(){const url=location.href.split('#')[0]+pageToHash(pageIdx);
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied'),()=>prompt('Copy this link:',url))}
+window.addEventListener('hashchange',applyHash);
+const start=hashToRoute(location.hash||'');
+if(start&&start.tab==='book')pageIdx=start.page;
 renderPage();renderCart();
-if(location.hash==='#trolley')showTab('cart');
+if(start&&start.tab==='cart')showTab('cart',{fromHash:true});
 </script>
 </body>
 </html>
