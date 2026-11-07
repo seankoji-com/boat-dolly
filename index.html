@@ -12,10 +12,11 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--sky);-webkit-font-smoothing:antialiased}
+body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--sky) radial-gradient(1200px 600px at 50% -200px,#eaf3fa,transparent);background-attachment:fixed;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer}
 
-.topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:3px solid var(--yellow)}
+.topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 18px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:3px solid var(--yellow)}
+.brand small{font-weight:700;color:var(--muted);font-size:12px;margin-left:2px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800}
 .brick{width:34px;height:24px;background:var(--red);border-radius:3px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
 .brick::before,.brick::after{content:"";position:absolute;top:-5px;width:10px;height:6px;background:var(--red);border-radius:2px 2px 0 0}
@@ -26,13 +27,18 @@ button{font:inherit;cursor:pointer}
 .tab .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--bun-red);color:#fff;font-size:12px;line-height:20px}
 
 #booklet{max-width:1120px;margin:20px auto 60px;padding:0 16px}
-.page{background:#fff;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 12px 30px rgba(20,60,100,.12);min-height:640px;padding:26px 30px 40px;position:relative;overflow:hidden}
+.page{background:#fff;border-radius:12px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 12px 30px rgba(20,60,100,.12);min-height:640px;padding:26px 30px 40px;position:relative;overflow:hidden}
 .pager{display:flex;align-items:center;gap:10px;margin:14px 0 0}
 .pager button.nav{border:0;background:var(--ink);color:#fff;width:52px;height:52px;border-radius:50%;font-size:26px;font-weight:700;flex:none}
 .pager button.nav:disabled{opacity:.2;cursor:default}
-.dots{display:flex;gap:5px;flex-wrap:wrap;flex:1;justify-content:center}
-.dot{border:0;min-width:28px;height:28px;border-radius:6px;background:#fff;font-size:12px;font-weight:800;color:var(--muted);padding:0 5px}
-.dot.on{background:var(--yellow);color:var(--ink)}
+.dots{display:flex;gap:6px 10px;flex-wrap:wrap;flex:1;justify-content:center;align-items:flex-end}
+.navg{display:flex;flex-direction:column;gap:3px}
+.navg>span{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--c);padding-left:2px}
+.navg>div{display:flex;gap:3px;flex-wrap:wrap}
+.dot{border:0;min-width:26px;height:26px;border-radius:6px;background:#fff;font-size:11.5px;font-weight:800;color:var(--muted);padding:0 4px;box-shadow:inset 0 -2px 0 var(--c,#c9d3dc);transition:transform .12s}
+.dot:hover{transform:translateY(-2px)}
+.dot.seen{color:var(--ink)}
+.dot.on{background:var(--c,var(--yellow));color:#fff;box-shadow:none;transform:scale(1.12)}
 .pageno{position:absolute;bottom:12px;right:20px;font-weight:800;color:#b5bec7;font-size:14px}
 .stagebar{position:absolute;top:0;left:0;right:0;height:8px}
 
@@ -91,7 +97,7 @@ h2.pt{font-size:30px;margin:4px 0 6px;letter-spacing:-.02em}
 .tools .tool svg{width:38px;height:38px}
 .adult{display:flex;align-items:center;gap:8px;background:var(--orange);color:#fff;border-radius:12px;padding:8px 12px;font-weight:900;font-size:15px;margin-bottom:12px}
 .adult svg{width:34px;height:34px;flex:none}
-.diagram{position:relative;background:linear-gradient(#f7fbfe,#fff);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.diagram{position:relative;background:repeating-linear-gradient(30deg,rgba(0,98,173,.055) 0 1px,transparent 1px 30px),repeating-linear-gradient(150deg,rgba(0,98,173,.055) 0 1px,transparent 1px 30px),linear-gradient(#f2f8fd,#fff 70%);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .diagram>svg{width:100%;height:auto;display:block}
 .mini{position:absolute;top:10px;right:10px;width:168px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:2px}
 .mini svg,.inset svg{width:100%;height:auto;display:block}
@@ -100,8 +106,17 @@ h2.pt{font-size:30px;margin:4px 0 6px;letter-spacing:-.02em}
 .mult{position:absolute;left:14px;top:12px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;font-weight:900;font-size:22px;padding:4px 14px;transform:rotate(-3deg)}
 .steplink{margin-left:8px;font-size:11px;font-weight:800;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 8px;text-transform:none;letter-spacing:0}
 .steplink:hover{color:var(--ink);border-color:var(--ink)}
-.animbtn{position:absolute;right:10px;bottom:10px;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px}
-.caption{font-size:21px;line-height:1.4;font-weight:600;margin:16px 4px 0}
+.player{display:flex;align-items:center;gap:10px;margin-top:10px}
+.animbtn{flex:none;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px;min-width:94px}
+.animbtn:hover{background:var(--ink);color:#fff}
+.scrub{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--c,#0062ad) var(--p,0%),#dfe6ec var(--p,0%));outline-offset:4px;cursor:pointer}
+.scrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--c,#0062ad);cursor:grab}
+.scrub::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--c,#0062ad);cursor:grab}
+.phases{display:flex;justify-content:space-between;font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:4px 0 0 104px}
+.stepof{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 10px}
+.stepof i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;background:#dfe6ec;vertical-align:0}
+.stepof i.on{background:var(--c)}
+.caption{font-size:20px;line-height:1.45;font-weight:600;margin:14px 4px 0;max-width:62ch}
 .tip{display:flex;gap:10px;align-items:flex-start;margin-top:12px;background:#fff7d1;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.4}
 .tip .bang{flex:none;width:30px;height:30px;background:var(--yellow);border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:900}
 .tip a,.sub a{color:var(--blue);font-weight:800;cursor:pointer;text-decoration:underline}
@@ -137,7 +152,7 @@ table.lt th{background:var(--yellow)}
 .mode{display:flex;gap:6px;margin:14px 0}
 .mode button{border:2px solid var(--bun-green);background:#fff;color:var(--bun-green);padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px}
 .mode button.on{background:var(--bun-green);color:#fff}
-.storeh{margin:22px 0 10px;font-size:17px;color:var(--bun-green);display:flex;align-items:center;gap:8px}
+.storeh{margin:22px 0 10px;font-size:17px;color:var(--bun-green);display:flex;align-items:baseline;gap:8px}
 .storeh small{font-size:12.5px;color:var(--muted);font-weight:600}
 .item{background:#fff;border-radius:6px;padding:14px;display:grid;grid-template-columns:96px 1fr auto;gap:16px;margin-bottom:10px;border:1px solid #e3e3df}
 .item.picked{background:#f1f8f3}.item.picked .thumb{opacity:.6}
@@ -145,7 +160,7 @@ table.lt th{background:var(--yellow)}
 .thumb svg{width:84px;height:60px}
 .thumb .badge{background:var(--bun-green)}
 .cat{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;display:flex;gap:6px;align-items:center}
-.st{font-size:10px;padding:2px 7px;border-radius:999px;color:#fff;letter-spacing:.04em}
+.st{display:inline-block;font-size:10px;line-height:16px;padding:0 7px;border-radius:999px;color:#fff;letter-spacing:.04em}
 .st.changed{background:#f39200}.st.added{background:var(--bun-red)}
 .iname{font-weight:700;font-size:15px;margin:3px 0 4px;line-height:1.3}
 .isize{font-size:13px;color:#444}
@@ -169,6 +184,18 @@ table.lt th{background:var(--yellow)}
 .row.total span:last-child{color:var(--bun-red)}
 .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:8px 0 4px}
 .progress i{display:block;height:100%;background:var(--bun-green);transition:width .3s}
+.budget{margin:14px 0 4px;padding:12px;border-radius:8px;background:#f1f8f3;border:1px solid #cfe5d6}
+.budget.warn{background:#fff6e8;border-color:#f6d39b}.budget.over{background:#fdecea;border-color:#f3b3ad}
+.budget .row{padding:3px 0}
+.budget input{width:72px;font:inherit;font-weight:800;padding:2px 6px;border:1px solid #bbb;border-radius:4px;text-align:right}
+.bbar{height:14px;background:#e4e8e6;border-radius:999px;overflow:hidden;margin:8px 0 2px}
+.bbar i{display:block;height:100%;border-radius:999px;background:#1a9c4a;transition:width .4s,background .4s}
+.budget.warn .bbar i{background:#f39200}.budget.over .bbar i{background:var(--bun-red)}
+.bnote{font-size:12px;font-weight:700;color:var(--muted)}
+.save{background:#fff;border:1px solid #e3e3df;border-left:5px solid #1a9c4a;border-radius:6px;padding:12px 14px;margin:18px 0 4px;font-size:13.5px;line-height:1.5}
+.save h3{margin:0 0 6px;font-size:15px;color:var(--bun-green)}.save ul{margin:0;padding-left:18px}
+.storeh .stot{margin-left:auto;font-size:14px;color:var(--ink)}
+.st.budget{background:#1a9c4a}
 .cta{display:block;width:100%;border:0;background:var(--bun-red);color:#fff;font-weight:800;font-size:16px;padding:14px;border-radius:999px;margin-top:14px}
 .cta.sec{background:#fff;color:var(--bun-green);border:2px solid var(--bun-green);font-size:14px;padding:11px;margin-top:8px}
 .disclaimer{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.4}
@@ -187,9 +214,11 @@ table.lt th{background:var(--yellow)}
   .thumb{width:72px;height:72px}.thumb svg{width:62px;height:46px}
   .ctl{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;min-width:0}
   .page{padding:20px 16px 40px}
+  .phases{margin-left:0}
+  .navg>span{display:none}
 }
 @media print{
-  .topbar,.pager,.mode,.cta,.btn,.noprint{display:none!important}
+  .topbar,.pager,.mode,.cta,.btn,.noprint,.player,.phases{display:none!important}
   body,#booklet{background:#fff;margin:0;padding:0}
   .page{box-shadow:none;padding:0}
 }
@@ -197,7 +226,7 @@ table.lt th{background:var(--yellow)}
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><div class="brick"></div> Boat Dolly</div>
+  <div class="brand"><div class="brick"></div> Boat Dolly <small>under $500</small></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-book" aria-selected="true">Build booklet</button>
     <button class="tab" role="tab" id="tab-cart" aria-selected="false">Shopping trolley<span class="count" id="cartCount">0</span></button>
@@ -216,13 +245,13 @@ table.lt th{background:var(--yellow)}
 <section id="cart">
   <div class="bun-head"><div class="wrap">
     <div class="bun-logo"><i></i> Shopping trolley</div>
-    <div class="bun-store">Boat Dolly · 3 stops: metal shop, Bunnings, marine store</div>
+    <div class="bun-store">Boat Dolly · 3 stops: metal shop, fastener shop, Bunnings</div>
   </div></div>
   <div class="bun-wrap">
     <div>
       <div class="crumbs">Home › Projects › Marine › Boat dolly</div>
       <h1>Your trolley</h1>
-      <div class="changes"><b>Why three shops?</b> Bunnings' Metal Mate range doesn't carry 50 x 50 x 3 mm tube, 100 mm flat bar or 20 mm round bar. An aluminium supplier sells these and will usually cut them to length for you. Bunnings covers the hardware. Barrier paste comes from a marine store.</div>
+      <div class="changes"><b>Why three shops?</b> Bunnings' Metal Mate range doesn't carry 50 x 50 x 3 mm tube, 100 mm flat bar or 20 mm round bar. An aluminium supplier sells these and will cut them to length for you. Buying all the tube as one 6.5 m length is the biggest saving. A fastener shop sells stainless bolts by the box for about half the 2-pack price. Bunnings covers the rest.</div>
       <div class="mode">
         <button id="m-shop" class="on">Shopping list</button>
         <button id="m-store">In-store pick mode</button>
@@ -236,9 +265,15 @@ table.lt th{background:var(--yellow)}
       <div class="row"><span>Picked</span><span id="sPicked">0 / 0</span></div>
       <div class="progress"><i id="sBar" style="width:0"></i></div>
       <div class="row total"><span>Est. total</span><span id="sTotal">$0.00</span></div>
+      <div class="budget" id="budget">
+        <div class="row"><span>Budget</span><span>$<input id="bInput" type="number" min="0" step="10" value="500" onchange="setBudget(this.value)" aria-label="Budget in dollars"></span></div>
+        <div class="bbar"><i id="bBar"></i></div>
+        <div class="row"><span id="bLeftLab">Left over</span><b id="bLeft">$0.00</b></div>
+        <div class="bnote" id="bNote"></div>
+      </div>
       <button class="cta" id="copyBtn">Copy shopping list</button>
       <button class="cta sec" id="toBook">Back to build booklet</button>
-      <p class="disclaimer">Prices are placeholder estimates in AUD, not quotes. Type the real price into any item to update the total. Check stock with each store before you go.</p>
+      <p class="disclaimer">Prices are estimates in AUD including GST (November 2026), not quotes. Type the real price into any item to update the total. Tools and drill bits are not included. Check stock with each store before you go.</p>
     </aside>
   </div>
 </section>
@@ -277,11 +312,40 @@ function cyl(axis,c,r,a0,a1,col,o={}){
 function rodBetween(p,q,r,col,seg=10){const d=norm(sub(q,p));const u=norm(Math.abs(d[2])<.9?cross(d,[0,0,1]):cross(d,[1,0,0])),v=cross(d,u);
   const ring=c=>Array.from({length:seg},(_,i)=>{const t=2*Math.PI*i/seg;return[0,1,2].map(k=>c[k]+r*(Math.cos(t)*u[k]+Math.sin(t)*v[k]))});
   return ringsFaces(ring(p),ring(q),col,true)}
+/* 2D convex hull (monotone chain) */
+function hull(pts){pts=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);if(pts.length<3)return pts;
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]),lo=[],up=[];
+  for(const p of pts){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+  for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(up.length>1&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+  return lo.slice(0,-1).concat(up.slice(0,-1))}
+/* chips or dust thrown off a cutting tool: a burst of little particles from (0,0), looping fast */
+function chips(n,s,col,{up=true,spread=1}={}){return Array.from({length:n},(_,i)=>{
+  const a=(up?200+i*(140/(n-1||1)):60+i*(60/(n-1||1)))*Math.PI/180,d=(22+(i%3)*9)*s*spread,dx=Math.cos(a)*d,dy=Math.sin(a)*d,fall=16*s,du=(.42+(i%3)*.07).toFixed(2),b=(-i*.07).toFixed(2);
+  const r=((2.2+(i%2)*1)*s).toFixed(2);
+  return `<rect x="-${r}" y="-${r}" width="${2*r}" height="${r}" rx="${(r/3).toFixed(2)}" fill="${col}" stroke="#1d2329" stroke-width=".6" ${NS}>`+
+    `<animateTransform attributeName="transform" type="translate" values="0 0;${(dx*.7).toFixed(2)} ${(dy*.9).toFixed(2)};${dx.toFixed(2)} ${(dy*.5+fall).toFixed(2)}" dur="${du}s" begin="${b}s" repeatCount="indefinite"/>`+
+    `<animate attributeName="opacity" values="1;1;0" dur="${du}s" begin="${b}s" repeatCount="indefinite"/></rect>`}).join('')}
 const ptsStr=(ps,off)=>ps.map(p=>proj(off?add(p,off):p).map(v=>v.toFixed(1)).join(',')).join(' ');
 const NS='vector-effect="non-scaling-stroke"';
 const ANIM_DUR=4.5;
 let ANIM_ON=!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-function toggleAnim(){ANIM_ON=!ANIM_ON;renderPage()}
+/* player: SMIL timeline control on the main step diagram. PAUSED keeps the animated drawing but freezes it. */
+let PAUSED=false,PAUSE_T=0,SCRUBBING=false;
+const mainSVG=()=>document.querySelector('#page .diagram>svg');
+const animLabel=()=>ANIM_ON&&!PAUSED?'❚❚ Pause':'▶ Play';
+function syncPlayer(){const b=document.getElementById('animbtn');if(b){b.textContent=animLabel();b.setAttribute('aria-label',(ANIM_ON&&!PAUSED?'Pause':'Play')+' animation')}}
+/* a freshly inserted SVG starts its timeline on the next frame, so set the frozen time now and again then */
+function freeze(sv){const f=()=>{if(sv.isConnected&&PAUSED){sv.pauseAnimations();sv.setCurrentTime(PAUSE_T);paintScrub(PAUSE_T/ANIM_DUR)}};f();requestAnimationFrame(f)}
+function afterRender(){const sv=mainSVG();if(sv&&ANIM_ON&&PAUSED&&sv.pauseAnimations)freeze(sv);syncPlayer()}
+function toggleAnim(){const sv=mainSVG();
+  if(!ANIM_ON){ANIM_ON=true;PAUSED=false;renderPage();return}
+  if(!sv||!sv.pauseAnimations)return;
+  if(PAUSED){sv.unpauseAnimations();PAUSED=false}else{sv.pauseAnimations();PAUSED=true;PAUSE_T=sv.getCurrentTime()%ANIM_DUR}
+  syncPlayer()}
+function scrubTo(v){PAUSE_T=v*ANIM_DUR;if(!ANIM_ON){ANIM_ON=true;PAUSED=true;renderPage()}
+  const sv=mainSVG();if(!sv||!sv.pauseAnimations)return;if(!PAUSED){PAUSED=true;syncPlayer()}freeze(sv)}
+function paintScrub(v){const r=document.getElementById('scrub');if(!r)return;if(!SCRUBBING)r.value=Math.round(v*1000);r.style.setProperty('--p',(v*100).toFixed(1)+'%')}
+(function tick(){const sv=mainSVG();if(sv&&sv.getCurrentTime&&ANIM_ON&&!SCRUBBING)paintScrub((sv.getCurrentTime()%ANIM_DUR)/ANIM_DUR);requestAnimationFrame(tick)})();
 /* loop timing (fractions of ANIM_DUR): parts slide in over SLIDE_T, cut pieces come apart over SEP_T */
 const SLIDE_T=[.12,.5],SEP_T=[.55,.72];
 let CLIP_N=0;
@@ -300,8 +364,15 @@ function render(objs,o={}){
     (o.ann||[]).forEach(a=>[a.a,a.b,a.p].filter(Boolean).forEach(p=>{grow(proj(p));if(a.ride)grow(proj(add(p,a.ride)));if(a.sep)grow(proj(add(p,a.sep)))}))}
   let bw=x1-x0,bh=y1-y0;const pad=Math.max(bw,bh)*(o.pad??.07);x0-=pad;y0-=pad;bw+=2*pad;bh+=2*pad;
   if(bw/bh<W/H){const nw=bh*W/H;x0-=(nw-bw)/2;bw=nw}else{const nh=bw*H/W;y0-=(nh-bh)/2;bh=nh}
-  const s=bw/W;let out='',overlay='';
+  const s=bw/W;let out='',overlay='',shadow='';
   const ANIMATE=!!o.animate&&ANIM_ON,ZERO=[0,0,0];
+  /* soft cast shadows on the ground (lowest resting z), thrown away from the light */
+  const SHADOW=o.shadow??!!o.animate;let zg=0;
+  if(SHADOW){const vis=list.filter(ob=>!ob.ghost&&ob.solids.length),base=vis.filter(ob=>!(ob.off[0]||ob.off[1]||ob.off[2]));zg=1e9;
+    (base.length?base:vis).forEach(ob=>ob.solids.forEach(sd=>sd.faces.forEach(f=>f.p.forEach(p=>{if(p[2]+ob.off[2]<zg)zg=p[2]+ob.off[2]}))))}
+  const shOff=d=>[d[0]-LIGHT[0]/LIGHT[2]*d[2],d[1]-LIGHT[1]/LIGHT[2]*d[2],0];
+  const shs=(solids,off)=>solids.map(sd=>{const pts=hull(sd.faces.flatMap(f=>f.p).map(p=>{const q=add(p,off),hh=Math.max(0,q[2]-zg);return proj([q[0]-LIGHT[0]/LIGHT[2]*hh,q[1]-LIGHT[1]/LIGHT[2]*hh,zg])}));
+    return `<polygon points="${pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}"/>`}).join('');
   const drawBody=(ob,solids,off)=>{
     let under='',body='';
     for(const sd of solids)for(const f of sd.faces){
@@ -321,11 +392,15 @@ function render(objs,o={}){
     const op=ob.ghost?` opacity="${ob.ghost===true?.2:ob.ghost}"`:'';
     const moving=ANIMATE&&ob.anim&&(ob.off[0]||ob.off[1]||ob.off[2]);
     if(!moving){const body=drawBody(ob,ob.solids,ob.off);
+      if(SHADOW&&!ob.ghost)shadow+=ANIMATE&&ob.sep?`<g>${slideTr(ZERO,shOff(ob.sep),...SEP_T)}${shs(ob.solids,ob.off)}</g>`:shs(ob.solids,ob.off);
       /* cut pieces: start joined, come apart after the saw cuts */
       out+=ANIMATE&&ob.sep?`<g${op}><g>${slideTr(ZERO,ob.sep,...SEP_T)}${body}</g></g>`:`<g${op}>${body}</g>`;continue}
     /* cycle: hold exploded -> slide into place -> hold assembled. Stagger shifts each part a little later. */
     const f=k3,t0=SLIDE_T[0]+ob.stagger/ANIM_DUR,t1=SLIDE_T[1]+ob.stagger/ANIM_DUR;
     const rep=REP(),tr=slideTr(ob.off,ZERO,t0,t1),hide=`<animate attributeName="opacity" values="1;0" keyTimes="0;${f(t1)}" calcMode="discrete" ${rep}/>`;
+    if(SHADOW&&!ob.ghost&&ob.off[2]>=0)shadow+=`<g>${slideTr(shOff(ob.off),ZERO,t0,t1)}${shs(ob.finalSolids||ob.solids,ZERO)}</g>`;
+    /* a faint ghost marks where the part is going, then fades as the part arrives */
+    out+=`<g opacity="0"><animate attributeName="opacity" values="0;.3;.3;0;0" keyTimes="0;${f(Math.max(t0-.09,.01))};${f(t0)};${f(t1)};1" ${rep}/>${drawBody(ob,ob.finalSolids||ob.solids,ZERO)}</g>`;
     /* bolt/pin shank: clipped at the surface it goes into, so it disappears down the hole instead of sliding over the metal */
     let shank='';
     if(ob.shank){const c=centroid(ob.shank.faces.flatMap(fc=>fc.p)),Ey=proj([c[0],c[1],ob.sink])[1],id='k'+(++CLIP_N);
@@ -348,6 +423,8 @@ function render(objs,o={}){
     if(a.ride)g=ANIMATE?`<g>${slideTr(a.ride,ZERO,...SLIDE_T)}${g}</g>`:`<g transform="translate(${proj(a.ride).map(k3).join(' ')})">${g}</g>`;
     return g};
   out+=overlay+(o.ann||[]).map(annWrap).join('');
+  if(shadow){const id='k'+(++CLIP_N);
+    out=`<filter id="${id}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${(4.5*s).toFixed(2)}"/></filter><g filter="url(#${id})" fill="#14324d" opacity=".3">${shadow}</g>`+out}
   if(o.ring){const [a,b,c,d,e,f]=o.ring,C=proj([(a+b)/2,(c+d)/2,(e+f)/2]);out+=`<circle cx="${C[0]}" cy="${C[1]}" r="${16*s}" fill="none" stroke="#e3000b" stroke-width="3.5" ${NS}/>`}
   return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${bw.toFixed(1)} ${bh.toFixed(1)}" preserveAspectRatio="xMidYMid meet" role="img">${out}</svg>`;
 }
@@ -357,7 +434,10 @@ function drillBit(A,B,s,E,T){
   const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]];
   const len=52*s,w=9*s,pt=(a,b)=>[a*u[0]+b*n[0],a*u[1]+b*n[1]].map(v=>v.toFixed(2)).join(',');
   const body=[pt(0,0),pt(-11*s,w/2),pt(-len,w/2),pt(-len,-w/2),pt(-11*s,-w/2)].join(' ');
-  const flutes=[18,28,38].map(k=>`<line x1="${pt(-k*s,w/2).split(',')[0]}" y1="${pt(-k*s,w/2).split(',')[1]}" x2="${pt(-(k+7)*s,-w/2).split(',')[0]}" y2="${pt(-(k+7)*s,-w/2).split(',')[1]}" stroke="#55606b" stroke-width="1.2" ${NS}/>`).join('');
+  /* the flutes scroll up the bit so it reads as spinning */
+  const fl=[];for(let k=2;k<=60;k+=8)fl.push(k);
+  const flutes0=fl.map(k=>{const a=pt(-k*s,w/2).split(','),b=pt(-(k+7)*s,-w/2).split(',');return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#55606b" stroke-width="1.4" ${NS}/>`}).join('');
+  const fid='k'+(++CLIP_N),spin=`${(-8*s*u[0]).toFixed(2)} ${(-8*s*u[1]).toFixed(2)}`;
   const chuck=[pt(-len,w*.9),pt(-len-16*s,w*.9),pt(-len-16*s,-w*.9),pt(-len,-w*.9)].join(' ');
   const P=p=>p.map(v=>v.toFixed(1)).join(' ');
   /* with an entry point the bit drills in, then pulls back out of the hole it made */
@@ -365,7 +445,9 @@ function drillBit(A,B,s,E,T){
              :`values="${P(A)};${P(A)};${P(B)};${P(B)}" keyTimes="0;${k3(T[0])};${k3(T[2])};1" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1"`;
   const vis=`<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${k3(Math.max(T[0]-.08,.005))};${k3(Math.max(T[0]-.02,.01))};.9;.96;1" ${REP()}/>`;
   return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" ${pos} calcMode="spline" ${REP()}/>`+
-    `<polygon points="${chuck}" fill="#e3000b" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#b8c2cc" stroke="#1d2329" stroke-width="1.2" ${NS}/>${flutes}</g></g>`;
+    `<polygon points="${chuck}" fill="#e3000b" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#c3ccd5" stroke="#1d2329" stroke-width="1.2" ${NS}/>`+
+    `<clipPath id="${fid}"><polygon points="${body}"/></clipPath><g clip-path="url(#${fid})"><g><animateTransform attributeName="transform" type="translate" values="0 0;${spin}" dur=".16s" repeatCount="indefinite"/>${flutes0}</g></g>`+
+    `<polygon points="${body}" fill="none" stroke="#1d2329" stroke-width="1.2" ${NS}/></g></g>`;
 }
 /* clip to the half of the screen on A's side of E (perpendicular to A->B): whatever passes E is hidden inside the material */
 function entryClip(A,B,E,s){const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]],G=5000*s,id='k'+(++CLIP_N);
@@ -393,7 +475,9 @@ function annSVG(a,s,anim){
       if(a.e&&a.hole){const d=sub(a.b,a.a),ax=Math.abs(d[0])>Math.abs(d[1])&&Math.abs(d[0])>Math.abs(d[2])?'x':Math.abs(d[1])>Math.abs(d[2])?'y':'z';
         hole=`<polygon points="${ptsStr(circ(a.e,a.hole,ax,20))}" fill="#2a2f35" stroke="#1d2329" stroke-width="1" ${NS}${anim?` opacity="0"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;${k3(T[1])};${k3(T[1]+.05)};1" ${REP()}/></polygon>`:'/>'}`}
       let bit='';
-      if(anim){bit=drillBit(A,B,s,E,T);if(E){const c=entryClip(A,B,E,s);bit=`${c.def}<g clip-path="url(#${c.id})">${bit}</g>`}}
+      if(anim){bit=drillBit(A,B,s,E,T);if(E){const c=entryClip(A,B,E,s);bit=`${c.def}<g clip-path="url(#${c.id})">${bit}</g>`;
+        /* swarf flies off the hole while the bit is cutting */
+        bit+=`<g transform="translate(${E[0].toFixed(1)} ${E[1].toFixed(1)})" opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(T[1]+.01)};${k3(T[2])}" calcMode="discrete" ${REP()}/>${chips(7,s,a.chip||'#b8c2cc')}</g>`}}
       return hole+`<line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}>${march}</line>`+head(A,Z,'#e3000b',15)+bit+(a.label?tag(a.a,a.label,'#fff','#e3000b'):'')}
     case 'cut':{const [w,h]=a.size,c=a.c,q=a.axis==='y'?[[c[0]-w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]-h/2],[c[0]+w/2,c[1],c[2]+h/2],[c[0]-w/2,c[1],c[2]+h/2]]:[[c[0],c[1]-w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]-h/2],[c[0],c[1]+w/2,c[2]+h/2],[c[0],c[1]-w/2,c[2]+h/2]];
       if(!anim)return `<polygon points="${ptsStr(q)}" fill="rgba(227,0,11,.16)" stroke="#e3000b" stroke-width="3" stroke-dasharray="7 4" ${NS}/>`;
@@ -408,7 +492,11 @@ function annSVG(a,s,anim){
         `<polyline points="${bladeA}" fill="none" stroke="#55606b" stroke-width="4" stroke-linecap="round" opacity="0" ${NS}>`+
           `<animate attributeName="points" values="${bladeA};${bladeA};${bladeB};${bladeB}" ${kt}/>`+
           `<animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(Math.max(t0-.01,.001))};${k3(t1+.01)}" calcMode="discrete" ${REP()}/>`+
-          `<animateTransform attributeName="transform" type="translate" values="0 0;${sw};0 0" dur=".3s" repeatCount="indefinite"/></polyline></g>`}
+          `<animateTransform attributeName="transform" type="translate" values="0 0;${sw};0 0" dur=".3s" repeatCount="indefinite"/></polyline>`+
+        /* dust falls out of the kerf, following the blade down */
+        `<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(t0+.01)};${k3(t1)}" calcMode="discrete" ${REP()}/><g>`+
+          `<animateTransform attributeName="transform" type="translate" values="${proj(mid(q[3],q[2])).map(k3).join(' ')};${proj(mid(q[3],q[2])).map(k3).join(' ')};${proj(mid(q[0],q[1])).map(k3).join(' ')};${proj(mid(q[0],q[1])).map(k3).join(' ')}" ${kt}/>`+
+          `${chips(6,s,a.chip||'#b8c2cc',{up:false,spread:.9})}</g></g></g>`}
     case 'cross':{const p=a.p,r=a.r||9,c=a.col||'#e3000b';return ln([p[0]-r,p[1],p[2]],[p[0]+r,p[1],p[2]],`stroke="${c}" stroke-width="2.5"`)+ln([p[0],p[1]-r,p[2]],[p[0],p[1]+r,p[2]],`stroke="${c}" stroke-width="2.5"`)}
     case 'dot':{const [x,y]=proj(a.p);return `<circle cx="${x}" cy="${y}" r="${6*s}" fill="${a.col||'#1a9c4a'}" stroke="#fff" stroke-width="1.5" ${NS}/>`}
     case 'text':return tag(a.p,a.label,a.col,a.bg);
@@ -571,8 +659,7 @@ const tplCrosses=(t,x0,y0,z,only)=>TPL[t].holes.map(([x,y],i)=>({i,x,y})).filter
 /* ================= PARTS (pictures for callouts) ================= */
 const tubeIcon=()=>[box(0,320,-25,25,0,50,COL.alu,{hollow:[1,3]})];
 const PART={
-  Astock:{nm:'Tube A',nt:'about 2.5 m',b:'A',icon:tubeIcon},
-  Cstock:{nm:'Tube C',nt:'about 1.5 m',b:'C',icon:tubeIcon},
+  Tstock:{nm:'Square tube',nt:'one 6.5 m length',b:'A',icon:tubeIcon},
   Dstock:{nm:'Flat bar',nt:'1.4 m long',b:'D',icon:()=>[box(0,400,0,100,0,3,COL.plate)]},
   Lstock:{nm:'Hardwood',nt:'42 x 42 mm, 1.8 m',b:'L',icon:()=>[box(0,250,-21,21,0,42,COL.wood)]},
   Qstock:{nm:'Pine board',nt:'140 x 45 mm, 1.2 m',b:'Q',icon:()=>[box(0,300,-22,22,0,140,COL.pine)]},
@@ -595,7 +682,7 @@ const PART={
   K:{nm:'Axle washer',nt:'20 mm hole',b:'K',icon:()=>[cyl('z',[0,0,0],20,0,3,COL.washer,{seg:24,hubs:[{r:10.5,col:'#ffffff'}]})]},
   J:{nm:'Split pin',nt:'4 mm',b:'J',icon:()=>[cyl('x',[0,0,0],2.5,0,40,COL.pin,{seg:8}),cyl('x',[0,0,5],2.5,0,30,COL.pin,{seg:8})]},
   O:{nm:'Eye bolt',nt:'M8',b:'O',icon:()=>[cyl('z',[0,0,0],4,0,70,COL.bolt,{seg:12}),cyl('x',[0,0,85],15,-3.5,3.5,COL.bolt,{seg:24,hubs:[{r:9,col:'#ffffff'}]})]},
-  X:{nm:'Paste',nt:'grown-ups only',b:'N',icon:()=>[cyl('x',[0,0,0],12,0,70,'#eeeeee',{seg:16}),cyl('x',[0,0,0],7,70,84,COL.pin,{seg:16})]},
+  X:{nm:'Barrier grease',nt:'lanolin, grown-ups',b:'N',icon:()=>[cyl('z',[0,0,0],26,0,34,'#f2d16b',{seg:24}),cyl('z',[0,0,0],27,34,42,'#1a1a1a',{seg:24})]},
   U:{nm:'Glue',nt:'contact adhesive',b:'U',icon:()=>[cyl('x',[0,0,0],12,0,70,'#ffe27a',{seg:16}),cyl('x',[0,0,0],7,70,84,'#1a1a1a',{seg:16})]},
   Istock:{nm:'Pad strip',nt:'1.5 m, 20 mm thick',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
   Ib:{nm:'Beam pad',nt:'1000 mm',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
@@ -653,25 +740,60 @@ const boatObj=(ghost=.45,order=70)=>solo(extrudeY(hullSection(),-1120,1325,COL.b
 const tubeY=(len,col=COL.alu)=>box(-25,25,0,len,0,50,col,{hollow:[0,2]});
 const drillDown=(x,y,label,top=50,len=0,hole=5.25)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],e:[x,y,top],hole,label});
 
+/* step 1: cut plan for the single 6.5 m length (schematic: lengths to scale, tube thickness exaggerated) */
+function cutPlan(anim){
+  const X0=26,k=600/6500,Y=128,h=38,d=14,dy=10,GAP=16,id='k'+(++CLIP_N);
+  const P=[['A',0,2200],['B',2200,3200],['C',3200,4450],['C',4450,5700],['spare',5700,6500]];
+  const CUTS=[2200,3200,4450,5700],ct=i=>[.05+i*.115,.145+i*.115];
+  const sep=(gx,body)=>anim?`<g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${gx} 0;${gx} 0" keyTimes="0;${k3(SEP_T[0])};${k3(SEP_T[1])};1" calcMode="spline" keySplines="0 0 1 1;.5 0 .2 1;0 0 1 1" ${REP()}/>${body}</g>`:`<g transform="translate(${gx} 0)">${body}</g>`;
+  const piece=([nm,a,b],i)=>{const x=X0+a*k,w=(b-a)*k,col=nm==='spare'?COL.off:COL.alu,f=v=>v.toFixed(1);
+    const top=`${f(x)},${Y} ${f(x+w)},${Y} ${f(x+w+d)},${Y-dy} ${f(x+d)},${Y-dy}`,end=`${f(x+w)},${Y} ${f(x+w+d)},${Y-dy} ${f(x+w+d)},${Y-dy+h} ${f(x+w)},${Y+h}`;
+    const hole=`${f(x+w+2.4)},${Y+3} ${f(x+w+d-2.4)},${Y-dy+4.6} ${f(x+w+d-2.4)},${Y-dy+h-3} ${f(x+w+2.4)},${Y+h-4.6}`;
+    const big=nm!=='spare',cx=x+w/2,dimY=Y+h+26;
+    return `<polygon points="${top}" fill="${shade(col,1.08)}" stroke="#1d2329" stroke-width="1.2" stroke-linejoin="round"/>`+
+      `<rect x="${f(x)}" y="${Y}" width="${f(w)}" height="${h}" fill="${shade(col,.86)}" stroke="#1d2329" stroke-width="1.2"/>`+
+      `<polygon points="${end}" fill="${shade(col,.72)}" stroke="#1d2329" stroke-width="1.2" stroke-linejoin="round"/><polygon points="${hole}" fill="#4b545d"/>`+
+      `<text x="${f(cx)}" y="${Y+h/2+(big?8:5)}" text-anchor="middle" font-size="${big?22:13}" font-weight="900" fill="${big?'#1a1a1a':'#8a2b23'}">${nm}</text>`+
+      `<path d="M${f(x+1)} ${dimY}H${f(x+w-1)}M${f(x+1)} ${dimY-6}v12M${f(x+w-1)} ${dimY-6}v12" stroke="#55606b" stroke-width="1.4" fill="none"/>`+
+      `<rect x="${f(cx-26)}" y="${dimY+8}" width="52" height="22" rx="6" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/><text x="${f(cx)}" y="${dimY+24}" text-anchor="middle" font-size="13" font-weight="800">${b-a}</text>`};
+  const cut=(c,i)=>{const x=X0+c*k,[t0,t1]=ct(i),kt=`keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}`;
+    const mark=`<path d="M${x} ${Y+h}V${Y}L${x+d} ${Y-dy}" fill="none" stroke="#e3000b" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+    if(!anim)return mark;
+    const blade=`<line x1="${x-8}" y1="${Y+dy*.6}" x2="${x+d+8}" y2="${Y-dy*1.6}" stroke="#55606b" stroke-width="4" stroke-linecap="round"/>`;
+    return `<g><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;${k3(SEP_T[0]-.04)};${k3(SEP_T[0])};1" ${REP()}/>${mark}`+
+      `<line x1="${x}" y1="${Y-2}" x2="${x}" y2="${Y-2}" stroke="#e3000b" stroke-width="4"><animate attributeName="y2" values="${Y-2};${Y-2};${Y+h};${Y+h}" ${kt}/></line>`+
+      `<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(t0)};${k3(t1+.01)}" calcMode="discrete" ${REP()}/>`+
+        `<g><animateTransform attributeName="transform" type="translate" values="0 -12;0 -12;0 ${h};0 ${h}" ${kt}/>`+
+          `<g><animateTransform attributeName="transform" type="translate" values="0 0;5 -3.6;0 0" dur=".3s" repeatCount="indefinite"/>${blade}</g>`+
+          `<g transform="translate(${x+3} ${Y+6})">${chips(6,1,'#b8c2cc',{up:false,spread:.9})}</g></g></g></g>`};
+  const total=X0+600+GAP*4+d;
+  return `<svg viewBox="0 20 720 250" role="img" aria-label="Cut plan for the 6.5 metre tube">`+
+    `<filter id="${id}" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="5"/></filter>`+
+    `<rect x="${X0+8}" y="${Y+h-2}" width="${total-X0}" height="10" rx="5" fill="#14324d" opacity=".2" filter="url(#${id})"/>`+
+    `<text x="${X0}" y="46" font-size="15" font-weight="900" fill="#1a1a1a">One 6.5 m length</text><text x="${X0}" y="66" font-size="13" font-weight="700" fill="#5d6872">50 x 50 x 3 mm square tube · lengths in mm</text>`+
+    P.map((p,i)=>sep(i*GAP,piece(p,i))).join('')+CUTS.map((c,i)=>sep(i*GAP,cut(c,i))).join('')+
+    `<text x="${X0}" y="252" font-size="12.5" font-weight="700" fill="#5d6872">Tube thickness drawn bigger so you can see it.</text></svg>`}
+
 const STEPS=[
  /* ---- cut ---- */
- {st:0,cap:'Clamp tube A down. Measure <b>2200 mm</b> from one end. Mark a line all the way round. Cut on the line.',parts:[['Astock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
-  tip:'Ask the metal shop to cut tubes A and C and the flat bar for you. Then you can skip to step 4.',
-  solo:()=>({objs:[solo(tubeY(2200)),solo(box(-25,25,2200,2500,0,50,COL.off,{hollow:[0,2]}),{order:1,sep:[0,160,0]})],
-    ann:[{t:'cut',axis:'y',c:[0,2200,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,2200,0],off:[110,0,0],label:'2200 mm'},{t:'text',p:[-160,2420,0],label:'spare bit',col:'#b3261e',sep:[0,160,0]}]})},
- {st:0,cap:'Clamp a C tube. Measure <b>1250 mm</b>. Mark. Cut. Then do the other C tube.',parts:[['Cstock',2]],tools:['tape','marker','square','clamp','saw'],adult:1,mult:'Do both',
-  solo:()=>({objs:[solo(tubeY(1250)),solo(box(-25,25,1250,1500,0,50,COL.off,{hollow:[0,2]}),{order:1,sep:[0,120,0]})],
-    ann:[{t:'cut',axis:'y',c:[0,1250,25],size:[90,90]},{t:'dim',a:[25,0,0],b:[25,1250,0],off:[110,0,0],label:'1250 mm'}]})},
+ {st:0,cap:'The <b>6.5 m</b> tube is cut into 4 pieces: <b>A</b> 2200 mm, <b>B</b> 1000 mm and two <b>C</b> 1250 mm. There\'s 800 mm spare. Ask the metal shop to make the cuts: a 6.5 m tube won\'t fit in a car.',parts:[['Tstock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
+  tip:'Cutting it yourself? Clamp it, measure from the end, mark a line all the way round, and cut. Measure each piece from a fresh cut end. If the shop cuts the flat bar into 8 plates as well, do step 2, then skip to step 4.',
+  custom:anim=>cutPlan(anim)},
+ {st:0,cap:'Check each piece with the tape. Write its letter on it near one end: <b>A</b> 2200, <b>B</b> 1000, <b>C</b> 1250 (two of them). Put the spare piece away.',parts:[],partsNote:'The 4 tubes from step 1',tools:['tape','marker'],
+  tip:'Pieces more than 2 mm out? Tell the shop now, not after you\'ve drilled them.',
+  solo:()=>{const L=[['A',0,2200],['B',330,1000],['C',660,1250],['C',990,1250]];
+    return{objs:L.map(([,x,len],i)=>solo(box(x-25,x+25,0,len,0,50,COL.alu,{hollow:[0,2]}),{off:[0,-420,0],anim:true,stagger:i*.12,hl:true})),
+      ann:L.map(([n,x,len])=>({t:'text',p:[x,len+150,25],label:`${n} · ${len}`})),pad:.13}}},
  {st:0,cap:'Mark every <b>160 mm</b> along the flat bar. Cut on each mark. You need <b>8 plates</b>.',parts:[['Dstock',1]],tools:['tape','marker','square','clamp','saw'],adult:1,
   solo:()=>({objs:[...Array.from({length:8},(_,i)=>solo(box(i*160,i*160+160,0,100,0,3,COL.plate),{sep:[i*25,0,0]})),solo(box(1280,1400,0,100,0,3,COL.off),{sep:[220,0,0]})],
     ann:[...Array.from({length:8},(_,i)=>({t:'cut',axis:'x',c:[160*(i+1),50,1.5],size:[130,30],tm:[.05+i*.05,.13+i*.05]})),{t:'dim',a:[0,0,3],b:[160,0,3],off:[0,-110,0],label:'160 mm'}]})},
  {st:0,cap:'Clamp the hardwood. Measure <b>60 mm</b> from the end. Cut. Measure and cut again so you have <b>2 plugs</b>. Keep the rest for later.',parts:[['Lstock',1]],tools:['tape','marker','clamp','saw'],adult:1,
   solo:()=>({objs:[solo(box(-21,21,0,60,0,42,COL.wood),{sep:[0,-90,0]}),solo(box(-21,21,60,120,0,42,COL.wood),{sep:[0,-45,0]}),solo(box(-21,21,120,420,0,42,COL.wood),{order:1,ghost:.45})],
-    ann:[{t:'cut',axis:'y',c:[0,120,21],size:[70,70],tm:[.06,.25]},{t:'cut',axis:'y',c:[0,60,21],size:[70,70],tm:[.28,.47]},{t:'dim',a:[21,0,0],b:[21,60,0],off:[70,0,0],label:'60',sep:[0,-90,0]},{t:'dim',a:[21,60,0],b:[21,120,0],off:[70,0,0],label:'60',sep:[0,-45,0]},{t:'text',p:[0,330,90],label:'keep for step 34'}]})},
+    ann:[{t:'cut',axis:'y',c:[0,120,21],size:[70,70],tm:[.06,.25],chip:'#d9b483'},{t:'cut',axis:'y',c:[0,60,21],size:[70,70],tm:[.28,.47],chip:'#d9b483'},{t:'dim',a:[21,0,0],b:[21,60,0],off:[70,0,0],label:'60',sep:[0,-90,0]},{t:'dim',a:[21,60,0],b:[21,120,0],off:[70,0,0],label:'60',sep:[0,-45,0]},{t:'text',p:[0,330,90],label:'keep for step 34'}]})},
  {st:0,cap:'Draw an X from corner to corner on the end of each plug. Clamp the plug standing up. Drill a <b>6 mm</b> hole through the middle of the X, then open it up to <b>20 mm</b>.',parts:[],partsNote:'The 2 plugs from step 4',tools:['marker','clamp','drill:6','drill:20','sand'],adult:1,mult:'Do both',
   tip:'Use a 20 mm Forstner bit and go slowly. Then push the rod in. If it\'s tight, roll sandpaper round a pencil and sand inside the hole until the rod slides.',
   solo:()=>{const q=[[-21,-21],[21,-21],[21,21],[-21,21]].map(([x,y])=>[x*Math.cos(.5)-y*Math.sin(.5),x*Math.sin(.5)+y*Math.cos(.5)]);
-    return{objs:[solo(prism(q,0,60,COL.wood))],ann:[{t:'line',a:[...q[0],60],b:[...q[2],60],col:'#1a1a1a',w:2.5,draw:[.02,.12]},{t:'line',a:[...q[1],60],b:[...q[3],60],col:'#1a1a1a',w:2.5,draw:[.13,.23]},{t:'drill',a:[0,0,220],b:[0,0,-15],e:[0,0,60],hole:10,tm:[.3,.42,.74],label:'6 then 20 mm'}]}}},
+    return{objs:[solo(prism(q,0,60,COL.wood))],ann:[{t:'line',a:[...q[0],60],b:[...q[2],60],col:'#1a1a1a',w:2.5,draw:[.02,.12]},{t:'line',a:[...q[1],60],b:[...q[3],60],col:'#1a1a1a',w:2.5,draw:[.13,.23]},{t:'drill',a:[0,0,220],b:[0,0,-15],e:[0,0,60],hole:10,tm:[.3,.42,.74],label:'6 then 20 mm',chip:'#d9b483'}]}}},
  {st:0,cap:'File every cut edge smooth. Write <b>FRONT</b> on one end of the long tube, and <b>TIP</b> and <b>FOOT</b> on the two ends of each brace.',parts:[],partsNote:'Every piece you cut',tools:['file','marker'],
   solo:()=>({objs:[solo(tubeY(1250)),solo(box(120,280,-60,40,0,3,COL.plate),{order:1,hl:true})],ann:[{t:'text',p:[0,1180,90],label:'TIP'},{t:'text',p:[0,70,90],label:'FOOT'},{t:'text',p:[200,0,60],label:'smooth!'}]})},
  /* ---- drill on the bench ---- */
@@ -722,7 +844,7 @@ const STEPS=[
  {st:4,cap:'Take the 2 <b>T</b> plates. Slide one under the front joint and put one on top, both writing up. Line up all the holes. Clamp them.',parts:[['P',2]],tools:['clamp'],
   tip:'Look down each hole. You should see straight through the tube. If not, wiggle the braces until you can.',
   view:()=>({ids:S.tee,hl:plates('tee'),off:{teeT:[0,0,170],teeB:[0,0,-170]},focus:F.tee,ann:[{t:'arrow',a:[110,YT,330],b:[110,YT,180]},{t:'arrow',a:[110,YT,-80],b:[110,YT,80]}]})},
- {st:4,cap:'A grown-up dabs paste on each bolt. Put a washer on each bolt and push it down through a hole. Underneath, add a washer, then a nut. Tighten until snug, then stop.',parts:[['G',4],['W',8],['N',4],['X',1]],tools:['spanner'],
+ {st:4,cap:'A grown-up smears barrier grease on each bolt. Put a washer on each bolt and push it down through a hole. Underneath, add a washer, then a nut. Tighten until snug, then stop.',parts:[['G',4],['W',8],['N',4],['X',1]],tools:['spanner'],
   tip:'Lock nuts stay put by themselves. Don\'t squash the tube.',
   view:()=>({ids:S.teeB,hl:bolts('tee'),off:{...offAll(tops('tee'),[0,0,190]),...offAll(bots('tee'),[0,0,-170])},focus:F.tee,ann:[{t:'arrow',a:[70,YF-25,330],b:[70,YF-25,190]},{t:'arrow',a:[70,YF-25,-60],b:[70,YF-25,80]}]})},
  {st:4,cap:'At each back corner: one plate under, one on top, then clamp. <b>CL</b> plates go on the left corner, <b>CR</b> on the right. Both plates writing up.',parts:[['P',4]],tools:['clamp'],mult:BOTH,
@@ -784,13 +906,13 @@ const STEPS=[
 /* ================= PAGES ================= */
 const PAGES=['cover','start','parts',...STEPS.map((_,i)=>'s'+i),'loading','test','templates','done','grownups'];
 let pageIdx=0;
-const fullModel=()=>render(scene(FINAL),{w:760,h:480});
+const fullModel=()=>render(scene(FINAL),{w:760,h:480,shadow:true});
 
 function pCover(){return `<div class="cover"><div>
   <div class="setno"><span>SET 2200</span><span class="y">12+ with a grown-up</span><span>Boats up to 80 kg</span></div>
   <h1>Boat<br>Dolly</h1>
   <p class="sub" style="max-width:420px">Build a trolley for wheeling a small boat down to the water.</p>
-  <div class="facts"><div class="fact"><small>Steps</small>${STEPS.length}</div><div class="fact"><small>Builders</small>2</div><div class="fact"><small>Time</small>About 2 days</div></div>
+  <div class="facts"><div class="fact"><small>Steps</small>${STEPS.length}</div><div class="fact"><small>Builders</small>2</div><div class="fact"><small>Time</small>About 2 days</div><div class="fact"><small>Parts cost</small>About $${Math.round(estTotal())}</div></div>
   <button class="btn y" onclick="go(1)">Start ›</button><button class="btn o" onclick="showTab('cart')">Shopping trolley</button>
 </div><div class="art">${fullModel()}</div></div>`}
 
@@ -821,7 +943,8 @@ function pParts(){
 function pStep(i){
   const s=STEPS[i],[stName,stCol]=STAGES[s.st];
   let main,mini='',inset='';
-  if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann,animate:true})}
+  if(s.custom)main=s.custom(ANIM_ON);
+  else if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann,animate:true,pad:v.pad})}
   else{const v=s.view();main=render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann,animate:true});
     if(v.focus)mini=`<div class="mini">${render(scene(v.ids,{ghost:v.ghost}),{w:168,h:110,ring:v.focus,pad:.12})}</div>`}
   if(s.inset){const v=s.inset();inset=`<div class="inset"><span>${v.label}</span>${render(v.objs,{focus:v.focus,ann:v.ann,w:230,h:150})}</div>`}
@@ -830,11 +953,15 @@ function pStep(i){
   <div class="step"><div>
     <div class="stage" style="color:${stCol}">${stName} <a class="steplink noprint" href="${pageToHash(PAGES.indexOf('s'+i))}" onclick="event.preventDefault();copyStepLink()" title="Copy a link to this step">🔗 link</a></div>
     <div class="stepnum">${i+1}</div>
+    ${(()=>{const inSt=STEPS.map((x,j)=>x.st===s.st?j:-1).filter(j=>j>=0),pos=inSt.indexOf(i);
+      return `<div class="stepof" style="--c:${stCol}">${inSt.map((_,k)=>`<i class="${k<=pos?'on':''}"></i>`).join('')}<br>${pos+1} of ${inSt.length} in this stage · step ${i+1} of ${STEPS.length}</div>`})()}
     ${s.adult?`<div class="adult">${ADULT_SVG} GROWN-UP</div>`:''}
     ${parts}
     ${s.tools?`<div class="tools">${s.tools.map(toolHTML).join('')}</div>`:''}
   </div><div>
-    <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}<button class="animbtn noprint" onclick="toggleAnim()" aria-label="${ANIM_ON?'Pause':'Play'} animation">${ANIM_ON?'❚❚ Pause':'▶ Play'}</button></div>
+    <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}</div>
+    ${!ANIM_ON||/<animate/.test(main)?`<div class="player noprint" style="--c:${stCol}"><button class="animbtn" id="animbtn" onclick="toggleAnim()">${animLabel()}</button><input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Animation position" oninput="scrubTo(this.value/1000)" onpointerdown="SCRUBBING=true" onpointerup="SCRUBBING=false"></div>
+    <div class="phases noprint">${(s.st===0?['Mark','Cut','Apart']:s.st===1?['Line up','Drill','Done']:['Parts','Fit','Done']).map(t=>`<span>${t}</span>`).join('')}</div>`:''}
     <p class="caption">${s.cap}</p>
     ${s.checks?`<ul class="checks">${s.checks.map(c=>`<li><label><input type="checkbox"> ${c}</label></li>`).join('')}</ul>`:''}
     ${s.tip?`<div class="tip"><span class="bang">!</span><span>${s.tip}</span></div>`:''}
@@ -844,7 +971,7 @@ function pStep(i){
 function pLoading(){
   const boat=boatObj(.45,70);
   const tie=solo([],{order:71,paths:[{pts:[[-640,0,150],[-640,0,530],[640,0,530],[640,0,150]],col:'#e3000b'}]});
-  const art=render([...scene(FINAL),boat,tie],{w:720,h:380,ann:[{t:'text',p:[0,120,520],label:'heaviest part here'},{t:'text',p:[700,0,330],label:'tie-down strap',col:'#e3000b'}]});
+  const art=render([...scene(FINAL),boat,tie],{w:720,h:380,shadow:true,ann:[{t:'text',p:[0,120,520],label:'heaviest part here'},{t:'text',p:[700,0,330],label:'tie-down strap',col:'#e3000b'}]});
   return `<div class="stagebar" style="background:#0d5257"></div><h2 class="pt">Loading your boat</h2><p class="sub">Read this with your grown-up before the first trip.</p>
   <div class="art" style="margin-bottom:16px">${art}</div>
   <div class="cards">
@@ -907,16 +1034,17 @@ function pDone(){return `<div class="cover"><div>
   <button class="btn o" onclick="go(0)">Back to cover</button></div><div class="art">${fullModel()}</div></div>`}
 function pGrown(){
   const N=[
-    ['Where to buy the metal','Bunnings\' Metal Mate range has 50 x 50 square tube only in 1.5 mm wall and 1 m lengths, no 100 mm flat bar, and no 20 mm round bar. Buy A, B, C, D and F from an aluminium supplier. Ask for 6061-T6 for the rod if you can, and have them cut to length.'],
+    ['Fitting a $500 budget','The parts come to about $472 at November 2026 prices, which leaves about $28 for price changes. Most of the saving comes from buying all the tube as one 6.5 m length (5.7 m used) instead of four cut lengths, which saves about $140. Buying the bolts by the box keeps the 20 bolts near $32; in 2-packs at $3–4 a bolt they would cost $60–80. Lanolin grease instead of Tef-Gel saves $15. The design and every hole position are unchanged. Tools and drill bits are not in the budget.'],
+    ['Where to buy the metal','Bunnings\' Metal Mate range has 50 x 50 square tube only in 1.5 mm wall and 1 m lengths, no 100 mm flat bar, and no 20 mm round bar. Buy the tube, flat bar and rod from an aluminium supplier. The Metal Warehouse listed 50 x 50 x 3 tube at $129 per 6.5 m length in November 2026. Have them make the 4 cuts, since a 6.5 m length won\'t fit in a car. Ask for 6061-T6 for the rod if you can.'],
     ['The axle rod is never drilled','An earlier version bolted through the rod. That cuts its bending strength by about two thirds right where the load is highest. Now the rod sits in plugs, the wheels and split pins stop it sliding out, and the axle-tube joints clamp the tube with bolts that pass in front of and behind it. Only the split-pin holes are near the rod ends, where bending is lowest.'],
     ['Why 80 kg','Each brace is held by one M8 bolt at each end, through hollow tube with no crush sleeve. That\'s fine for kayaks and light dinghies. For heavier boats use longer gusset plates with 2 bolts per brace end, and crush sleeves (short tube spacers) inside the tube at every bolt.'],
     ['Everything is drilled on the bench','Every hole is drilled before assembly. Plate holes are 8.5 mm, drilled as matched pairs from the 1:1 templates. Tube holes are measured from the tube ends and drilled 10.5 mm, so bench-drilled holes still line up with about ±1 mm of measuring error. The plates then hold each bolt snugly. The cost is up to about 1 mm of slip in a joint before the bolt takes the load, which is fine for a dolly. The only drilling in the frame is a 3.5 mm pilot for each corner screw, done before the rod goes in.'],
     ['Cradle for a round hull','A Sabot has a rounded bottom, so a flat pad would let it roll. Two pine cradle blocks are traced from the actual hull 1.3 m behind the bow and covered in marine carpet. Hardwood cleats hug the axle tube so the blocks can\'t tip or slide, and the plates stop them moving sideways. The blocks sit on bare tube between the plates, so no bolt head is under the hull. A bow block, cut to the measured gap, supports the hull further forward.'],
     ['What stops things sliding','The clamp bolts touch the front and back faces of the axle tube, so it can\'t move fore and aft. A short screw at each corner (the green dot) goes through the top plate into the tube wall, so it can\'t slide sideways. A screw through the tube into each plug stops the plugs being pushed inward by the wheel washers. The split pins sit 4 mm past the outer washer, leaving about 2 mm of side play.'],
     ['Why the brace ends are cut square','The braces meet the other tubes at about 17.5°. An angled cut would leave a 166 mm sliver, too hard to cut accurately. The plates and bolts carry the load, not the brace ends, so a small gap at the tip doesn\'t matter.'],
-    ['Changed from the original picklist','Braces are 50 x 50 x 3 tube, so all the tubes match and the plates clamp flat. Flat bar is 1.4 m for 8 plates. The rod is 1220 mm. The flat carpet pad became a shaped cradle (pine blocks, hardwood cleats, marine carpet). Added: plugs, 20 mm axle washers, screws, an eye bolt, a rubber foot, glue, a tie-down strap and barrier paste. There are now 20 bolts.'],
+    ['Changed from the original picklist','Braces are 50 x 50 x 3 tube, so all the tubes match and the plates clamp flat. Flat bar is 1.4 m for 8 plates. The rod is 1220 mm. The flat carpet pad became a shaped cradle (pine blocks, hardwood cleats, marine carpet). Added: plugs, 20 mm axle washers, screws, an eye bolt, a rubber foot, glue, a tie-down strap and barrier grease. There are now 20 bolts.'],
     ['Wheels','Check them in the shop. The bore must slide onto a 20 mm rod (many are 5/8" or 3/4"). Hub no wider than 75 mm. Plastic rim, not steel. Rated at least 100 kg each.'],
-    ['Corrosion','Stainless touching aluminium corrodes the aluminium in salt water. Tef-Gel on every bolt, nylon axle washers if you can get them, a fresh-water rinse, and draining the tubes all help. Avoid Duralac: it contains barium chromate.'],
+    ['Corrosion','Stainless touching aluminium corrodes the aluminium in salt water. Lanolin grease on every bolt keeps water out of the joint. It washes out slowly, so re-apply it each season. Tef-Gel lasts longer and is worth the extra $15 if the dolly lives at the beach. Nylon axle washers, a fresh-water rinse and draining the tubes all help. Avoid Duralac: it contains barium chromate.'],
     ['Not load-tested','These steps came from a parts list and sketches, not a tested design. Run the load test page before the dolly carries a boat.'],
   ];
   return `<h2 class="pt">For grown-ups</h2><p class="sub">How the design works, what changed and why.</p><div class="gnotes">${N.map(([h,p])=>`<div class="gn"><h3>${h}</h3><p>${p}</p></div>`).join('')}</div>`;
@@ -929,8 +1057,15 @@ function renderPage(){
   document.getElementById('prev').disabled=pageIdx===0;
   document.getElementById('next').disabled=pageIdx===PAGES.length-1;
   const lab={cover:'★',start:'!',parts:'P',loading:'L',test:'kg',templates:'T',done:'✓',grownups:'G'};
-  document.getElementById('dots').innerHTML=PAGES.map((p,i)=>`<button class="dot ${i===pageIdx?'on':''}" onclick="go(${i})">${lab[p]||(+p.slice(1)+1)}</button>`).join('');
+  const ttl={cover:'Cover',start:'Before you start',parts:'All the parts',loading:'Loading your boat',test:'Load test',templates:'Templates',done:'Finished',grownups:'For grown-ups'};
+  const dot=(p,i)=>{const t=ttl[p]||`Step ${+p.slice(1)+1}`;return `<button class="dot${i===pageIdx?' on':i<pageIdx?' seen':''}" onclick="go(${i})" title="${t}" aria-label="${t}"${i===pageIdx?' aria-current="page"':''}>${lab[p]||(+p.slice(1)+1)}</button>`};
+  document.getElementById('dots').innerHTML=NAV_GROUPS.map(([nm,c,f])=>`<div class="navg" style="--c:${c}"><span>${nm}</span><div>${PAGES.map((p,i)=>f(p)?dot(p,i):'').join('')}</div></div>`).join('');
+  afterRender();
 }
+const NAV_SHORT=['Cut','Drill','Axle','Layout','Bolt','Wheels','Cradle'];
+const NAV_GROUPS=[['Start','#5d6872',p=>['cover','start','parts'].includes(p)],
+  ...STAGES.map(([,c],k)=>[NAV_SHORT[k],c,p=>/^s\d+$/.test(p)&&STEPS[+p.slice(1)].st===k]),
+  ['After','#0d5257',p=>['loading','test','templates','done','grownups'].includes(p)]];
 function go(i){pageIdx=Math.max(0,Math.min(PAGES.length-1,i));renderPage();setHash(pageToHash(pageIdx));window.scrollTo({top:0,behavior:'smooth'})}
 function goTpl(){showTab('book');go(PAGES.indexOf('templates'))}
 document.getElementById('prev').onclick=()=>go(pageIdx-1);
@@ -938,49 +1073,60 @@ document.getElementById('next').onclick=()=>go(pageIdx+1);
 document.addEventListener('keydown',e=>{if(document.getElementById('booklet').style.display==='none'||e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go(pageIdx+1);if(e.key==='ArrowLeft')go(pageIdx-1)});
 
 /* ================= TROLLEY ================= */
-const STORES={metal:['Aluminium supplier','Ask them to cut to length'],bunnings:['Bunnings',''],marine:['Marine store','e.g. a chandlery']};
+/* Prices: AUD inc. GST, estimated November 2026. The tube price is The Metal Warehouse's online listing; the rest are typical shelf prices. */
+const BUDGET_DEFAULT=500;
+const STORES={metal:['Aluminium supplier','Ask them to cut to length'],fasteners:['Fastener shop','Trade counter or online, sold by the box'],bunnings:['Bunnings','']};
 const SHOP={
-  A:{store:'metal',cat:'Backbone',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'2200 mm (or 2.5 m and cut it yourself)',qty:1,price:110,icon:'Astock'},
-  B:{store:'metal',cat:'Axle beam',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'1000 mm',qty:1,price:50,icon:'B'},
-  C:{store:'metal',cat:'Braces',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'1250 mm each',qty:2,price:62,icon:'Cstock',status:'changed',why:'Was 40 x 40 x 2.0 mm. Matching the 50 mm tubes lets the plates clamp flat.'},
-  D:{store:'metal',cat:'Plates',name:'Aluminium flat bar 100 x 3 mm',size:'1.4 m (makes 8 plates of 160 mm)',qty:1,price:45,icon:'Dstock',status:'changed',why:'Was 1.0 m. The build needs 8 plates.'},
-  F:{store:'metal',cat:'Axle',name:'Aluminium round bar 20 mm, 6061-T6 if available',size:'1220 mm',qty:1,price:55,icon:'F',status:'changed',why:'Was 1.2 m. 20 mm longer so the split-pin holes sit well clear of the ends.'},
-  E:{store:'bunnings',cat:'Wheels',name:'260 mm solid puncture-proof wheel, plastic rim',size:'20 mm bore · hub ≤ 75 mm · rated ≥ 100 kg',qty:2,price:29,aisle:'Castors & wheels',icon:'E',why:'Slide each wheel onto the rod in the shop if you can. Many wheels have a 5/8" or 3/4" bore that won\'t fit.'},
-  G:{store:'bunnings',cat:'Fasteners',name:'M8 x 75 mm stainless hex bolt (316 if available)',size:'20 needed',qty:20,price:1.6,aisle:'Fasteners',icon:'G',status:'changed',why:'Was a pack of 10–12. The new joints use 20.'},
-  H:{store:'bunnings',cat:'Fasteners',name:'M8 stainless nyloc (lock) nut',size:'21 needed',qty:21,price:.6,aisle:'Fasteners',icon:'N'},
-  W:{store:'bunnings',cat:'Fasteners',name:'M8 stainless penny washer, about 30 mm wide',size:'42 needed',qty:42,price:.4,aisle:'Fasteners',icon:'W'},
-  Z:{store:'bunnings',cat:'Fasteners',name:'Stainless pan-head self-tapping screws, 8g x 12 mm',size:'Small pack (5 needed)',qty:1,price:6,aisle:'Fasteners',icon:'Z',status:'added',why:'Stop the axle tube sliding sideways and the plugs sliding in, and hold the rubber foot.'},
-  R:{store:'bunnings',cat:'Hardware',name:'Screw-on rubber foot or buffer, about 30 mm tall',size:'1 needed',qty:1,price:4,aisle:'Furniture fittings',icon:'R',status:'added',why:'Takes the weight when the dolly rests on its front, instead of the eye-bolt nut.'},
-  O:{store:'bunnings',cat:'Handle',name:'M8 stainless eye bolt, at least 70 mm thread',size:'1 needed',qty:1,price:9,aisle:'Fasteners',icon:'O',status:'added',why:'A smooth eye for the handle strap. A strap through a drilled hole would wear through.'},
-  K:{store:'bunnings',cat:'Axle',name:'M20 stainless flat washer',size:'4 needed',qty:4,price:2.5,aisle:'Fasteners',icon:'K',status:'added',why:'The M8 washers won\'t fit the 20 mm axle. Nylon M20 washers are better against corrosion but usually have to be ordered online.'},
-  J:{store:'bunnings',cat:'Retainers',name:'Stainless split pins 4.0 mm',size:'Pack',qty:1,price:7,aisle:'Fasteners',icon:'J'},
-  L:{store:'bunnings',cat:'Plugs + cleats',name:'42 x 42 mm DAR hardwood',size:'1.8 m (2 plugs + 6 cleats)',qty:1,price:24,aisle:'Timber',icon:'Lstock',status:'added',why:'Makes the 2 axle plugs and the 6 cleats that hold the cradle blocks on the tubes.'},
-  Q:{store:'bunnings',cat:'Hull cradle',name:'140 x 45 mm treated pine (H3)',size:'1.2 m',qty:1,price:14,aisle:'Timber',icon:'Qstock',status:'added',why:'Cut into 2 cradle blocks shaped to your hull, plus a bow block.'},
-  V:{store:'bunnings',cat:'Hull cradle',name:'Stainless wood screws, about 65 mm (10g)',size:'18 needed',qty:18,price:.5,aisle:'Fasteners',icon:'Ws',status:'added',why:'Fix the cleats to the cradle and bow blocks.'},
-  I:{store:'bunnings',cat:'Padding',name:'Marine carpet (e.g. Moroday)',size:'1 m length (cut 3 strips 120 mm wide)',qty:1,price:20,aisle:'Marine / Outdoor',icon:'Kc',why:'Covers the cradle and bow blocks so they\'re kind to the hull.'},
-  M:{store:'bunnings',cat:'Webbing',name:'25 mm polyester webbing',size:'4 m',qty:1,price:14,aisle:'Rope & chain',icon:'Mstock',status:'changed',why:'Split out from item I. Makes 3 block straps (900 mm) and the handle loop (800 mm).'},
-  U:{store:'bunnings',cat:'Glue',name:'Contact adhesive (outdoor)',size:'Small tin',qty:1,price:12,aisle:'Adhesives',icon:'U',status:'added'},
-  S:{store:'bunnings',cat:'Tie-down',name:'Cam buckle tie-down strap',size:'About 3 m',qty:1,price:12,aisle:'Trailer',icon:'Mstock',status:'added',why:'Holds the boat on the dolly. See "Loading your boat".'},
-  N:{store:'marine',cat:'Corrosion',name:'Tef-Gel anti-corrosion paste',size:'Small tube',qty:1,price:30,aisle:'Chandlery',icon:'X',status:'added',why:'Goes on every bolt to stop stainless eating the aluminium. Grown-ups only.'},
+  A:{store:'metal',cat:'Tubes A, B, C',name:'Aluminium square tube 50 x 50 x 3.0 mm',size:'One 6.5 m length, cut into 2200 + 1000 + 1250 + 1250 mm',qty:1,price:140,icon:'Tstock',letters:['A','B','C'],status:'budget',why:'Was 4 separate cut lengths for about $284. One stock length covers all of them, with 800 mm spare. About $129 for the length plus a few dollars for the 4 cuts.'},
+  D:{store:'metal',cat:'Plates',name:'Aluminium flat bar 100 x 3 mm',size:'1.4 m (makes 8 plates of 160 mm)',qty:1,price:35,icon:'Dstock',why:'Ask for an offcut. Most suppliers keep a rack of them at a lower price.'},
+  F:{store:'metal',cat:'Axle',name:'Aluminium round bar 20 mm, 6061-T6 if available',size:'1220 mm',qty:1,price:40,icon:'F',why:'The one part not to skimp on. 6061-T6 is stronger than the 6060 or 6063 that some shops stock.'},
+  G:{store:'fasteners',cat:'Bolts',name:'M8 x 75 mm stainless hex bolt (A4/316 if available)',size:'Box of 25 (20 needed)',qty:1,price:32,icon:'G',status:'budget',why:'Bunnings sells these in 2-packs for about $3–4 a bolt. A box is about half that.'},
+  H:{store:'fasteners',cat:'Nuts',name:'M8 stainless nyloc (lock) nut',size:'Box of 25 (21 needed)',qty:1,price:9,icon:'N',status:'budget'},
+  W:{store:'fasteners',cat:'Washers',name:'M8 stainless penny washer, about 30 mm wide',size:'Pack of 50 (42 needed)',qty:1,price:12,icon:'W',status:'budget'},
+  K:{store:'fasteners',cat:'Axle',name:'M20 stainless flat washer',size:'4 needed',qty:4,price:1.5,icon:'K',why:'The M8 washers won\'t fit the 20 mm axle. Nylon M20 washers are better against corrosion if the shop has them.'},
+  J:{store:'fasteners',cat:'Retainers',name:'Stainless split pins 4.0 mm',size:'Small pack',qty:1,price:5,icon:'J'},
+  Z:{store:'fasteners',cat:'Screws',name:'Stainless pan-head self-tapping screws, 8g x 12 mm',size:'Small pack (5 needed)',qty:1,price:6,icon:'Z',why:'Stop the axle tube sliding sideways and the plugs sliding in, and hold the rubber foot.'},
+  O:{store:'fasteners',cat:'Handle',name:'M8 stainless eye bolt, at least 70 mm thread',size:'1 needed',qty:1,price:8,icon:'O',why:'A smooth eye for the handle strap. A strap through a drilled hole would wear through.'},
+  E:{store:'bunnings',cat:'Wheels',name:'260 mm solid puncture-proof wheel, plastic rim',size:'20 mm bore · hub ≤ 75 mm · rated ≥ 100 kg',qty:2,price:30,aisle:'Castors & wheels',icon:'E',why:'Slide each wheel onto the rod in the shop if you can. Many wheels have a 5/8" or 3/4" bore that won\'t fit.'},
+  N:{store:'bunnings',cat:'Corrosion',name:'Lanolin grease (e.g. Lanotec)',size:'Small tub',qty:1,price:15,aisle:'Lubricants',icon:'X',status:'budget',why:'Replaces $30 Tef-Gel. Goes on every bolt to keep salt water away from where stainless touches aluminium, and greases the wheels too. Re-apply each season.'},
+  R:{store:'bunnings',cat:'Hardware',name:'Screw-on rubber foot or buffer, about 30 mm tall',size:'1 needed',qty:1,price:4,aisle:'Furniture fittings',icon:'R',why:'Takes the weight when the dolly rests on its front, instead of the eye-bolt nut.'},
+  L:{store:'bunnings',cat:'Plugs + cleats',name:'42 x 42 mm DAR hardwood',size:'1.8 m (2 plugs + 6 cleats)',qty:1,price:22,aisle:'Timber',icon:'Lstock',why:'Makes the 2 axle plugs and the 6 cleats that hold the cradle blocks on the tubes.'},
+  Q:{store:'bunnings',cat:'Hull cradle',name:'140 x 45 mm treated pine (H3)',size:'1.2 m',qty:1,price:12,aisle:'Timber',icon:'Qstock',why:'Cut into 2 cradle blocks shaped to your hull, plus a bow block.'},
+  V:{store:'bunnings',cat:'Hull cradle',name:'Stainless wood screws, about 65 mm (10g)',size:'Pack of 25 (18 needed)',qty:1,price:12,aisle:'Fasteners',icon:'Ws',why:'Fix the cleats to the cradle and bow blocks.'},
+  I:{store:'bunnings',cat:'Padding',name:'Marine carpet (e.g. Moroday)',size:'1 m length (cut 3 strips 120 mm wide)',qty:1,price:20,aisle:'Marine / Outdoor',icon:'Kc',why:'Covers the cradle and bow blocks so they\'re kind to the hull. An outdoor carpet offcut works too.'},
+  M:{store:'bunnings',cat:'Webbing',name:'25 mm polyester webbing',size:'4 m',qty:1,price:12,aisle:'Rope & chain',icon:'Mstock',why:'Makes 3 block straps (900 mm) and the handle loop (800 mm).'},
+  U:{store:'bunnings',cat:'Glue',name:'Contact adhesive (outdoor)',size:'Small tin',qty:1,price:12,aisle:'Adhesives',icon:'U'},
+  S:{store:'bunnings',cat:'Tie-down',name:'Cam buckle tie-down strap',size:'About 3 m',qty:1,price:10,aisle:'Trailer',icon:'Mstock',why:'Holds the boat on the dolly. See "Loading your boat".'},
 };
+const SAVE_TIPS=[
+  ['Carpet offcut','Ask a carpet shop for an outdoor offcut, or use old carpet. Saves about $20.'],
+  ['Screws from the shed','The self-tappers, wood screws and split pins are often already in a jar somewhere. Saves up to $23.'],
+  ['Second-hand wheels','Wheelbarrow and trolley wheels turn up cheap online. Check the bore is 20 mm and the hub fits in 75 mm.'],
+  ['Skip the glue','Staple the carpet under each block with a staple gun instead. Saves $12.'],
+];
 const cart={};Object.entries(SHOP).forEach(([r,p])=>cart[r]={qty:p.qty,price:p.price,picked:false});
 let storeMode=false;
 const money=n=>'$'+n.toFixed(2);
-const stepsUsing=letter=>STEPS.map((s,i)=>s.parts.some(([k])=>PART[k].b===letter)?i:-1).filter(i=>i>=0);
+let budget=BUDGET_DEFAULT;
+const stepsUsing=letters=>STEPS.map((s,i)=>s.parts.some(([k])=>letters.includes(PART[k].b))?i:-1).filter(i=>i>=0);
+const lineTotal=r=>cart[r].qty*cart[r].price;
+const estTotal=()=>Object.keys(cart).reduce((a,r)=>a+lineTotal(r),0);
 function itemHTML(ref,p){
-  const c=cart[ref],used=stepsUsing(ref);
+  const c=cart[ref],used=stepsUsing(p.letters||[ref]);
   const ctl=storeMode
     ?`<div class="ctl"><div class="aisle">${p.aisle||STORES[p.store][0]}</div><div style="font-weight:800">Qty ${c.qty}</div><label class="pick"><input type="checkbox" ${c.picked?'checked':''} onchange="pick('${ref}',this.checked)"> Got it</label></div>`
     :`<div class="ctl"><div class="price">${money(c.price*c.qty)}<small>est. $<input class="priceedit" type="number" min="0" step="0.1" value="${c.price}" onchange="setPrice('${ref}',this.value)" aria-label="Unit price for ${ref}"> each</small></div>
       <div class="qty"><button onclick="setQty('${ref}',-1)" aria-label="Decrease">−</button><span>${c.qty}</span><button onclick="setQty('${ref}',1)" aria-label="Increase">+</button></div></div>`;
-  return `<div class="item ${c.picked&&storeMode?'picked':''}"><div class="thumb"><span class="badge">${ref}</span>${partIcon(p.icon)}</div>
-    <div><div class="cat">${p.cat}${p.status?`<span class="st ${p.status}">${p.status.toUpperCase()}</span>`:''}</div>
+  return `<div class="item ${c.picked&&storeMode?'picked':''}"><div class="thumb"><span class="badge">${(p.letters||[ref]).join('')}</span>${partIcon(p.icon)}</div>
+    <div><div class="cat">${p.cat}${p.status?`<span class="st ${p.status}">${p.status==='budget'?'SAVING':p.status.toUpperCase()}</span>`:''}</div>
       <div class="iname">${p.name}</div><div class="isize">${p.size}</div>
       ${used.length?`<div class="used">Used in step ${used.map(i=>`<a onclick="jump(${i})">${i+1}</a>`).join('')}</div>`:''}
       ${p.why?`<div class="flag">${p.why}</div>`:''}</div>${ctl}</div>`;
 }
 function renderCart(){
-  document.getElementById('items').innerHTML=Object.entries(STORES).map(([k,[nm,note]])=>`<h2 class="storeh">${nm}${note?` <small>${note}</small>`:''}</h2>`+Object.entries(SHOP).filter(([,p])=>p.store===k).map(([r,p])=>itemHTML(r,p)).join('')).join('');
+  document.getElementById('items').innerHTML=Object.entries(STORES).map(([k,[nm,note]])=>{const rs=Object.entries(SHOP).filter(([,p])=>p.store===k);
+    return `<h2 class="storeh">${nm}${note?` <small>${note}</small>`:''}<span class="stot">${money(rs.reduce((a,[r])=>a+lineTotal(r),0))}</span></h2>`+rs.map(([r,p])=>itemHTML(r,p)).join('')}).join('')+
+    `<div class="save"><h3>Need more room in the budget?</h3><ul>${SAVE_TIPS.map(([h,t])=>`<li><b>${h}.</b> ${t}</li>`).join('')}</ul></div>`;
   const live=Object.entries(cart).filter(([,c])=>c.qty>0);
   const units=live.reduce((a,[,c])=>a+c.qty,0),total=live.reduce((a,[,c])=>a+c.qty*c.price,0),picked=live.filter(([,c])=>c.picked).length;
   document.getElementById('sLines').textContent=live.length;
@@ -989,7 +1135,14 @@ function renderCart(){
   document.getElementById('sBar').style.width=(live.length?picked/live.length*100:0)+'%';
   document.getElementById('sTotal').textContent=money(total);
   document.getElementById('cartCount').textContent=live.length;
+  const left=budget-total,pct=budget>0?total/budget:1,bx=document.getElementById('budget');
+  bx.className='budget'+(pct>1?' over':pct>.95?' warn':'');
+  document.getElementById('bBar').style.width=Math.min(100,pct*100).toFixed(1)+'%';
+  document.getElementById('bLeft').textContent=left>=0?money(left):'−'+money(-left);
+  document.getElementById('bLeftLab').textContent=left>=0?'Left over':'Over budget';
+  document.getElementById('bNote').textContent=left>=0?`${Math.round(pct*100)}% of the budget. Keep the rest for price changes.`:'Try the money-saving ideas under the list.';
 }
+function setBudget(v){budget=Math.max(0,parseFloat(v)||0);renderCart()}
 function setQty(r,d){cart[r].qty=Math.max(0,cart[r].qty+d);renderCart()}
 function setPrice(r,v){cart[r].price=Math.max(0,parseFloat(v)||0);renderCart()}
 function pick(r,v){cart[r].picked=v;renderCart()}
@@ -999,7 +1152,7 @@ function setMode(v){storeMode=v;document.getElementById('m-store').classList.tog
 document.getElementById('m-shop').onclick=()=>setMode(false);
 document.getElementById('m-store').onclick=()=>setMode(true);
 document.getElementById('copyBtn').onclick=()=>{
-  const txt='Boat Dolly: shopping list\n'+Object.entries(STORES).map(([k,[nm]])=>`\n${nm}\n`+Object.entries(cart).filter(([r,c])=>SHOP[r].store===k&&c.qty>0).map(([r,c])=>`[ ] ${r}  ${c.qty} x ${SHOP[r].name} (${SHOP[r].size})  ~${money(c.qty*c.price)}`).join('\n')).join('\n')+`\n\nEst. total ${document.getElementById('sTotal').textContent} (placeholder prices)`;
+  const txt='Boat Dolly: shopping list\n'+Object.entries(STORES).map(([k,[nm]])=>`\n${nm}\n`+Object.entries(cart).filter(([r,c])=>SHOP[r].store===k&&c.qty>0).map(([r,c])=>`[ ] ${r}  ${c.qty} x ${SHOP[r].name} (${SHOP[r].size})  ~${money(c.qty*c.price)}`).join('\n')).join('\n')+`\n\nEst. total ${document.getElementById('sTotal').textContent} of a ${money(budget)} budget (estimates, Nov 2026)`;
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('List copied'),()=>prompt('Copy your list:',txt));
 };
 document.getElementById('toBook').onclick=()=>showTab('book');
