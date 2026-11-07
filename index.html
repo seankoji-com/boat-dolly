@@ -940,12 +940,21 @@ function pParts(){
   ${bag('Bag 5 · Straps',[['Ms',3],['Ml',1],['S',1]])}`;
 }
 
+function stepMain(s){
+  if(s.custom)return{main:s.custom(ANIM_ON)};
+  if(s.solo){const v=s.solo();return{main:render(v.objs,{ann:v.ann,animate:true,pad:v.pad})}}
+  const v=s.view();return{v,main:render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann,animate:true})};
+}
+/* does this step animate at all? In static mode, render it animated once to find out (cached) */
+const HAS_ANIM={};
+function stepAnimates(i,main){if(ANIM_ON)return /<animate/.test(main);
+  if(!(i in HAS_ANIM)){ANIM_ON=true;try{HAS_ANIM[i]=/<animate/.test(stepMain(STEPS[i]).main)}finally{ANIM_ON=false}}
+  return HAS_ANIM[i]}
 function pStep(i){
   const s=STEPS[i],[stName,stCol]=STAGES[s.st];
-  let main,mini='',inset='';
-  if(s.custom)main=s.custom(ANIM_ON);
-  else if(s.solo){const v=s.solo();main=render(v.objs,{ann:v.ann,animate:true,pad:v.pad})}
-  else{const v=s.view();main=render([...scene(v.ids,v),...(v.extra||[])],{focus:v.focus,ann:v.ann,animate:true});
+  let mini='',inset='';
+  const {main,v}=stepMain(s);
+  if(v){
     if(v.focus)mini=`<div class="mini">${render(scene(v.ids,{ghost:v.ghost}),{w:168,h:110,ring:v.focus,pad:.12})}</div>`}
   if(s.inset){const v=s.inset();inset=`<div class="inset"><span>${v.label}</span>${render(v.objs,{focus:v.focus,ann:v.ann,w:230,h:150})}</div>`}
   const parts=s.parts.length?`<div class="callout"><h4>You need</h4><div class="bagrow">${s.parts.map(([k,q])=>partCard(k,q)).join('')}</div></div>`:`<div class="callout none">${s.partsNote}</div>`;
@@ -960,7 +969,7 @@ function pStep(i){
     ${s.tools?`<div class="tools">${s.tools.map(toolHTML).join('')}</div>`:''}
   </div><div>
     <div class="diagram">${main}${mini}${inset}${s.mult?`<div class="mult">${s.mult}</div>`:''}</div>
-    ${!ANIM_ON||/<animate/.test(main)?`<div class="player noprint" style="--c:${stCol}"><button class="animbtn" id="animbtn" onclick="toggleAnim()">${animLabel()}</button><input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Animation position" oninput="scrubTo(this.value/1000)" onpointerdown="SCRUBBING=true" onpointerup="SCRUBBING=false"></div>
+    ${stepAnimates(i,main)?`<div class="player noprint" style="--c:${stCol}"><button class="animbtn" id="animbtn" onclick="toggleAnim()">${animLabel()}</button><input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Animation position" oninput="scrubTo(this.value/1000)" onpointerdown="SCRUBBING=true" onpointerup="SCRUBBING=false" onpointercancel="SCRUBBING=false" onlostpointercapture="SCRUBBING=false" onblur="SCRUBBING=false"></div>
     <div class="phases noprint">${(s.st===0?['Mark','Cut','Apart']:s.st===1?['Line up','Drill','Done']:['Parts','Fit','Done']).map(t=>`<span>${t}</span>`).join('')}</div>`:''}
     <p class="caption">${s.cap}</p>
     ${s.checks?`<ul class="checks">${s.checks.map(c=>`<li><label><input type="checkbox"> ${c}</label></li>`).join('')}</ul>`:''}
@@ -1135,12 +1144,12 @@ function renderCart(){
   document.getElementById('sBar').style.width=(live.length?picked/live.length*100:0)+'%';
   document.getElementById('sTotal').textContent=money(total);
   document.getElementById('cartCount').textContent=live.length;
-  const left=budget-total,pct=budget>0?total/budget:1,bx=document.getElementById('budget');
+  const left=budget-total,pct=budget>0?total/budget:total>0?Infinity:0,bx=document.getElementById('budget');
   bx.className='budget'+(pct>1?' over':pct>.95?' warn':'');
   document.getElementById('bBar').style.width=Math.min(100,pct*100).toFixed(1)+'%';
   document.getElementById('bLeft').textContent=left>=0?money(left):'−'+money(-left);
   document.getElementById('bLeftLab').textContent=left>=0?'Left over':'Over budget';
-  document.getElementById('bNote').textContent=left>=0?`${Math.round(pct*100)}% of the budget. Keep the rest for price changes.`:'Try the money-saving ideas under the list.';
+  document.getElementById('bNote').textContent=left>=0?budget>0?`${Math.round(pct*100)}% of the budget. Keep the rest for price changes.`:'Nothing in the trolley.':'Try the money-saving ideas under the list.';
 }
 function setBudget(v){budget=Math.max(0,parseFloat(v)||0);renderCart()}
 function setQty(r,d){cart[r].qty=Math.max(0,cart[r].qty+d);renderCart()}
