@@ -2,7 +2,7 @@
 
 A LEGO-style build booklet and shopping trolley for an aluminium A-frame launching dolly, sized for a Sabot (or another small boat up to 80 kg).
 
-**Open it:** https://seankoji-com.github.io/boat-dolly/
+**Open it:** https://cart.seankoji.com/
 
 It's a single self-contained `index.html`: 44 illustrated steps with isometric drawings, 1:1 printable drilling templates, a hull-cradle you shape to your own boat, a loading guide, a load test, and a shopping list split by store (aluminium supplier, fastener shop, Bunnings).
 
