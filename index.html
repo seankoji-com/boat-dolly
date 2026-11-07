@@ -1149,7 +1149,7 @@ function renderCart(){
   document.getElementById('bBar').style.width=Math.min(100,pct*100).toFixed(1)+'%';
   document.getElementById('bLeft').textContent=left>=0?money(left):'−'+money(-left);
   document.getElementById('bLeftLab').textContent=left>=0?'Left over':'Over budget';
-  document.getElementById('bNote').textContent=left>=0?budget>0?`${Math.round(pct*100)}% of the budget. Keep the rest for price changes.`:'Nothing in the trolley.':'Try the money-saving ideas under the list.';
+  document.getElementById('bNote').textContent=left>=0?budget>0?`${Math.round(pct*100)}% of the budget. Keep the rest for price changes.`:'Set a budget above $0 to track spending.':'Try the money-saving ideas under the list.';
 }
 function setBudget(v){budget=Math.max(0,parseFloat(v)||0);renderCart()}
 function setQty(r,d){cart[r].qty=Math.max(0,cart[r].qty+d);renderCart()}
