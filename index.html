@@ -468,7 +468,7 @@ function annSVG(a,s,anim){
           `<animate attributeName="opacity" values="0;1;1" keyTimes="0;${k3(d0)};1" calcMode="discrete" ${REP()}/><animate attributeName="x2" ${v(0)} ${kt}/><animate attributeName="y2" ${v(1)} ${kt}/></line>`}
       return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
     case 'dim':{const o=a.off||[0,0,0],A=add(a.a,o),B=add(a.b,o),M=proj(mid(A,B));
-      return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+tag(mid(A,B),a.label)}
+      return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+(a.label?tag(mid(A,B),a.label):'')}
     case 'drill':{/* e = entry point on the surface: the dashed line stops there and the bit vanishes into the hole. hole = radius of the hole it leaves */
       const A=proj(a.a),B=proj(a.b),E=a.e?proj(a.e):null,Z=E||B,T=a.tm||[.15,.3,.62];
       let hole='';
@@ -566,13 +566,31 @@ const screwHead=(x,y,z)=>cyl('z',[x,y,0],4.5,z,z+2.5,COL.bolt,{seg:12,hubs:[{r:1
 def('scrC',32,[screwHead(-420,0,158),screwHead(420,0,158)]);
 def('scrP',27,[screwHead(-480,0,155),screwHead(480,0,155)]);
 def('foot',9,cyl('z',[0,2120,0],15,75,105,'#222222',{seg:20}));
-/* hull cradle for a round-bottomed boat (e.g. a Sabot). HULL_R is only for the drawings: real blocks are traced from the boat. */
-const HULL_R=1200,HULL_Z0=212;
-const hullZ=x=>HULL_Z0+HULL_R-Math.sqrt(HULL_R*HULL_R-x*x);
+/* Australian Sabot hull from the ANSC measurement form (2009), mid-tolerance values: keel rocker, chine and sheer
+   half-widths and chine-to-sheer heights at stations 2, 4 and 6 (taken as 1/8 of the length apart). Transom sizes and
+   the V of the bottom (deadrise) are estimates. s = mm back from the bow. Real cradle blocks are traced from the boat. */
+const SAB=[{sK:110,sS:0,kz:205,ch:280,dr:45,sh:380,sz:480},{sK:607.5,sS:607.5,kz:78,ch:381,dr:70,sh:476,sz:417},{sK:1215,sS:1215,kz:3,ch:497,dr:80,sh:572,sz:393},{sK:1822.5,sS:1822.5,kz:28,ch:502,dr:80,sh:565,sz:397},{sK:2320,sS:2430,kz:110,ch:450,dr:70,sh:520,sz:440}];
+const SAB_CR=(p0,p1,p2,p3,u)=>.5*(2*p1+(p2-p0)*u+(2*p0-5*p1+4*p2-p3)*u*u+(3*p1-p0-3*p2+p3)*u*u*u);
+function sabSec(t){const i=Math.min(3,Math.floor(t)),u=t-i,o={};
+  for(const k in SAB[0]){const b=SAB[i][k],c=SAB[i+1][k],a=i>0?SAB[i-1][k]:2*b-c,d=i<3?SAB[i+2][k]:2*c-b;o[k]=SAB_CR(a,b,c,d,u)}return o}
+const sabAt=s=>{let lo=0,hi=4;for(let n=0;n<30;n++){const m=(lo+hi)/2;if(sabSec(m).sK<s)lo=m;else hi=m}return sabSec((lo+hi)/2)};
+const sabBottom=(x,s)=>{const q=sabAt(s),ax=Math.abs(x);return ax<=q.ch?q.kz+q.dr*ax/q.ch:q.kz+q.dr+(Math.min(ax,q.sh)-q.ch)/(q.sh-q.ch)*(q.sz-q.kz-q.dr)};
+/* the boat sits with its bow 1.6 m in front of the axle, so its heaviest part (about 1.15 m back from the bow) is well in front of the wheels */
+const BOAT_BOW=1600,BOAT_CG=1150,HULL_Z0=212,BOAT_DZ=HULL_Z0-sabBottom(0,BOAT_BOW);
+const hullAt=(x,y)=>BOAT_DZ+sabBottom(x,BOAT_BOW-y);
+const HZ_CACHE={},hullZ=x=>HZ_CACHE[x]??(HZ_CACHE[x]=hullAt(x,0));
+const sheerAt=y=>BOAT_DZ+sabAt(BOAT_BOW-y).sz;
+function sabotSolid(col){const N=16,Y=s=>BOAT_BOW-s,Z=z=>BOAT_DZ+z;
+  const secs=Array.from({length:N+1},(_,i)=>{const q=sabSec(4*i/N);
+    return [[-q.sh,Y(q.sS),Z(q.sz)],[-q.ch,Y(q.sK),Z(q.kz+q.dr)],[0,Y(q.sK),Z(q.kz)],[q.ch,Y(q.sK),Z(q.kz+q.dr)],[q.sh,Y(q.sS),Z(q.sz)]]});
+  const faces=[];
+  for(let i=0;i<N;i++){const A=secs[i],B=secs[i+1];for(let j=0;j<5;j++){const k=(j+1)%5;faces.push({p:[A[j],A[k],B[k],B[j]],col})}}
+  for(const e of[secs[0],secs[N]])faces.push({p:[e[0],e[1],e[3],e[4]],col},{p:[e[1],e[2],e[3]],col});
+  return solid(faces)}
 function extrudeY(poly,y0,y1,col){const n=poly.length,F=poly.map(([x,z])=>[x,y1,z]),Bk=poly.map(([x,z])=>[x,y0,z]);
   const faces=[{p:F,col},{p:Bk.slice().reverse(),col}];
   for(let i=0;i<n;i++){const j=(i+1)%n;faces.push({p:[Bk[i],Bk[j],F[j],F[i]],col})}return solid(faces)}
-const arcPts=(x0,x1,dz=0,n=12)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,hullZ(x)+dz]});
+const arcPts=(x0,x1,dz=0,n=12,f=hullZ)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,f(x)+dz]});
 const cradleSolids=s=>{const a=60,b=360,m=x=>s*x;
   const block=[[m(a),155],[m(b),155],...arcPts(b,a).map(([x,z])=>[m(x),z])];
   const carpet=[...arcPts(a,b).map(([x,z])=>[m(x),z]),...arcPts(b,a,6).map(([x,z])=>[m(x),z])];
@@ -582,15 +600,21 @@ const cradleSolids=s=>{const a=60,b=360,m=x=>s*x;
 const CR_L=cradleSolids(-1),CR_R=cradleSolids(1);
 def('cradleL',40,CR_L.block);def('cradleR',40,CR_R.block);
 def('carpetL',41,CR_L.carpet);def('carpetR',41,CR_R.carpet);
-const BOW_Y0=720,BOW_Y1=1020,BOW_TOP=212;
-def('bowBlock',40,[box(-22.5,22.5,BOW_Y0,BOW_Y1,155,BOW_TOP,COL.pine),box(25,67,BOW_Y0+25,BOW_Y1-25,128,170,COL.wood),box(-67,-25,BOW_Y0+25,BOW_Y1-25,128,170,COL.wood),box(-24,24,BOW_Y0,BOW_Y1,BOW_TOP,BOW_TOP+6,COL.carpet)]);
+/* bow block: lies across the long tube and both braces, top shaped to the hull. Two short cleats on its front face sit just inside the braces. */
+const BOW_YC=820,BOW_Y0=BOW_YC-22.5,BOW_Y1=BOW_YC+22.5,BOW_X=220,bowZ=x=>hullAt(x,BOW_YC);
+const bowCleat=s=>{const [x0,x1]=[86,128].map(x=>s*x).sort((p,q)=>p-q);return box(x0,x1,BOW_Y1,BOW_Y1+42,110,210,COL.wood)};
+def('bowBlock',40,[extrudeY([[-BOW_X,155],[BOW_X,155],...arcPts(BOW_X,-BOW_X,0,16,bowZ)],BOW_Y0,BOW_Y1,COL.pine),bowCleat(-1),bowCleat(1),extrudeY([...arcPts(-BOW_X,BOW_X,0,16,bowZ),...arcPts(BOW_X,-BOW_X,6,16,bowZ)],BOW_Y0-1.5,BOW_Y1+1.5,COL.carpet)]);
 /* straps: over the block, down the side, across the cleat, down its outside; the part under the tube is drawn early */
 const strapOverX=(x,top)=>[box(x-12,x+12,-24,24,top,top+2.5,COL.strap),box(x-12,x+12,22.5,25,170,top+2.5,COL.strap),box(x-12,x+12,25,69.5,170,172.5,COL.strap),box(x-12,x+12,67,69.5,100,172.5,COL.strap)];
-const strapOverY=(y,top)=>[box(-24,24,y-12,y+12,top,top+2.5,COL.strap),box(22.5,25,y-12,y+12,170,top+2.5,COL.strap),box(25,69.5,y-12,y+12,170,172.5,COL.strap),box(67,69.5,y-12,y+12,100,172.5,COL.strap)];
 def('cStraps',42,[...strapOverX(-210,hullZ(210)+6),...strapOverX(210,hullZ(210)+6)]);
 def('cStrapsUnder',9,[box(-222,-198,-69.5,69.5,97.5,100,COL.strap),box(198,222,-69.5,69.5,97.5,100,COL.strap)]);
-def('bStrap',42,strapOverY((BOW_Y0+BOW_Y1)/2,BOW_TOP+6));
-def('bStrapUnder',9,[box(-69.5,69.5,(BOW_Y0+BOW_Y1)/2-12,(BOW_Y0+BOW_Y1)/2+12,97.5,100,COL.strap)]);
+/* bow strap, lashed in an X: each pass goes over the block, crosses its front face diagonally, drops beside the long tube,
+   crosses under it to the other side at the back, comes up and crosses the back face. The two passes make an X on the
+   front face, the back face and under the tube. The parts under the tube are drawn early so the tube covers them. */
+const bowLash=s=>{const F=BOW_Y1+4,B=BOW_Y0-4,top=bowZ(50)+9,x=40*s;
+  return [{pts:[[x,B,165],[-50*s,B,top],[-50*s,F,top],[x,F,165],[x,F,100]],col:COL.strap},{pts:[[-x,B,100],[-x,B,165]],col:COL.strap}]};
+def('bStrap',42,[],{paths:[...bowLash(-1),...bowLash(1)]});
+def('bStrapUnder',9,[],{paths:[{pts:[[40,BOW_Y1+4,100],[-40,BOW_Y0-4,100]],col:COL.strap},{pts:[[-40,BOW_Y1+4,100],[40,BOW_Y0-4,100]],col:COL.strap}]});
 def('wRin',50,cyl('x',RODC,20,500,503,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
 def('wheelR',51,cyl('x',RODC,130,505,580,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
 def('wRout',52,cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
@@ -663,9 +687,10 @@ const PART={
   Dstock:{nm:'Flat bar',nt:'1.4 m long',b:'D',icon:()=>[box(0,400,0,100,0,3,COL.plate)]},
   Lstock:{nm:'Hardwood',nt:'42 x 42 mm, 1.8 m',b:'L',icon:()=>[box(0,250,-21,21,0,42,COL.wood)]},
   Qstock:{nm:'Pine board',nt:'140 x 45 mm, 1.2 m',b:'Q',icon:()=>[box(0,300,-22,22,0,140,COL.pine)]},
-  Cb:{nm:'Cradle block',nt:'300 mm, curved top',b:'Q',icon:()=>[extrudeY([[60,0],[360,0],...arcPts(360,60).map(([x,z])=>[x,z-155])],-22.5,22.5,COL.pine)]},
-  Bb:{nm:'Bow block',nt:'300 mm',b:'Q',icon:()=>[box(0,300,-22,22,0,50,COL.pine)]},
+  Cb:{nm:'Cradle block',nt:'300 mm, shaped top',b:'Q',icon:()=>[extrudeY([[60,0],[360,0],...arcPts(360,60).map(([x,z])=>[x,z-155])],-22.5,22.5,COL.pine)]},
+  Bb:{nm:'Bow block',nt:'440 mm, shaped top',b:'Q',icon:()=>[extrudeY([[-BOW_X,0],[BOW_X,0],...arcPts(BOW_X,-BOW_X,0,16,bowZ).map(([x,z])=>[x,z-155])],-22.5,22.5,COL.pine)]},
   Cl:{nm:'Cleat',nt:'250 mm',b:'L',icon:()=>[box(0,250,-21,21,0,42,COL.wood)]},
+  Cs:{nm:'Short cleat',nt:'100 mm',b:'L',icon:()=>[box(0,100,-21,21,0,42,COL.wood)]},
   Kc:{nm:'Carpet strip',nt:'120 mm wide',b:'I',icon:()=>[box(0,300,0,120,0,6,COL.carpet)]},
   Ws:{nm:'Wood screw',nt:'65 mm',b:'V',icon:()=>[cyl('z',[0,0,0],2.2,0,65,COL.bolt,{seg:10}),cyl('z',[0,0,0],4.5,65,68,COL.bolt,{seg:14,hubs:[{r:1.2,col:'#333333'}]})]},
   Card:{nm:'Cardboard',nt:'about 600 x 300 mm',b:'',icon:()=>[box(0,300,0,150,0,3,'#c8a46a')]},
@@ -687,8 +712,9 @@ const PART={
   Istock:{nm:'Pad strip',nt:'1.5 m, 20 mm thick',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
   Ib:{nm:'Beam pad',nt:'1000 mm',b:'I',icon:()=>[box(0,300,0,64,0,20,COL.pad)]},
   Iw:{nm:'Bow pad',nt:'400 mm',b:'I',icon:()=>[box(0,160,0,64,0,20,COL.pad)]},
-  Mstock:{nm:'Webbing',nt:'5 m',b:'M',icon:()=>[box(0,300,0,25,0,2.5,COL.strap)]},
+  Mstock:{nm:'Webbing',nt:'4 m',b:'M',icon:()=>[box(0,300,0,25,0,2.5,COL.strap)]},
   Ms:{nm:'Block strap',nt:'900 mm',b:'M',icon:()=>[box(0,200,0,25,0,2.5,COL.strap)]},
+  Mb:{nm:'Bow strap',nt:'1.3 m',b:'M',icon:()=>[box(0,260,0,25,0,2.5,COL.strap)]},
   Ml:{nm:'Long strap',nt:'800 mm',b:'M',icon:()=>[box(0,320,0,25,0,2.5,COL.strap)]},
   Z:{nm:'Screw',nt:'8g x 12 mm',b:'Z',icon:()=>[cyl('z',[0,0,0],2,0,12,COL.bolt,{seg:10}),cyl('z',[0,0,0],4.5,12,14.5,COL.bolt,{seg:14,hubs:[{r:1.2,col:'#333333'}]})]},
   R:{nm:'Rubber foot',nt:'about 30 mm tall',b:'R',icon:()=>[cyl('z',[0,0,0],15,0,30,'#222222',{seg:20,hubs:[{r:3,col:'#888888'}]})]},
@@ -734,9 +760,9 @@ const STAGES=[['Cut the parts','#e3000b'],['Drill the plates','#b0006a'],['Build
 const marks=[-400,0,400].map(x=>({t:'line',a:[x,-34,156],b:[x,34,156]}));
 const tubeDrill=(j,i,label)=>{const [x,y]=HOLES[j][i];return{t:'drill',a:[x,y,320],b:[x,y,70],e:[x,y,158],label}};
 const BOTH='Both sides';
-/* boat for the cradle and loading pictures: rounded bottom resting on the carpet */
-const hullSection=(dz=6)=>[[-600,530],...arcPts(-560,560,dz,24),[600,530]];
-const boatObj=(ghost=.45,order=70)=>solo(extrudeY(hullSection(),-1120,1325,COL.boat),{order,ghost});
+/* boat for the cradle and loading pictures: the Sabot hull resting on the carpet */
+let BOAT_SOLID=null;
+const boatObj=(ghost=.45,order=70)=>solo(BOAT_SOLID||(BOAT_SOLID=sabotSolid(COL.boat)),{order,ghost,off:[0,0,6]});
 const tubeY=(len,col=COL.alu)=>box(-25,25,0,len,0,50,col,{hollow:[0,2]});
 const drillDown=(x,y,label,top=50,len=0,hole=5.25)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],e:[x,y,top],hole,label});
 
@@ -868,23 +894,24 @@ const STEPS=[
   view:()=>({ids:S.pins,hl:['pinL','pinR'],off:{pinR:[0,0,110],pinL:[0,0,110]},focus:F.rodEnd,ann:[{t:'arrow',a:[608,0,290],b:[608,0,180]}]}),
   inset:()=>({objs:[solo(cyl('x',RODC,10,560,ROD_END,COL.rod,{seg:16})),solo(cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}),{order:1}),solo(pinBent(1),{order:2,hl:true})],focus:[560,625,-30,30,90,165],label:'Legs bent like this'})},
  /* ---- hull cradle ---- */
- {st:6,cap:'Turn the boat upside down on grass. Measure <b>1.3 m</b> back from the bow and draw a line across the hull. Hold cardboard across the hull on the line. Trim it until it follows the curve, from the middle out to <b>400 mm</b> each side.',parts:[['Card',1]],tools:['tape','pencil','scissors'],
+ {st:6,cap:'Turn the boat upside down on grass. Measure <b>1.6 m</b> back from the top of the bow and draw a line across the hull. Hold cardboard across the hull on the line. Trim it until it follows the V of the bottom, from the keel in the middle out to <b>400 mm</b> each side.',parts:[['Card',1]],tools:['tape','pencil','scissors'],
   tip:'Do this with a grown-up. The cardboard is your pattern for the cradle, so take your time getting it snug.',
-  solo:()=>{const up=x=>530-(hullZ(x)-HULL_Z0);const sec=[[-600,0],[600,0],[600,530-(hullZ(560)-HULL_Z0)],...Array.from({length:25},(_,i)=>{const x=560-1120*i/24;return[x,up(x)]}),[-600,530-(hullZ(560)-HULL_Z0)]];
+  solo:()=>{/* upside down on its gunwales: the V bottom on top, the sides flaring down to the grass */
+    const q=sabAt(BOAT_BOW),top=BOAT_DZ+q.sz,up=x=>top-hullZ(x);const sec=[[-q.sh,0],[q.sh,0],...[q.ch,0,-q.ch].map(x=>[x,up(x)])];
     const card=[...Array.from({length:17},(_,i)=>{const x=-400+800*i/16;return[x,up(x)]}).reverse(),[-400,up(0)+70],[400,up(0)+70]].reverse();
-    return{objs:[solo(extrudeY(sec,0,700,COL.boat)),solo(extrudeY(card,330,334,'#c8a46a'),{order:1,hl:true})],ann:[{t:'text',p:[0,332,up(0)+120],label:'trim to fit'},{t:'line',a:[-560,350,up(0)+2],b:[560,350,up(0)+2],col:'#1a1a1a',w:2,dash:'6 5'}]}}},
- {st:6,cap:'Cut 2 pieces of pine board, <b>300 mm</b> long. Trace the cardboard curve onto each one. A grown-up cuts along the curve with a jigsaw. Sand the edges.',parts:[['Qstock',1]],tools:['tape','pencil','clamp','jigsaw','sand'],adult:1,
-  tip:'Use the right half of the pattern for one block and the left half for the other. Keep the offcut for the bow block.',
+    return{objs:[solo(extrudeY(sec,0,700,COL.boat)),solo(extrudeY(card,330,334,'#c8a46a'),{order:1,hl:true})],ann:[{t:'text',p:[0,332,up(0)+120],label:'trim to fit'},{t:'line',a:[-q.sh,350,2],b:[-q.ch,350,up(q.ch)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[-q.ch,350,up(q.ch)+2],b:[0,350,up(0)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[0,350,up(0)+2],b:[q.ch,350,up(q.ch)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[q.ch,350,up(q.ch)+2],b:[q.sh,350,2],col:'#1a1a1a',w:2,dash:'6 5'}]}}},
+ {st:6,cap:'Cut 2 pieces of pine board, <b>300 mm</b> long. Trace the cardboard shape onto each one. A grown-up cuts along the line with a jigsaw. Sand the edges.',parts:[['Qstock',1]],tools:['tape','pencil','clamp','jigsaw','sand'],adult:1,
+  tip:'Use the right half of the pattern for one block and the left half for the other. Keep the rest of the board for the bow block.',
   solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(extrudeY([...arcPts(60,360),[360,295],[60,295]],-22.5,22.5,COL.off),{order:1,off:[0,0,40]}),solo(extrudeY([[-360,155],[-60,155],...arcPts(60,360).map(([x,z])=>[-x,z])].map(([x,z])=>[x,z]),-22.5,22.5,COL.pine),{off:[-40,0,0]})],ann:[{t:'text',p:[210,0,340],label:'offcut'}]})},
  {st:6,cap:'Cut 4 cleats, <b>250 mm</b> long, from the leftover hardwood. Screw 2 under each block, one on each side, so the axle tube fits snugly between them.',parts:[['Cl',4],['Ws',12]],tools:['tape','saw','clamp','drill:3.5','screwdriver'],adult:1,mult:'Do both',
   tip:'Hold a scrap of the axle tube between the cleats as a spacer while you screw them on.',
   solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(box(85,335,25,67,128,170,COL.wood),{order:1,hl:true,off:[0,90,0],anim:true}),solo(box(85,335,-67,-25,128,170,COL.wood),{order:0,hl:true,off:[0,-90,0],anim:true,stagger:.15}),solo(box(150,280,-25,25,105,155,COL.alu,{hollow:[1,3]}),{order:-1,ghost:.35})],ann:[{t:'arrow',a:[210,180,150],b:[210,75,150]}]})},
- {st:6,cap:'A grown-up glues a strip of carpet over the curved top of each block and down its sides.',parts:[['Kc',2],['U',1]],tools:['scissors'],adult:1,
+ {st:6,cap:'A grown-up glues a strip of carpet over the shaped top of each block and down its sides.',parts:[['Kc',2],['U',1]],tools:['scissors'],adult:1,
   tip:'Glue outside or with the door open. Fold the carpet neatly at the ends.',
   view:()=>({ids:[...CRADLE],hl:['carpetL','carpetR'],off:{carpetL:[0,0,90],carpetR:[0,0,90]},ann:[{t:'arrow',a:[210,0,400],b:[210,0,300]}]})},
- {st:6,cap:'Cut the webbing into <b>3 block straps</b> (900 mm) and <b>1 long strap</b> (800 mm). A grown-up melts each cut end so it can\'t fray.',parts:[['Mstock',1]],tools:['tape','scissors','lighter'],adult:1,
-  solo:()=>({objs:[...Array.from({length:3},(_,i)=>solo(box(0,900,i*45,i*45+25,0,2.5,COL.strap))),solo(box(0,800,180,205,0,2.5,COL.strap))],ann:[{t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'dim',a:[0,205,3],b:[800,205,3],off:[0,60,0],label:'800'}]})},
- {st:6,cap:'Sit each cradle block on the axle tube, between the middle plates and a corner plate. The cleats hug the tube. The high ends of the curve go outwards.',parts:[['Cb',2]],
+ {st:6,cap:'Cut the webbing into <b>2 block straps</b> (900 mm), <b>1 bow strap</b> (1.3 m) and <b>1 long strap</b> (800 mm). A grown-up melts each cut end so it can\'t fray.',parts:[['Mstock',1]],tools:['tape','scissors','lighter'],adult:1,
+  solo:()=>({objs:[...Array.from({length:2},(_,i)=>solo(box(0,900,i*45,i*45+25,0,2.5,COL.strap))),solo(box(0,800,90,115,0,2.5,COL.strap)),solo(box(0,1300,180,205,0,2.5,COL.strap))],ann:[{t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'text',p:[880,102,3],label:'800'},{t:'dim',a:[0,205,3],b:[1300,205,3],off:[0,60,0],label:'1300'}]})},
+ {st:6,cap:'Sit each cradle block on the axle tube, between the middle plates and a corner plate. The cleats hug the tube. The high ends go outwards.',parts:[['Cb',2]],
   view:()=>({ids:S.cradle,hl:CRADLE,off:offAll(CRADLE,[0,0,140]),focus:F.cradle,ann:[{t:'arrow',a:[-210,0,470],b:[-210,0,320]},{t:'arrow',a:[210,0,470],b:[210,0,320]}]})},
  {st:6,cap:'Wrap a block strap over each block and under the tube. Tie the ends in a double knot underneath.',parts:[['Ms',2]],
   view:()=>({ids:S.cStraps,hl:['cStraps','cStrapsUnder'],focus:F.cradle})},
@@ -895,11 +922,12 @@ const STEPS=[
  {st:6,cap:'Slide a <b>120 mm</b> piece of old garden hose onto the long strap. Thread the strap through the eye and tie the ends with a double knot. That\'s your handle.',parts:[['Ml',1]],tools:['knife'],
   tip:'The hose makes a comfy grip so the strap doesn\'t dig into your hand.',
   view:()=>({ids:S.handle,hl:['handle'],focus:F.front})},
- {st:6,cap:'Lift the dolly off the bricks and gently set the boat on the cradle. Measure the gap between the hull and the long tube, <b>300 mm</b> behind the front joint. Cut the bow block to that height from the pine offcut. Screw on 2 cleats.',parts:[['Cl',2],['Ws',6]],tools:['tape','pencil','saw','drill:3.5','screwdriver'],adult:1,
-  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-700,700,-300,1500,0,560],extra:[boatObj(.35)],ann:[{t:'dim',a:[0,(BOW_Y0+BOW_Y1)/2,155],b:[0,(BOW_Y0+BOW_Y1)/2,HULL_Z0+6],off:[220,0,0],label:'measure'}]})},
- {st:6,cap:'Glue carpet on top of the bow block. Sit it on the long tube under the hull and strap it down like the cradle blocks.',parts:[['Bb',1],['Kc',1],['Ms',1]],adult:1,
-  view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-160,160,680,1060,90,420]})},
- {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
+ {st:6,cap:'Cut a <b>440 mm</b> piece of pine for the bow block. Lift the dolly off the bricks and gently set the boat on the cradle. Lay the piece flat across the long tube and both braces, <b>400 mm</b> behind the front joint. Measure from its top up to the hull in the middle and at each end. Add <b>39 mm</b> to each (45 mm for the board, less 6 mm for the carpet) and mark those heights on the piece. Join the middle mark to each end mark with a straight line, to match the V of the hull. A grown-up cuts along the lines. Cut 2 short cleats, <b>100 mm</b> long, and screw them to the front so they will sit just inside the braces.',parts:[['Cs',2],['Ws',4]],tools:['tape','pencil','saw','jigsaw','drill:3.5','screwdriver'],adult:1,
+  tip:'The bow block lies across the long tube and both braces, so it holds the hull across its width and stops it rocking.',
+  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],extra:[solo(box(-BOW_X,BOW_X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true}),boatObj(.35)],ann:[...[-BOW_X+8,0,BOW_X-8].map(x=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places'}]})},
+ {st:6,cap:'Glue carpet on top of the bow block. Lay it across the long tube and both braces, cleats at the front. Lash it to the long tube with the bow strap: over the block, under the tube, and back over in an X. Tie a double knot.',parts:[['Bb',1],['Kc',1],['Mb',1]],adult:1,
+  view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-420,420,600,1150,60,420]})},
+ {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks and the bow block without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
   view:()=>({ids:FINAL})},
 ];
 
@@ -936,8 +964,8 @@ function pParts(){
   ${bag('Bag 1 · Metal',[['A',1],['B',1],['C',2],['P',8],['F',1]])}
   ${bag('Bag 2 · Wheels',[['E',2],['K',4],['J',2],['L',2]])}
   ${bag('Bag 3 · Nuts and bolts',[['G',20],['N',21],['W',42],['Z',5],['O',1],['R',1],['X',1]])}
-  ${bag('Bag 4 · Hull cradle',[['Cb',2],['Bb',1],['Cl',6],['Ws',18],['Kc',3],['U',1]])}
-  ${bag('Bag 5 · Straps',[['Ms',3],['Ml',1],['S',1]])}`;
+  ${bag('Bag 4 · Hull cradle',[['Cb',2],['Bb',1],['Cl',4],['Cs',2],['Ws',16],['Kc',3],['U',1]])}
+  ${bag('Bag 5 · Straps',[['Ms',2],['Mb',1],['Ml',1],['S',1]])}`;
 }
 
 function stepMain(s){
@@ -979,16 +1007,17 @@ function pStep(i){
 
 function pLoading(){
   const boat=boatObj(.45,70);
-  const tie=solo([],{order:71,paths:[{pts:[[-640,0,150],[-640,0,530],[640,0,530],[640,0,150]],col:'#e3000b'}]});
-  const art=render([...scene(FINAL),boat,tie],{w:720,h:380,shadow:true,ann:[{t:'text',p:[0,120,520],label:'heaviest part here'},{t:'text',p:[700,0,330],label:'tie-down strap',col:'#e3000b'}]});
+  const top=sheerAt(0)+12,cg=BOAT_BOW-BOAT_CG;
+  const tie=solo([],{order:71,paths:[{pts:[[-640,0,150],[-640,0,top],[640,0,top],[640,0,150]],col:'#e3000b'}]});
+  const art=render([...scene(FINAL),boat,tie],{w:720,h:380,shadow:true,ann:[{t:'arrow',a:[0,cg,sheerAt(cg)+260],b:[0,cg,hullAt(0,cg)+30]},{t:'text',p:[0,cg,sheerAt(cg)+300],label:'heaviest part here'},{t:'text',p:[700,0,330],label:'tie-down strap (backup)',col:'#e3000b'}]});
   return `<div class="stagebar" style="background:#0d5257"></div><h2 class="pt">Loading your boat</h2><p class="sub">Read this with your grown-up before the first trip.</p>
   <div class="art" style="margin-bottom:16px">${art}</div>
   <div class="cards">
     <div class="card warnc"><h3>80 kg maximum</h3><p>That's the boat plus everything in it. A Sabot hull is well under this. Take the sails, rudder and gear out before you move it.</p></div>
-    <div class="card"><h3>Balance it</h3><p>Put the boat on so its heaviest part sits a little <b>in front of</b> the wheels. Lift the handle: it should feel light, but never try to flip up.</p></div>
-    <div class="card"><h3>Strap it on</h3><p>Run the tie-down strap over the boat and under the axle tube on each side. Pull it snug.</p></div>
+    <div class="card"><h3>Balance it</h3><p>The 1.6 m line on the hull goes on the cradle blocks. That puts the bow about 1.6 m in front of the wheels and the heaviest part, around the back of the centreboard case, about <b>450 mm in front of</b> them. (That's an estimate: every boat is a little different.) Lift the handle: it should take a little of the boat's weight and never try to flip up.</p></div>
+    <div class="card"><h3>Strap is a backup</h3><p>The boat should sit in the cradle by itself: the blocks match the V of the hull, the bow block holds the front, and the weight in front of the wheels keeps it pressed down. If it rocks or slides without the strap, fix the blocks first. Then run the tie-down strap over the boat and under the axle tube on each side and pull it snug.</p></div>
     <div class="card"><h3>Slopes and ramps</h3><p>Keep hold of the handle the whole time. Never let the dolly roll by itself. Go slowly downhill.</p></div>
-    <div class="card"><h3>Round hulls like a Sabot</h3><p>The cradle blocks are cut to fit your boat's curve, 1.3 m back from the bow. Put the boat on so that spot sits on the blocks. If you get a different boat, make a new pattern and new blocks.</p></div>
+    <div class="card"><h3>V-bottom hulls like a Sabot</h3><p>The cradle blocks are cut to fit your boat's bottom, 1.6 m back from the bow. Put the boat on so that spot sits on the blocks. If you get a different boat, make a new pattern and new blocks.</p></div>
     <div class="card"><h3>Soft sand</h3><p>Narrow wheels sink in soft sand. Go slowly, take a helper, and carry gear separately.</p></div>
     <div class="card"><h3>After every trip</h3><p>Hose it down with fresh water. Stand it up on the handle end so water drains out of the tubes.</p></div>
   </div>`;
@@ -1048,7 +1077,7 @@ function pGrown(){
     ['The axle rod is never drilled','An earlier version bolted through the rod. That cuts its bending strength by about two thirds right where the load is highest. Now the rod sits in plugs, the wheels and split pins stop it sliding out, and the axle-tube joints clamp the tube with bolts that pass in front of and behind it. Only the split-pin holes are near the rod ends, where bending is lowest.'],
     ['Why 80 kg','Each brace is held by one M8 bolt at each end, through hollow tube with no crush sleeve. That\'s fine for kayaks and light dinghies. For heavier boats use longer gusset plates with 2 bolts per brace end, and crush sleeves (short tube spacers) inside the tube at every bolt.'],
     ['Everything is drilled on the bench','Every hole is drilled before assembly. Plate holes are 8.5 mm, drilled as matched pairs from the 1:1 templates. Tube holes are measured from the tube ends and drilled 10.5 mm, so bench-drilled holes still line up with about ±1 mm of measuring error. The plates then hold each bolt snugly. The cost is up to about 1 mm of slip in a joint before the bolt takes the load, which is fine for a dolly. The only drilling in the frame is a 3.5 mm pilot for each corner screw, done before the rod goes in.'],
-    ['Cradle for a round hull','A Sabot has a rounded bottom, so a flat pad would let it roll. Two pine cradle blocks are traced from the actual hull 1.3 m behind the bow and covered in marine carpet. Hardwood cleats hug the axle tube so the blocks can\'t tip or slide, and the plates stop them moving sideways. The blocks sit on bare tube between the plates, so no bolt head is under the hull. A bow block, cut to the measured gap, supports the hull further forward.'],
+    ['Cradle for a Sabot hull','A Sabot has a hard-chine V bottom, so a flat pad would let it rock. The drawings use the Australian Sabot measurement form (ANSC, 2009) at mid-tolerance: 2.43 m long, about 1.14 m across the gunwales, with the measured keel rocker and chine widths. The form doesn\'t give everything, so these are estimates: the stations are taken as 1/8 of the length apart, the transom sizes, the angle of the V, and the heaviest point (about 1.15 m back from the bow, around the back of the centreboard case). Two pine cradle blocks are traced from the actual hull 1.6 m behind the bow and covered in marine carpet. Hardwood cleats hug the axle tube so the blocks can\'t tip or slide, and the plates stop them moving sideways. The blocks sit on bare tube between the plates, so no bolt head is under the hull. Further forward, a bow block lies across the long tube and both braces, so it holds the hull across its width instead of on one narrow strip. Its top is shaped to the measured gaps. Short cleats just inside the braces stop it sliding forward or sideways, and a strap lashed in an X holds it to the long tube.'],
     ['What stops things sliding','The clamp bolts touch the front and back faces of the axle tube, so it can\'t move fore and aft. A short screw at each corner (the green dot) goes through the top plate into the tube wall, so it can\'t slide sideways. A screw through the tube into each plug stops the plugs being pushed inward by the wheel washers. The split pins sit 4 mm past the outer washer, leaving about 2 mm of side play.'],
     ['Why the brace ends are cut square','The braces meet the other tubes at about 17.5°. An angled cut would leave a 166 mm sliver, too hard to cut accurately. The plates and bolts carry the load, not the brace ends, so a small gap at the tip doesn\'t matter.'],
     ['Changed from the original picklist','Braces are 50 x 50 x 3 tube, so all the tubes match and the plates clamp flat. Flat bar is 1.4 m for 8 plates. The rod is 1220 mm. The flat carpet pad became a shaped cradle (pine blocks, hardwood cleats, marine carpet). Added: plugs, 20 mm axle washers, screws, an eye bolt, a rubber foot, glue, a tie-down strap and barrier grease. There are now 20 bolts.'],
@@ -1101,9 +1130,9 @@ const SHOP={
   R:{store:'bunnings',cat:'Hardware',name:'Screw-on rubber foot or buffer, about 30 mm tall',size:'1 needed',qty:1,price:4,aisle:'Furniture fittings',icon:'R',why:'Takes the weight when the dolly rests on its front, instead of the eye-bolt nut.'},
   L:{store:'bunnings',cat:'Plugs + cleats',name:'42 x 42 mm DAR hardwood',size:'1.8 m (2 plugs + 6 cleats)',qty:1,price:22,aisle:'Timber',icon:'Lstock',why:'Makes the 2 axle plugs and the 6 cleats that hold the cradle blocks on the tubes.'},
   Q:{store:'bunnings',cat:'Hull cradle',name:'140 x 45 mm treated pine (H3)',size:'1.2 m',qty:1,price:12,aisle:'Timber',icon:'Qstock',why:'Cut into 2 cradle blocks shaped to your hull, plus a bow block.'},
-  V:{store:'bunnings',cat:'Hull cradle',name:'Stainless wood screws, about 65 mm (10g)',size:'Pack of 25 (18 needed)',qty:1,price:12,aisle:'Fasteners',icon:'Ws',why:'Fix the cleats to the cradle and bow blocks.'},
+  V:{store:'bunnings',cat:'Hull cradle',name:'Stainless wood screws, about 65 mm (10g)',size:'Pack of 25 (16 needed)',qty:1,price:12,aisle:'Fasteners',icon:'Ws',why:'Fix the cleats to the cradle and bow blocks.'},
   I:{store:'bunnings',cat:'Padding',name:'Marine carpet (e.g. Moroday)',size:'1 m length (cut 3 strips 120 mm wide)',qty:1,price:20,aisle:'Marine / Outdoor',icon:'Kc',why:'Covers the cradle and bow blocks so they\'re kind to the hull. An outdoor carpet offcut works too.'},
-  M:{store:'bunnings',cat:'Webbing',name:'25 mm polyester webbing',size:'4 m',qty:1,price:12,aisle:'Rope & chain',icon:'Mstock',why:'Makes 3 block straps (900 mm) and the handle loop (800 mm).'},
+  M:{store:'bunnings',cat:'Webbing',name:'25 mm polyester webbing',size:'4 m',qty:1,price:12,aisle:'Rope & chain',icon:'Mstock',why:'Makes 2 block straps (900 mm), the bow strap (1.3 m) and the handle loop (800 mm). That uses 3.9 m, so don\'t buy less than 4 m.'},
   U:{store:'bunnings',cat:'Glue',name:'Contact adhesive (outdoor)',size:'Small tin',qty:1,price:12,aisle:'Adhesives',icon:'U'},
   S:{store:'bunnings',cat:'Tie-down',name:'Cam buckle tie-down strap',size:'About 3 m',qty:1,price:10,aisle:'Trailer',icon:'Mstock',why:'Holds the boat on the dolly. See "Loading your boat".'},
 };
