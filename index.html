@@ -608,11 +608,13 @@ def('bowBlock',40,[extrudeY([[-BOW_X,155],[BOW_X,155],...arcPts(BOW_X,-BOW_X,0,1
 const strapOverX=(x,top)=>[box(x-12,x+12,-24,24,top,top+2.5,COL.strap),box(x-12,x+12,22.5,25,170,top+2.5,COL.strap),box(x-12,x+12,25,69.5,170,172.5,COL.strap),box(x-12,x+12,67,69.5,100,172.5,COL.strap)];
 def('cStraps',42,[...strapOverX(-210,hullZ(210)+6),...strapOverX(210,hullZ(210)+6)]);
 def('cStrapsUnder',9,[box(-222,-198,-69.5,69.5,97.5,100,COL.strap),box(198,222,-69.5,69.5,97.5,100,COL.strap)]);
-/* bow strap: lashed in an X, two passes over the block either side of the long tube, crossing under it */
-const bowLash=s=>{const [x0,x1]=[28,52].map(x=>s*x).sort((p,q)=>p-q),top=bowZ(52)+6;
-  return [box(x0,x1,BOW_Y0-2.5,BOW_Y1+2.5,top,top+2.5,COL.strap),box(x0,x1,BOW_Y1+1.5,BOW_Y1+4,100,top+2.5,COL.strap),box(x0,x1,BOW_Y0-4,BOW_Y0-1.5,100,top+2.5,COL.strap)]};
-def('bStrap',42,[...bowLash(-1),...bowLash(1)]);
-def('bStrapUnder',9,[box(-52,52,BOW_Y0-4,BOW_Y1+4,97.5,100,COL.strap)]);
+/* bow strap, lashed in an X: each pass goes over the block, crosses its front face diagonally, drops beside the long tube,
+   crosses under it to the other side at the back, comes up and crosses the back face. The two passes make an X on the
+   front face, the back face and under the tube. The parts under the tube are drawn early so the tube covers them. */
+const bowLash=s=>{const F=BOW_Y1+4,B=BOW_Y0-4,top=bowZ(50)+9,x=40*s;
+  return [{pts:[[x,B,165],[-50*s,B,top],[-50*s,F,top],[x,F,165],[x,F,100]],col:COL.strap},{pts:[[-x,B,100],[-x,B,165]],col:COL.strap}]};
+def('bStrap',42,[],{paths:[...bowLash(-1),...bowLash(1)]});
+def('bStrapUnder',9,[],{paths:[{pts:[[40,BOW_Y1+4,100],[-40,BOW_Y0-4,100]],col:COL.strap},{pts:[[-40,BOW_Y1+4,100],[40,BOW_Y0-4,100]],col:COL.strap}]});
 def('wRin',50,cyl('x',RODC,20,500,503,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
 def('wheelR',51,cyl('x',RODC,130,505,580,COL.wheel,{seg:40,hubs:[{r:82,col:COL.rim},{r:26,col:'#9aa4ae'},{r:10.5,col:'#444444'}]}));
 def('wRout',52,cyl('x',RODC,20,581,584,COL.washer,{seg:24,hubs:[{r:10.5,col:'#555555'}]}));
@@ -919,9 +921,9 @@ const STEPS=[
  {st:6,cap:'Slide a <b>120 mm</b> piece of old garden hose onto the long strap. Thread the strap through the eye and tie the ends with a double knot. That\'s your handle.',parts:[['Ml',1]],tools:['knife'],
   tip:'The hose makes a comfy grip so the strap doesn\'t dig into your hand.',
   view:()=>({ids:S.handle,hl:['handle'],focus:F.front})},
- {st:6,cap:'Lift the dolly off the bricks and gently set the boat on the cradle. <b>400 mm</b> behind the front joint, measure up from the tubes to the hull in the middle and <b>220 mm</b> each side. Cut a <b>440 mm</b> bow block from the pine and mark the 3 heights on it. Join the middle mark to each end mark with a straight line, to match the V of the hull. A grown-up cuts along the lines. Cut 2 short cleats, <b>100 mm</b> long, and screw them to the front so they will sit just inside the braces.',parts:[['Cs',2],['Ws',4]],tools:['tape','pencil','saw','jigsaw','drill:3.5','screwdriver'],adult:1,
+ {st:6,cap:'Cut a <b>440 mm</b> piece of pine for the bow block. Lift the dolly off the bricks and gently set the boat on the cradle. Lay the piece flat across the long tube and both braces, <b>400 mm</b> behind the front joint. Measure from its top up to the hull in the middle and at each end. Add <b>39 mm</b> to each (45 mm for the board, less 6 mm for the carpet) and mark those heights on the piece. Join the middle mark to each end mark with a straight line, to match the V of the hull. A grown-up cuts along the lines. Cut 2 short cleats, <b>100 mm</b> long, and screw them to the front so they will sit just inside the braces.',parts:[['Cs',2],['Ws',4]],tools:['tape','pencil','saw','jigsaw','drill:3.5','screwdriver'],adult:1,
   tip:'The bow block lies across the long tube and both braces, so it holds the hull across its width and stops it rocking.',
-  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],extra:[boatObj(.35)],ann:[...[-BOW_X,0,BOW_X].map(x=>({t:'dim',a:[x,BOW_YC,155],b:[x,BOW_YC,bowZ(x)+6]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places'}]})},
+  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],extra:[solo(box(-BOW_X,BOW_X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true}),boatObj(.35)],ann:[...[-BOW_X+8,0,BOW_X-8].map(x=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places'}]})},
  {st:6,cap:'Glue carpet on top of the bow block. Lay it across the long tube and both braces, cleats at the front. Lash it to the long tube with a block strap: over the block, under the tube, and back over in an X. Tie a double knot.',parts:[['Bb',1],['Kc',1],['Ms',1]],adult:1,
   view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-420,420,600,1150,60,420]})},
  {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks and the bow block without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
