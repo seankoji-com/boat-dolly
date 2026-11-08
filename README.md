@@ -4,6 +4,8 @@ A LEGO-style build booklet and shopping trolley for an aluminium A-frame launchi
 
 **Open it:** https://cart.seankoji.com/
 
+**Second booklet:** a 30 cm wallaby built from real LEGO bricks, with 32 steps and a BrickLink parts list: https://cart.seankoji.com/wallaby/ ([source](wallaby/)).
+
 It's a single self-contained `index.html`: 44 illustrated steps with isometric drawings, 1:1 printable drilling templates, a hull-cradle you shape to your own boat, a loading guide, a load test, and a shopping list split by store (RHS Steel Supplies, Stainless Central, Bunnings), with a link to each product.
 
 ## Budget
