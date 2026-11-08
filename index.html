@@ -453,7 +453,8 @@ function render(objs,o={}){
     if(a.sep&&ANIMATE)g=`<g>${slideTr(ZERO,a.sep,...SEP_T)}${g}</g>`;
     if(a.ride)g=ANIMATE?`<g>${slideTr(a.ride,ZERO,...SLIDE_T)}${g}</g>`:`<g transform="translate(${proj(a.ride).map(k3).join(' ')})">${g}</g>`;
     return g};
-  out+=overlay+(o.ann||[]).map(annWrap).join('');
+  const anns=o.ann||[];
+  out+=overlay+anns.map(a=>annWrap(a.t==='drill'&&a.label?{...a,noLabel:true}:a)).join('')+anns.filter(a=>a.t==='drill'&&a.label).map(a=>annWrap({...a,labelOnly:true})).join('');
   if(shadow){const id='k'+(++CLIP_N);
     out=`<filter id="${id}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${(4.5*s).toFixed(2)}"/></filter><g filter="url(#${id})" fill="#14324d" opacity=".3">${shadow}</g>`+out}
   if(o.ring){const [a,b,c,d,e,f]=o.ring,C=proj([(a+b)/2,(c+d)/2,(e+f)/2]);out+=`<circle cx="${C[0]}" cy="${C[1]}" r="${16*s}" fill="none" stroke="#e3000b" stroke-width="3.5" ${NS}/>`}
@@ -524,7 +525,7 @@ function toolOn(tl,s0,t0,t1,tr){const s=s0*TOOL_Z,C=proj(tl.at),cx=C[0].toFixed(
   }return ''}
 /* a twist drill bit that travels from A to B along a drill line, on the same loop as the parts. It sits in a red cordless drill like the tool icon */
 /* E = where the bit enters the material (screen coords). T = [start, reach surface, finish]. The bit eases down to E, then drills on to B. */
-function drillBit(A,B,s,E,T,back,lead){
+function drillBit(A,B,s,E,T,back,lead,hideAt){
   const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],n=[-u[1],u[0]];
   const len=52*s,w=9*s,pt=(a,b)=>[a*u[0]+b*n[0],a*u[1]+b*n[1]].map(v=>v.toFixed(2)).join(',');
   const body=[pt(0,0),pt(-11*s,w/2),pt(-len,w/2),pt(-len,-w/2),pt(-11*s,-w/2)].join(' ');
@@ -541,8 +542,8 @@ function drillBit(A,B,s,E,T,back,lead){
   const out=Math.min(T[2]+(back??.14),Math.max(.89,T[2]+.02));
   const pos=E?`values="${P(A)};${P(A)};${P(E)};${P(B)};${P(A)};${P(A)}" keyTimes="0;${k3(T[0])};${k3(T[1])};${k3(T[2])};${k3(out)};1" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1;.4 0 .6 1;0 0 1 1"`
              :`values="${P(A)};${P(A)};${P(B)};${P(B)}" keyTimes="0;${k3(T[0])};${k3(T[2])};1" keySplines="0 0 1 1;.4 0 .6 1;0 0 1 1"`;
-  const h0=back==null?.9:Math.min(out+.01,.95);
-  const vis=`<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${k3(lead!=null?lead:Math.max(T[0]-.08,.005))};${k3(lead!=null?lead+.005:Math.max(T[0]-.02,.01))};${k3(h0)};${k3(h0+.02)};1" ${REP()}/>`;
+  const h0=hideAt!=null?hideAt-.005:back==null?.9:Math.min(out+.01,.95),h1=h0+(hideAt!=null?.005:.02);
+  const vis=`<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${k3(lead!=null?lead:Math.max(T[0]-.08,.005))};${k3(lead!=null?lead+.005:Math.max(T[0]-.02,.01))};${k3(h0)};${k3(h1)};1" ${REP()}/>`;
   return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" ${pos} calcMode="spline" ${REP()}/>`+
     `${drill}<polygon points="${chuck}" fill="#3a4048" stroke="#1d2329" stroke-width="1.2" ${NS}/><polygon points="${body}" fill="#c3ccd5" stroke="#1d2329" stroke-width="1.2" ${NS}/>`+
     `<clipPath id="${fid}"><polygon points="${body}"/></clipPath><g clip-path="url(#${fid})"><g><animateTransform attributeName="transform" type="translate" values="0 0;${spin}" dur=".16s" repeatCount="indefinite"/>${flutes0}</g></g>`+
@@ -569,20 +570,22 @@ function annSVG(a,s,anim){
       return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
     case 'dim':{const o=a.off||[0,0,0],A=add(a.a,o),B=add(a.b,o),M=proj(mid(A,B));
       return ln(a.a,A,'stroke="#55606b" stroke-width="1.2"')+ln(a.b,B,'stroke="#55606b" stroke-width="1.2"')+ln(A,B,'stroke="#55606b" stroke-width="2"')+head(M,proj(A),'#55606b',12)+head(M,proj(B),'#55606b',12)+(a.label?tag(mid(A,B),a.label):'')}
-    case 'drill':{/* e = entry point on the surface: the dashed line stops there and the bit vanishes into the hole. hole = radius of the hole it leaves */
+    case 'drill':{if(a.labelOnly){if(!a.label)return '';const l=tag(a.a,a.label,'#fff','#e3000b');
+        return anim&&a.guide?`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(a.guide[0])};${k3(a.guide[1])}" calcMode="discrete" ${REP()}/>${l}</g>`:l}
+      /* e = entry point on the surface: the dashed line stops there and the bit vanishes into the hole. hole = radius of the hole it leaves */
       const A=proj(a.a),B=proj(a.b),E=a.e?proj(a.e):null,Z=E||B,T=a.tm||[.15,.3,.62];
       let hole='';
       if(a.e&&a.hole){const d=sub(a.b,a.a),ax=Math.abs(d[0])>Math.abs(d[1])&&Math.abs(d[0])>Math.abs(d[2])?'x':Math.abs(d[1])>Math.abs(d[2])?'y':'z';
         hole=`<polygon points="${ptsStr(circ(a.e,a.hole,ax,20))}" fill="#2a2f35" stroke="#1d2329" stroke-width="1" ${NS}${anim?` opacity="0"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;${k3(T[1])};${k3(T[1]+.05)};1" ${REP()}/></polygon>`:'/>'}`}
       let bit='';
       if(anim&&a.punch&&E){const u=unit2([B[0]-A[0],B[1]-A[1]]);bit+=punchSVG(E,u,[-u[1],u[0]],s*TOOL_Z,a.punchT?a.punchT[0]:Math.max(.01,T[0]-.14),a.punchT?a.punchT[1]:T[0]-.02)}
-      if(anim){const db=drillBit(A,B,s,E,T,a.back,a.punchT?a.punchT[1]:a.lead);if(E){const c=entryClip(A,B,E,s);bit+=`${c.def}<g clip-path="url(#${c.id})">${db}</g>`}else bit+=db;if(E){
+      if(anim){const db=drillBit(A,B,s,E,T,a.back,a.punchT?a.punchT[1]:a.lead,a.hideAt);if(E){const c=entryClip(A,B,E,s);bit+=`${c.def}<g clip-path="url(#${c.id})">${db}</g>`}else bit+=db;if(E){
         /* swarf flies off the hole while the bit is cutting */
         bit+=`<g transform="translate(${E[0].toFixed(1)} ${E[1].toFixed(1)})" opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(T[1]+.01)};${k3(T[2])}" calcMode="discrete" ${REP()}/>${chips(7,s,a.chip||'#b8c2cc')}</g>`}}
       /* guide = [t0,t1]: the dashed line and label only show while this hole is being worked on; the hole itself stays */
       let guide=`<line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#fff" stroke-width="7" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#e3000b" stroke-width="3" stroke-dasharray="8 5" ${NS}>${march}</line>`+head(A,Z,'#e3000b',15);
       /* the size label goes on top of the drill and punch so they never hide it */
-      let label=a.label?tag(a.a,a.label,'#fff','#e3000b'):'';
+      let label=a.label&&!a.noLabel?tag(a.a,a.label,'#fff','#e3000b'):'';
       const win=g=>`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(a.guide[0])};${k3(a.guide[1])}" calcMode="discrete" ${REP()}/>${g}</g>`;
       if(anim&&a.guide){guide=win(guide);if(label)label=win(label)}
       return hole+guide+bit+label}
@@ -613,7 +616,8 @@ function annSVG(a,s,anim){
         return `<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(t0)};${k3(h)}" calcMode="discrete" ${REP()}/>${blade(7,'#1d2329')}${blade(5,'#ffd500')}`+
           poly2(F,[[-34*s,-13*s],[-8*s,-13*s],[-8*s,13*s],[-34*s,13*s]],'#ffd500')+poly2(F,arc2(6*s,0,340,14,-21*s),'#ffffff')+'</g>'}
       if(a.kind==='screwdriver'){const C=proj(a.p),d=unit2(sub(proj(add(a.p,a.dir)),C).slice(0,2)),cx=k3(C[0]),cy=k3(C[1]);
-        return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="rotate" values="-8 ${cx} ${cy};8 ${cx} ${cy};-8 ${cx} ${cy}" dur=".24s" repeatCount="indefinite"/>${screwdriverSVG(C,s,d)}</g></g>`}
+        const M=a.move?proj(a.move).map(k3).join(' '):'0 0',mv=`<animateTransform attributeName="transform" type="translate" values="0 0;0 0;${M};${M}" keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}/>`;
+        return `<g opacity="0">${vis}<g>${mv}<g><animateTransform attributeName="transform" type="rotate" values="-8 ${cx} ${cy};8 ${cx} ${cy};-8 ${cx} ${cy}" dur=".24s" repeatCount="indefinite"/>${screwdriverSVG(C,s,d)}</g></g></g>`}
       if(a.kind==='jigsaw'){const A=proj(a.a),B=proj(a.b),D=[B[0]-A[0],B[1]-A[1]].map(k3).join(' ');
         return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${D};${D}" keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}/>`+
           `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 ${k3(2.5*s)};0 0" dur=".08s" repeatCount="indefinite"/>${jigsawSVG(A,s)}</g></g></g>`}
@@ -892,7 +896,8 @@ const tubeY=(len,col=COL.alu)=>box(-25,25,0,len,0,50,col,{hollow:[0,2]});
 /* one drill visits each hole in turn (punching the first mark), instead of every hole being drilled at once */
 const seqDrills=(anns,{from=.18,to=.88,punch=false}={})=>{const ds=anns.filter(a=>a.t==='drill'),w=(to-from)/(ds.length||1);
   ds.forEach((a,i)=>{const t=from+i*w;if(punch&&a.e){a.punch=true;a.punchT=[t,t+w*.3];a.tm=[t+w*.32,t+w*.5,t+w*.8];a.back=w*.15}
-    else{a.tm=[t,t+w*.3,t+w*.72];a.back=w*.2;a.lead=Math.max(t-.01,.005)}});return anns};
+    else{a.tm=[t,t+w*.3,t+w*.72];a.back=w*.2;a.lead=Math.max(t-.01,.005)}
+    a.hideAt=t+w-.015;a.back=Math.max(.004,Math.min(a.back,a.hideAt-.006-a.tm[2]))});return anns};
 const drillDown=(x,y,label,top=50,len=0,hole=5.25)=>({t:'drill',a:[x,y,top+170],b:[x,y,len],e:[x,y,top],hole,label});
 
 /* step 1: cut plan for the single 6.5 m length (schematic: lengths to scale, tube thickness exaggerated) */
@@ -1070,7 +1075,7 @@ const STEPS=[
     ...[125,210,295].map((x,i)=>{const t=.6+i*.12;return solo(cyl('y',[x,0,162],4.5,67,69.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]}),{order:2,keys:[[0,[0,0,0],0],[t-.001,[0,0,0],0],[t,[0,20,0],1],[t+.09,[0,0,0],1],[1,[0,0,0],1]]})})],
     ann:[{t:'arrow',a:[210,180,150],b:[210,75,150],show:[.005,.2]},
       ...seqDrills([125,210,295].map(x=>({t:'drill',a:[x,67+80,162],b:[x,20,162],e:[x,67,162],hole:1.75,chip:'#d9b483',label:x===210?'3.5 mm':'',guide:[.22,.58]})),{from:.24,to:.58}),
-      ...[125,210,295].map((x,i)=>({t:'tool',kind:'screwdriver',p:[x,89.5,162],dir:[0,-1,0],tm:[.6+i*.12,.69+i*.12]})),
+      ...[125,210,295].map((x,i)=>({t:'tool',kind:'screwdriver',p:[x,89.5,162],dir:[0,-1,0],move:[0,-20,0],tm:[.6+i*.12,.69+i*.12]})),
       {t:'text',p:[210,-60,300],label:'same on the far cleat'}]})},
  {st:6,cap:'A grown-up glues a strip of carpet over the shaped top of each block and down its sides.',parts:[['Kc',2],['U',1]],tools:['scissors'],adult:1,
   tip:'Glue outside or with the door open. Fold the carpet neatly at the ends.',
