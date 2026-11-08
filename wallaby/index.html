@@ -38,6 +38,8 @@ a{color:var(--blue)}
 .brand .brick::before,.brand .brick::after{content:"";position:absolute;top:-5px;width:10px;height:6px;background:var(--red);border-radius:2px 2px 0 0}
 .brand .brick::before{left:5px}.brand .brick::after{right:5px}
 .brand small{display:block;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.crosslink{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;border:2px solid var(--line);border-radius:999px;padding:6px 11px;white-space:nowrap}
+.crosslink:hover{color:var(--ink);border-color:var(--ink)}
 .printbtn{margin-left:auto;border:2px solid var(--ink);background:#fff;border-radius:999px;padding:7px 13px;font-weight:900;font-size:12px}
 .tabs{display:flex;gap:4px;background:#e9dfcf;padding:4px;border-radius:999px}
 #printall{display:none}
@@ -187,6 +189,7 @@ h2.pt{font-size:34px;margin:2px 0 6px;letter-spacing:-.035em}
 <body>
 <header class="topbar">
   <div class="brand"><span class="brick" aria-hidden="true"></span><div>Wallaby<small>30 cm brick build</small></div></div>
+  <a class="crosslink" href="../">← Boat Dolly</a>
   <button class="printbtn" id="printbook" title="Print the whole booklet">Print</button>
   <nav class="tabs" aria-label="Sections">
     <button class="tab" data-tab="booklet" aria-selected="true">Booklet</button>
