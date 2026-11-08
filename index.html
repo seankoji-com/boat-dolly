@@ -332,7 +332,7 @@ function chips(n,s,col,{up=true,spread=1}={}){return Array.from({length:n},(_,i)
     `<animate attributeName="opacity" values="1;1;0" dur="${du}s" begin="${b}s" repeatCount="indefinite"/></rect>`}).join('')}
 const ptsStr=(ps,off)=>ps.map(p=>proj(off?add(p,off):p).map(v=>v.toFixed(1)).join(',')).join(' ');
 const NS='vector-effect="non-scaling-stroke"';
-const ANIM_DUR=4.5;
+let ANIM_DUR=4.5;/* a step can ask for a longer loop with dur */
 let ANIM_ON=!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 /* player: SMIL timeline control on the main step diagram. PAUSED keeps the animated drawing but freezes it. */
 let PAUSED=false,PAUSE_T=0,SCRUBBING=false;
@@ -584,7 +584,7 @@ function annSVG(a,s,anim){
       return `<g>${fade}<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}</g>`}
     case 'line':if(anim&&a.draw){/* pen stroke: the line grows from a to b between draw[0] and draw[1] */
         const A=proj(a.a),B=proj(a.b),[d0,d1]=a.draw,kt=`keyTimes="0;${k3(d0)};${k3(d1)};1" ${REP()}`,v=i=>`values="${A[i]};${A[i]};${B[i]};${B[i]}"`;
-        const pen=`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(d0)};${k3(Math.min(d1+.005,.98))}" calcMode="discrete" ${REP()}/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${k3(B[0]-A[0])} ${k3(B[1]-A[1])};${k3(B[0]-A[0])} ${k3(B[1]-A[1])}" ${kt}/>${(a.pen==='pencil'?pencilSVG:markerSVG)(A,s)}</g></g>`;
+        const pen=`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(d0)};${k3(Math.min(d1,.98))}" calcMode="discrete" ${REP()}/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${k3(B[0]-A[0])} ${k3(B[1]-A[1])};${k3(B[0]-A[0])} ${k3(B[1]-A[1])}" ${kt}/>${(a.pen==='pencil'?pencilSVG:markerSVG)(A,s)}</g></g>`;
         return `<line x1="${A[0]}" y1="${A[1]}" x2="${A[0]}" y2="${A[1]}" stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''} opacity="0" ${NS}>`+
           `<animate attributeName="opacity" values="0;1;1" keyTimes="0;${k3(d0)};1" calcMode="discrete" ${REP()}/><animate attributeName="x2" ${v(0)} ${kt}/><animate attributeName="y2" ${v(1)} ${kt}/></line>`+pen}
       return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
@@ -618,7 +618,8 @@ function annSVG(a,s,anim){
       const kx=Math.max(.25,(300/w-1)/2),S1=proj(ext(q[3],q[2],kx)),S2=proj(ext(q[2],q[3],kx)),Q0=proj(q[0]),Q3=proj(q[3]);
       const e=unit2([S2[0]-S1[0],S2[1]-S1[1]]),Ls=Math.hypot(S2[0]-S1[0],S2[1]-S1[1]),sw=[e[0]*.12*Ls,e[1]*.12*Ls].map(k3).join(' ');
       const mv=sub(proj(mid(q[0],q[1])),proj(mid(q[3],q[2]))).slice(0,2).map(k3).join(' ');
-      return `<g><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;${k3(SEP_T[0]-.04)};${k3(SEP_T[0])};1" ${REP()}/>`+
+      const fo=a.fade||SEP_T[0];
+      return `<g><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;${k3(fo-.04)};${k3(fo)};1" ${REP()}/>`+
         `<polygon points="${ptsStr(q)}" fill="none" stroke="#e3000b" stroke-width="2.5" stroke-dasharray="7 4" ${NS}/>`+
         `<polygon points="${grow[0]}" fill="rgba(227,0,11,.3)"><animate attributeName="points" values="${grow[0]};${grow[0]};${grow[1]};${grow[1]}" ${kt}/></polygon>`+
         `<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(Math.max(t0-.01,.001))};${k3(t1+.01)}" calcMode="discrete" ${REP()}/>`+
@@ -914,7 +915,7 @@ const ADULT_SVG=`<svg viewBox="0 0 40 40"><circle cx="13" cy="8" r="5" fill="#ff
 
 /* ================= STEPS ================= */
 const STAGES=[['Cut the parts','#e3000b'],['Drill the plates','#b0006a'],['Build the axle','#0062ad'],['Lay out the frame','#1a9c4a'],['Bolt the joints','#f07d00'],['Fit the wheels','#7b3fa0'],['Cradle and handle','#0d5257']];
-const marks=[-400,0,400].map(x=>({t:'line',a:[x,-34,156],b:[x,34,156]}));
+const marks=[-400,0,400].map(x=>({t:'line',a:[x,-24,156],b:[x,24,156]}));
 const tubeDrill=(j,i,label)=>{const [x,y]=HOLES[j][i];return{t:'drill',a:[x,y,320],b:[x,y,70],e:[x,y,158],label}};
 const BOTH='Both sides';
 /* boat for the cradle and loading pictures: the Sabot hull resting on the carpet */
@@ -1056,9 +1057,9 @@ const STEPS=[
   view:()=>({ids:S.layB,hl:BRICKS})},
  {st:3,cap:'Mark the middle of the axle tube. Then make a mark <b>400 mm</b> each side of the middle.',parts:[],partsNote:'Nothing new',tools:['tape','marker'],
   view:()=>({ids:S.layB,ann:[
-    {t:'tool',kind:'tape',a:[-500,0,158],b:[0,0,158],tm:[.04,.16],hide:.2},{t:'text',p:[0,0,260],label:'middle',show:[.16,.3],animOnly:true},{t:'line',a:[0,-34,156],b:[0,34,156],draw:[.2,.26]},
-    {t:'tool',kind:'tape',a:[0,0,158],b:[400,0,158],tm:[.32,.44],hide:.48},{t:'line',a:[400,-34,156],b:[400,34,156],draw:[.48,.54]},
-    {t:'tool',kind:'tape',a:[0,0,158],b:[-400,0,158],tm:[.6,.72],hide:.76},{t:'line',a:[-400,-34,156],b:[-400,34,156],draw:[.76,.82]},
+    {t:'tool',kind:'tape',a:[-500,0,158],b:[0,0,158],tm:[.04,.16],hide:.2},{t:'text',p:[0,0,260],label:'middle',show:[.16,.3],animOnly:true},{t:'line',a:[0,-24,156],b:[0,24,156],draw:[.2,.26]},
+    {t:'tool',kind:'tape',a:[0,0,158],b:[400,0,158],tm:[.32,.44],hide:.48},{t:'line',a:[400,-24,156],b:[400,24,156],draw:[.48,.54]},
+    {t:'tool',kind:'tape',a:[0,0,158],b:[-400,0,158],tm:[.6,.72],hide:.76},{t:'line',a:[-400,-24,156],b:[-400,24,156],draw:[.76,.82]},
     {t:'dim',a:[0,25,155],b:[400,25,155],off:[0,120,0],label:'400',show:[.32,.995]},{t:'dim',a:[-400,25,155],b:[0,25,155],off:[0,120,0],label:'400',show:[.6,.995]}]})},
  {st:3,cap:'Lay the long tube on the other 2 bricks, FRONT end away from the axle tube. Centre its back end on the middle mark and push it against the axle tube.',parts:[['A',1]],tools:['square'],
   view:()=>({ids:S.spine,hl:['A'],off:{A:[0,320,0]},ann:[...marks,{t:'arrow',a:[90,380,190],b:[90,60,190]}]})},
@@ -1123,14 +1124,15 @@ const STEPS=[
   view:()=>({ids:[...CRADLE],hl:['carpetL','carpetR'],off:{carpetL:[0,0,90],carpetR:[0,0,90]},ann:[{t:'arrow',a:[210,0,400],b:[210,0,300]}]})},
  {st:6,cap:'Cut the webbing into <b>2 block straps</b> (900 mm), <b>1 bow strap</b> (1.3 m) and <b>1 long strap</b> (800 mm). A grown-up melts each cut end so it can\'t fray.',parts:[['Mstock',1]],tools:['tape','scissors','lighter'],adult:1,
   /* each strap is still joined to the rest of the roll until the scissors cut it; then the lighter melts the cut end dark */
-  solo:()=>{const Z=[0,0,0],S=[[900,0],[900,45],[800,90],[1300,180]],cut=i=>.2+i*.08,melt=i=>.56+i*.1;
+  solo:()=>{const Z=[0,0,0],S=[[900,0],[900,45],[800,90],[1300,180]],cut=i=>.2+i*.08,melt=i=>.54+i*.054,
+      E=S.flatMap(([L,y])=>[[0,y,0],[L-8,y,L-3]]).map(([x0,y,xm])=>[x0,y,xm||3]);
     return{objs:[...S.map(([L,y])=>solo(box(0,L,y,y+25,0,2.5,COL.strap))),
       ...S.map(([L,y],i)=>solo(box(L,L+170,y,y+25,0,2.5,COL.strap),{animOnly:true,keys:[[0,Z,1],[cut(i)+.07,Z,1],[cut(i)+.12,[90,0,0],0],[1,[90,0,0],0]]})),
-      ...S.map(([L,y],i)=>solo(box(L-8,L,y,y+25,0,2.8,'#6b4a1f'),{order:1,keys:[[0,Z,0],[melt(i)+.05,Z,0],[melt(i)+.06,Z,1],[1,Z,1]]}))],
+      ...E.map(([x0,y],i)=>solo(box(x0,x0+8,y,y+25,0,2.8,'#6b4a1f'),{order:1,keys:[[0,Z,0],[melt(i)+.03,Z,0],[melt(i)+.031,Z,1],[1,Z,1]]}))],
     ann:[{t:'tool',kind:'tape',a:[-60,192,6],b:[1300,192,6],tm:[.03,.15],hide:.18},
       ...S.map(([L,y],i)=>({t:'tool',kind:'scissors',a:[L,y-20,4],b:[L,y+45,4],tm:[cut(i),cut(i)+.07]})),
-      ...S.map(([L,y],i)=>({t:'tool',kind:'lighter',p:[L-3,y+12,4],tm:[melt(i),melt(i)+.08]})),
-      {t:'text',p:[1100,120,3],label:'melt both ends',show:[.56,.99],animOnly:true},
+      ...E.map(([x0,y,xm],i)=>({t:'tool',kind:'lighter',p:[xm,y+12,4],tm:[melt(i),melt(i)+.045]})),
+      {t:'text',p:[1100,120,3],label:'melt both ends',show:[.54,.99],animOnly:true},
       {t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'text',p:[880,102,3],label:'800'},{t:'dim',a:[0,205,3],b:[1300,205,3],off:[0,60,0],label:'1300'}]}}},
  {st:6,cap:'Sit each cradle block on the axle tube, between the middle plates and a corner plate. The cleats hug the tube. The high ends go outwards.',parts:[['Cb',2]],
   /* one block at a time, lifted well clear of the frame, and solid all the way down */
@@ -1149,22 +1151,29 @@ const STEPS=[
       solo(cyl('x',[0,2290,9],9,-190,-71,'#2f7d3a',{seg:14,hubs:[{r:6,col:'#173f1d'}]}),{order:5,animOnly:true,keys:[[0,Z,1],[.3,Z,1],[.36,[-20,0,0],1],[.38,[-20,0,0],0],[1,[-20,0,0],0]]})],
     ann:[{t:'tool',kind:'knife',p:[-70,2290,19],dir:[0,1,0],tm:[.06,.3]},{t:'text',p:[-130,2290,90],label:'120 mm',show:[.02,.36],animOnly:true},{t:'text',p:[0,EYE_Y,520],label:'double knot',show:[.62,.99],animOnly:true}]}}},
  {st:6,cap:'Cut a <b>440 mm</b> piece of pine for the bow block. Lift the dolly off the bricks and gently set the boat on the cradle. Lay the piece flat across the long tube and both braces, <b>400 mm</b> behind the front joint. Measure from its top up to the hull in the middle and at each end. Add <b>39 mm</b> to each (45 mm for the board, less 6 mm for the carpet) and mark those heights on the piece. Join the middle mark to each end mark with a straight line, to match the V of the hull. A grown-up cuts along the lines. Cut 2 short cleats, <b>100 mm</b> long, and screw them to the front so they will sit just inside the braces.',parts:[['Cs',2],['Ws',4]],tools:['tape','pencil','saw','jigsaw','drill:3.5','screwdriver'],adult:1,
-  tip:'The bow block lies across the long tube and both braces, so it holds the hull across its width and stops it rocking.',
-  view:()=>{const Z=[0,0,0],X=BOW_X,F1=BOW_Y1+.6,on=(a,b)=>[[0,Z,0],[a-.001,Z,0],[a,Z,1],[b,Z,1],[b+.001,Z,0],[1,Z,0]],
-      V=[[-X,bowZ(-X)],[0,bowZ(0)],[X,bowZ(X)]],sx=[-107,107],cleatIn=[[0,[0,60,0],0],[.69,[0,60,0],0],[.7,[0,60,0],1],[.75,Z,1],[1,Z,1]];
+  tip:'The bow block lies across the long tube and both braces, so it holds the hull across its width and stops it rocking.',dur:12,
+  view:()=>{const Z=[0,0,0],X=BOW_X,F1=BOW_Y1+.6,V=[[-X,bowZ(-X)],[0,bowZ(0)],[X,bowZ(X)]],
+      /* 4 screws: 2 in each cleat, one above the other, both into the block */
+      SC=[[-107,172],[-107,198],[107,172],[107,198]],dT=i=>.69+i*.04,sT=i=>.86+i*.033,
+      sy=BOW_Y1+151,stock=(x0,x1)=>box(x0,x1,sy-21,sy+21,60,102,COL.wood),stockK=[[0,Z,0],[.519,Z,0],[.52,Z,1],[.63,Z,1],[.64,Z,0],[1,Z,0]];
     return{ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],
-    extra:[solo(box(-X,X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true,keys:[[0,Z,1],[.33,Z,1],[.331,Z,0],[1,Z,0]]}),boatObj(.35),
-      solo(extrudeY([[-X,155],[X,155],...arcPts(X,-X,0,16,bowZ)],BOW_Y0,BOW_Y1,COL.pine),{order:39,hl:true,animOnly:true,keys:on(.331,.999)}),
-      solo(extrudeY([...arcPts(-X,X,0,16,bowZ),[X,300],[-X,300]],BOW_Y0,BOW_Y1,COL.pine),{order:39,animOnly:true,keys:[[0,Z,0],[.33,Z,0],[.331,Z,1],[.66,Z,1],[.72,[0,0,40],0],[1,[0,0,40],0]]}),
-      ...[-1,1].map(sg=>solo(bowCleat(sg),{order:41,animOnly:true,keys:cleatIn})),
-      ...sx.map((x,i)=>solo(cyl('y',[x,0,185],4.5,BOW_Y1+42,BOW_Y1+44.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]}),{order:42,animOnly:true,keys:[[0,Z,0],[.87+i*.055,[0,20,0],0],[.871+i*.055,[0,20,0],1],[.915+i*.055,Z,1],[1,Z,1]]}))],
-    ann:[...[-X+8,0,X-8].map((x,i)=>({t:'tool',kind:'tape',a:[x+30,BOW_YC+70,200],b:[x+30,BOW_YC+70,bowZ(x)+6],tm:[.03+i*.09,.1+i*.09],hide:.11+i*.09})),
-      ...[-X+8,0,X-8].map((x,i)=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6],show:[.03+i*.09,.33]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places',show:[.005,.33]},
-      ...[0,1].map(i=>({t:'line',a:[V[i][0],F1,V[i][1]],b:[V[i+1][0],F1,V[i+1][1]],col:'#1a1a1a',w:2,pen:'pencil',draw:[.35+i*.06,.41+i*.06],show:[.34,.66],animOnly:true})),
-      ...[0,1].map(i=>({t:'tool',kind:'jigsaw',a:[V[i][0],BOW_Y1,V[i][1]+4],b:[V[i+1][0],BOW_Y1,V[i+1][1]+4],tm:[.49+i*.08,.57+i*.08]})),
-      ...seqDrills(sx.map(x=>({t:'drill',a:[x,BOW_Y1+42+80,185],b:[x,BOW_Y1+10,185],e:[x,BOW_Y1+42,185],hole:1.75,chip:'#d9b483',label:x<0?'3.5 mm':'',guide:[.76,.86]})),{from:.76,to:.86}),
-      ...sx.map((x,i)=>({t:'tool',kind:'screwdriver',p:[x,BOW_Y1+64.5,185],dir:[0,-1,0],move:[0,-20,0],tm:[.871+i*.055,.915+i*.055]})),
-      {t:'text',p:[0,BOW_Y1+60,330],label:'2 screws in each cleat',show:[.7,.99],animOnly:true}]}}},
+    extra:[solo(box(-X,X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true,keys:[[0,Z,1],[.27,Z,1],[.271,Z,0],[1,Z,0]]}),boatObj(.35),
+      solo(box(X,X+160,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,animOnly:true,keys:[[0,Z,1],[.05,Z,1],[.08,[80,0,0],0],[1,[80,0,0],0]]}),
+      solo(extrudeY([[-X,155],[X,155],...arcPts(X,-X,0,16,bowZ)],BOW_Y0,BOW_Y1,COL.pine),{order:39,hl:true,animOnly:true,keys:[[0,Z,0],[.27,Z,0],[.271,Z,1],[1,Z,1]]}),
+      solo(extrudeY([...arcPts(-X,X,0,16,bowZ),[X,300],[-X,300]],BOW_Y0,BOW_Y1,COL.pine),{order:39,animOnly:true,keys:[[0,Z,0],[.27,Z,0],[.271,Z,1],[.47,Z,1],[.51,[0,0,40],0],[1,[0,0,40],0]]}),
+      solo(stock(-60,40),{order:43,animOnly:true,keys:stockK}),solo(stock(40,140),{order:43,animOnly:true,keys:stockK}),solo(stock(140,260),{order:43,animOnly:true,keys:stockK}),
+      ...[-1,1].map(sg=>solo(bowCleat(sg),{order:41,animOnly:true,keys:[[0,[0,60,0],0],[.639,[0,60,0],0],[.64,[0,60,0],1],[.68,Z,1],[1,Z,1]]})),
+      ...SC.map(([x,z],i)=>solo(cyl('y',[x,0,z],4.5,BOW_Y1+42,BOW_Y1+44.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]}),{order:42,animOnly:true,keys:[[0,Z,0],[sT(i)-.001,[0,20,0],0],[sT(i),[0,20,0],1],[sT(i)+.025,Z,1],[1,Z,1]]}))],
+    ann:[{t:'cut',axis:'x',c:[X,BOW_YC,177.5],size:[170,75],tm:[.01,.05],fade:.08,show:[.002,.08],animOnly:true},{t:'text',p:[X+80,BOW_YC,320],label:'440 mm',show:[.005,.08],animOnly:true},
+      ...[-X+8,0,X-8].map((x,i)=>({t:'tool',kind:'tape',a:[x+30,BOW_YC+70,200],b:[x+30,BOW_YC+70,bowZ(x)+6],tm:[.09+i*.05,.13+i*.05],hide:.14+i*.05})),
+      ...[-X+8,0,X-8].map((x,i)=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6],show:[.09+i*.05,.27]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places',show:[.085,.27]},
+      ...[0,1].map(i=>({t:'line',a:[V[i][0],F1,V[i][1]],b:[V[i+1][0],F1,V[i+1][1]],col:'#1a1a1a',w:2,pen:'pencil',draw:[.28+i*.04,.32+i*.04],show:[.275,.47],animOnly:true})),
+      ...[0,1].map(i=>({t:'tool',kind:'jigsaw',a:[V[i][0],BOW_Y1,V[i][1]+4],b:[V[i+1][0],BOW_Y1,V[i+1][1]+4],tm:[.37+i*.05,.42+i*.05]})),
+      ...[40,140].map((x,i)=>({t:'cut',axis:'x',c:[x,sy,81],size:[62,62],tm:[.53+i*.05,.57+i*.05],fade:.63,show:[.52,.63],animOnly:true})),{t:'text',p:[100,sy,180],label:'2 cleats, 100 mm',show:[.52,.64],animOnly:true},
+      ...SC.map(([x,z],i)=>{const t=dT(i);return{t:'drill',a:[x,BOW_Y1+42+70,z],b:[x,BOW_Y1+12,z],e:[x,BOW_Y1+42,z],hole:1.75,chip:'#d9b483',label:i?'':'3.5 mm',guide:[.685,.85],
+        tm:[t,t+.008,t+.025],back:.005,lead:Math.max(t-.003,.001),hideAt:t+.036,animOnly:true}}),
+      ...SC.map(([x,z],i)=>({t:'tool',kind:'screwdriver',p:[x,BOW_Y1+64.5,z],dir:[0,-1,0],move:[0,-20,0],tm:[sT(i),sT(i)+.028]})),
+      {t:'text',p:[0,BOW_Y1+60,330],label:'2 screws in each cleat',show:[.64,.995],animOnly:true}]}}},
  {st:6,cap:'Glue carpet on top of the bow block. Lay it across the long tube and both braces, cleats at the front. Lash it to the long tube with the bow strap: over the block on one side of the tube, under the tube to the other side, and over the block again, so the strap crosses in an X under the tube. Go round twice and tie a double knot underneath.',parts:[['Bb',1],['Kc',1],['Mb',1]],adult:1,
   view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-420,420,600,1150,60,420]})},
  {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks and the bow block without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
@@ -1329,6 +1338,7 @@ function pGrown(){
 }
 function renderPage(){
   const id=PAGES[pageIdx];
+  ANIM_DUR=(/^s\d+$/.test(id)&&STEPS[+id.slice(1)].dur)||4.5;
   const R={cover:pCover,start:pStart,parts:pParts,loading:pLoading,test:pTest,templates:pTemplates,done:pDone,grownups:pGrown};
   const html=R[id]?R[id]():pStep(+id.slice(1));
   document.getElementById('page').innerHTML=html+`<div class="pageno">${pageIdx+1} / ${PAGES.length}</div>`;
