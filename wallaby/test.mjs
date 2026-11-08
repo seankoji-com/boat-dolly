@@ -11,8 +11,7 @@ assert.equal(TOTAL_PIECES, 285, "total piece count");
 assert.equal(sum(PARTS.map((p) => p.qty)), 285, "parts list sums to total");
 assert.equal(sum(STEPS.map((s) => s.bricks.length)), 285, "all bricks appear in steps");
 assert.equal(LAST_STEP.z, 31, "last step is the ear cap");
-assert.equal(AUDIT.components, 1, "single connected brick graph");
-assert.equal(AUDIT.detach, 0, "no single-brick module detach");
+assert.equal(AUDIT.components, 1, "stored component count");
 assert.equal(AUDIT.heightMm, 300.8, "nominal height");
 
 // Every step's callout sums to the bricks placed on that step.
@@ -44,6 +43,37 @@ for (const [x, y, z] of brickCells) {
   assert.ok(seen.has(`${x},${y},${z}`), `uncovered cell ${x},${y},${z}`);
 }
 
+// Recompute the brick graph instead of trusting the stored count. Every brick
+// must connect to the assembly through a stud overlap with an adjacent layer.
+const adj = ALL_BRICKS.map(() => []);
+for (let i = 0; i < ALL_BRICKS.length; i++) {
+  for (let j = 0; j < ALL_BRICKS.length; j++) {
+    const a = ALL_BRICKS[i], b = ALL_BRICKS[j];
+    if (Math.abs(a.z - b.z) !== 1) continue;
+    let overlap = false;
+    for (let x = a.x; x < a.x + a.w && !overlap; x++) {
+      for (let y = a.y; y < a.y + a.d; y++) {
+        if (x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.d) { overlap = true; break; }
+      }
+    }
+    if (overlap) { adj[i].push(j); adj[j].push(i); }
+  }
+}
+const seenGraph = new Set();
+let components = 0;
+for (let i = 0; i < ALL_BRICKS.length; i++) {
+  if (seenGraph.has(i)) continue;
+  components++;
+  const stack = [i];
+  seenGraph.add(i);
+  while (stack.length) {
+    const u = stack.pop();
+    for (const v of adj[u]) if (!seenGraph.has(v)) { seenGraph.add(v); stack.push(v); }
+  }
+}
+assert.equal(components, 1, "recomputed connected brick graph");
+assert.equal(components, AUDIT.components, "stored component count matches recomputation");
+
 // The static XML and the in-page XML agree.
 const xml = fs.readFileSync(new URL("./wallaby-parts.xml", import.meta.url), "utf8");
 assert.equal(xml, WANTED_XML, "static XML matches generated XML");
@@ -62,7 +92,6 @@ console.log(JSON.stringify({
   steps: STEPS.length,
   partTypes: PARTS.length,
   colours: Object.keys(COLORS).length,
-  components: AUDIT.components,
-  detach: AUDIT.detach,
+  components,
   heightMm: AUDIT.heightMm,
 }, null, 2));

@@ -59,6 +59,7 @@ export function colorKeyOf(brick) {
   if (p === "nose" || p === "eye" || p === "claw") return "black";
   if (p === "snout") return "tan";
   if (p === "foot" || p === "paw") return "darkTan";
+  if (brick.tile || p === "earcap") return "darkBrown";
   if (p === "tail") return brick.z < 4 ? "darkBrown" : "reddishBrown";
   if (p === "ear") return brick.z >= 29 ? "darkBrown" : "reddishBrown";
   if (p === "body" || p === "neck") {
@@ -82,6 +83,13 @@ for (const b of ALL_BRICKS) {
   b.colorKey = colorKeyOf(b);
   b.color = COLORS[b.colorKey];
   b.design = designOf(b);
+}
+
+export const CELL_COLORS = new Map();
+for (const b of ALL_BRICKS) {
+  for (let x = b.x; x < b.x + b.w; x++) {
+    for (let y = b.y; y < b.y + b.d; y++) CELL_COLORS.set(`${x},${y},${b.z}`, b.colorKey);
+  }
 }
 
 export const TOTAL_PIECES = ALL_BRICKS.length;
@@ -148,17 +156,17 @@ const CAPTIONS = {
   16: "Add the chest ring. The arms should feel firmly attached.",
   17: "The chest is at its widest. Check the front is smooth.",
   18: "The shoulders begin to close over the arms.",
-  19: "The arms are complete. The cream chest patch should run up the front.",
-  20: "The chest narrows into the neck.",
+  19: "The chest closes over the arms. The cream chest patch should run up the front.",
+  20: "The arms are complete. The chest narrows into the neck.",
   21: "Keep the neck centred. The head will sit on top.",
   22: "The neck is almost done.",
   23: "The last neck ring. Leave the top studs free for the head.",
   24: "The head starts. The snout points forward, over the chest.",
   25: "Build the jaw first; it supports the snout above.",
-  26: "The face. Keep the black eye bricks on the front corners.",
+  26: "The head begins. The snout points forward over the chest.",
   27: "The snout and the black nose. The nose is the front-most brick.",
   28: "The top of the head. The two black eyes should face forward.",
-  29: "The ears rise. Each ear is a 2×2 column.",
+  29: "The ears rise. Each ear has a 2×2 footprint.",
   30: "The last ear bricks. The model is 29.8 cm tall here.",
   31: "Press a 2×2 tile onto each ear. That finishes the wallaby at 30.1 cm.",
 };

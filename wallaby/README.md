@@ -44,8 +44,9 @@ node wallaby/test.mjs
 ```
 
 It checks 285 pieces, 32 steps, no overlapping bricks, one connected brick
-graph, no single-brick module detachment, the 300.8 mm nominal height, and that
-the static XML matches the generated wanted list.
+graph, the 300.8 mm nominal height, and that the static XML matches the
+generated wanted list. The arms and tail are display assemblies with small root
+clusters; lift the model by the body, not by a limb.
 
 ## Print
 

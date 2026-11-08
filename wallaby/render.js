@@ -151,7 +151,7 @@ export function renderCellsIso(cells, opts = {}) {
   let glow = "";
   let newLayer = "";
   for (const [x, y, z, part, tile] of sorted) {
-    const key = cellColor(x, y, z, part, set);
+    const key = (opts.cellColors && opts.cellColors.get(`${x},${y},${z}`)) || cellColor(x, y, z, part, set);
     const color = COLORS[key].hex;
     const h = tile ? 0.333 : 1;
     const x0 = x, y0 = y, z0 = z, x1 = x + 1, y1 = y + 1, z1 = z + h;
@@ -215,7 +215,7 @@ export function renderCellsSide(cells, opts = {}) {
   const sorted = list.slice().sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]);
   let out = "";
   for (const [x, y, z, part, tile] of sorted) {
-    const key = cellColor(x, y, z, part, set);
+    const key = (opts.cellColors && opts.cellColors.get(`${x},${y},${z}`)) || cellColor(x, y, z, part, set);
     const color = shade(COLORS[key].hex, 0.92 + Math.min(x, 8) * 0.012);
     const isNew = z === highlightZ;
     out += `<rect x="${y}" y="${-(z + (tile ? 0.333 : 1))}" width="1" height="${tile ? 0.333 : 1}" fill="${color}" stroke="${isNew ? "#ffcf00" : "#2a1c13"}" stroke-width="${isNew ? 1.6 : 0.35}"/>`;

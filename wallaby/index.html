@@ -44,7 +44,7 @@ a{color:var(--blue)}
 .tabs{display:flex;gap:4px;background:#e9dfcf;padding:4px;border-radius:999px}
 #printall{display:none}
 .tab{border:0;background:transparent;padding:8px 15px;border-radius:999px;font-weight:900;color:var(--muted);font-size:13px}
-.tab[aria-selected="true"]{background:var(--ink);color:#fff}
+.tab[aria-current="page"]{background:var(--ink);color:#fff}
 .wrap{max-width:1140px;margin:0 auto;padding:24px 18px 70px}
 .progress{height:7px;background:#e2d5c2;border-radius:999px;overflow:hidden;margin-bottom:18px}
 .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:999px;transition:width .25s}
@@ -192,9 +192,9 @@ h2.pt{font-size:34px;margin:2px 0 6px;letter-spacing:-.035em}
   <a class="crosslink" href="../">← Boat Dolly</a>
   <button class="printbtn" id="printbook" title="Print the whole booklet">Print</button>
   <nav class="tabs" aria-label="Sections">
-    <button class="tab" data-tab="booklet" aria-selected="true">Booklet</button>
-    <button class="tab" data-tab="parts" aria-selected="false">Parts</button>
-    <button class="tab" data-tab="notes" aria-selected="false">Notes</button>
+    <button class="tab" data-tab="booklet" aria-current="page">Booklet</button>
+    <button class="tab" data-tab="parts">Parts</button>
+    <button class="tab" data-tab="notes">Notes</button>
   </nav>
 </header>
 <main class="wrap">
@@ -205,7 +205,7 @@ h2.pt{font-size:34px;margin:2px 0 6px;letter-spacing:-.035em}
 
 <script type="module">
 import {
-  CELLS, PARTS, PARTS_BY_COLOR, COLORS, STEPS, STEP_COUNT,
+  CELLS, CELL_COLORS, PARTS, PARTS_BY_COLOR, COLORS, STEPS, STEP_COUNT,
   TOTAL_PIECES, WANTED_XML, AUDIT,
 } from "./model.js";
 import { renderCellsIso, renderCellsSide, renderLayerMap, brickIcon } from "./render.js";
@@ -231,8 +231,10 @@ function stepIndexFor(step) {
   return PAGES.findIndex((p) => p.kind === "step" && p.step.z === step.z);
 }
 function go(i, push = true) {
+  const focusId = document.activeElement?.id;
   page = Math.max(0, Math.min(PAGES.length - 1, i));
   render();
+  if (focusId === "prev" || focusId === "next") document.getElementById(focusId)?.focus();
   const p = PAGES[page];
   if (push) history.replaceState(null, "", `#${p.hash}`);
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -243,7 +245,7 @@ function goHash(hash) {
 }
 
 function coverPage() {
-  const art = renderCellsIso(CELLS, { upToZ: 31, width: 560, height: 650 });
+  const art = renderCellsIso(CELLS, { upToZ: 31, width: 560, height: 650, cellColors: CELL_COLORS });
   return `<section class="page cover">
     <div>
       <div class="setno"><span>WBY-3001</span><span class="y">FAN BUILD</span><span>30.1 cm</span></div>
@@ -283,10 +285,10 @@ function introPage() {
     </div>
     <div class="audit">
       <div><b>${AUDIT.components}</b><span>connected brick graph</span></div>
-      <div><b>${AUDIT.detach}</b><span>single-brick module detachments</span></div>
+      <div><b>${PARTS.length}</b><span>part types</span></div>
       <div><b>${(AUDIT.heightMm / 10).toFixed(1)}</b><span>cm to ear tips</span></div>
     </div>
-    <p class="finenote">The model is checked as a brick graph: every brick is connected to the assembly, and no single brick separates the head, arms or tail from the body. It is still a display model, not a toy to throw in a bag.</p>
+    <p class="finenote">The model is checked as a brick graph: every brick is connected to the assembly. The head, arms and tail are display assemblies; lift the model by the body, not by an arm or the tail. It is still a display model, not a toy to throw in a bag.</p>
   </section>`;
 }
 
@@ -298,9 +300,9 @@ function partRow(p) {
 function stepPage(step, opts = {}) {
   const prevCells = step.z > 0 ? (STEPS.find((s) => s.z === step.z - 1)?.cells || []) : [];
   const below = prevCells.map(([x, y]) => [x, y]);
-  const iso = renderCellsIso(CELLS, { upToZ: step.z, highlightZ: step.z, width: 760, height: 470, animate: !opts.print });
+  const iso = renderCellsIso(CELLS, { upToZ: step.z, highlightZ: step.z, width: 760, height: 470, animate: !opts.print, cellColors: CELL_COLORS });
   const map = renderLayerMap(step.bricks, below, { cell: 12 });
-  const side = renderCellsSide(CELLS, { upToZ: 31, highlightZ: step.z, width: 420, height: 520 });
+  const side = renderCellsSide(CELLS, { upToZ: 31, highlightZ: step.z, width: 420, height: 520, cellColors: CELL_COLORS });
   const showSide = step.z >= 8 && (step.z <= 13 || step.z >= 24);
   const parts = step.parts.map(partRow).join("");
   const tip = step.tip ? `<div class="tip"><b>Tip.</b> ${step.tip}</div>` : "";
@@ -326,8 +328,8 @@ function stepPage(step, opts = {}) {
 }
 
 function finishedPage() {
-  const side = renderCellsSide(CELLS, { upToZ: 31, width: 520, height: 720 });
-  const iso = renderCellsIso(CELLS, { upToZ: 31, width: 520, height: 560 });
+  const side = renderCellsSide(CELLS, { upToZ: 31, width: 520, height: 720, cellColors: CELL_COLORS });
+  const iso = renderCellsIso(CELLS, { upToZ: 31, width: 520, height: 560, cellColors: CELL_COLORS });
   return `<section class="page">
     <h2 class="pt">Finished wallaby</h2>
     <p class="sub">Stand it on a flat surface. The two feet and the tail tip should all touch; if the tail floats, press the rump joint together.</p>
@@ -386,9 +388,9 @@ function notesPage() {
         <ul>
           <li>Three ground contacts: the two hind feet and the tail tip.</li>
           <li>The centre of mass projects inside that support triangle.</li>
-          <li>The tail is a cantilever, tied into the rump by ${AUDIT.tailAttach} brick-to-brick overlaps.</li>
-          <li>The head attaches at ${AUDIT.headAttach} points, each arm at ${AUDIT.armAttach}.</li>
-          <li>No single brick separates the head, arms or tail from the body.</li>
+          <li>The tail is a cantilever. Tie it tightly into the rump at layers 9–13.</li>
+          <li>The head attaches at several points. Each arm and the tail hang from a small root cluster, so lift the model by the body.</li>
+          <li>The brick graph is connected, but the arms and tail are display assemblies, not handles.</li>
         </ul>
       </div>
     </div>
@@ -441,7 +443,8 @@ function render() {
     const kind = t.dataset.tab;
     const on = (kind === "booklet" && (p.kind === "cover" || p.kind === "intro" || p.kind === "step" || p.kind === "finished")) ||
       (kind === "parts" && p.kind === "parts") || (kind === "notes" && p.kind === "notes");
-    t.setAttribute("aria-selected", on ? "true" : "false");
+    if (on) t.setAttribute("aria-current", "page");
+    else t.removeAttribute("aria-current");
   });
   renderPager();
   wire();
@@ -454,13 +457,20 @@ function renderPager() {
 
 function wire() {
   const printBtn = document.getElementById("printbook");
-  if (printBtn) printBtn.addEventListener("click", printAll);
+  if (printBtn && !printBtn.dataset.bound) {
+    printBtn.dataset.bound = "1";
+    printBtn.addEventListener("click", printAll);
+  }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(Number(b.dataset.go))));
   document.querySelectorAll("[data-page]").forEach((b) => b.addEventListener("click", () => go(Number(b.dataset.page))));
-  document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => {
-    if (b.dataset.tab === "booklet") go(0);
-    else go(PAGES.findIndex((p) => p.kind === b.dataset.tab));
-  }));
+  document.querySelectorAll("[data-tab]").forEach((b) => {
+    if (b.dataset.bound) return;
+    b.dataset.bound = "1";
+    b.addEventListener("click", () => {
+      if (b.dataset.tab === "booklet") go(0);
+      else go(PAGES.findIndex((p) => p.kind === b.dataset.tab));
+    });
+  });
   const prev = document.getElementById("prev");
   const next = document.getElementById("next");
   if (prev) prev.addEventListener("click", () => go(page - 1));
