@@ -495,6 +495,26 @@ function pliersSVG(C,s){const r=unit2([.5,.87]),F=frame2(C,r,[-r[1],r[0]]);
 /* marker pen with its tip at C */
 function markerSVG(C,s){const r=unit2([.55,-.83]),F=frame2(C,r,[-r[1],r[0]]);
   return poly2(F,[[0,0],[8*s,-3*s],[8*s,3*s]],'#1a1a1a')+poly2(F,[[8*s,-4.5*s],[40*s,-4.5*s],[40*s,4.5*s],[8*s,4.5*s]],'#e3000b')+poly2(F,[[40*s,-5*s],[48*s,-5*s],[48*s,5*s],[40*s,5*s]],'#1a1a1a')}
+/* pencil with its point at C, like the marker */
+function pencilSVG(C,s){const r=unit2([.55,-.83]),F=frame2(C,r,[-r[1],r[0]]);
+  return poly2(F,[[0,0],[4*s,-1.6*s],[4*s,1.6*s]],'#333333')+poly2(F,[[4*s,-1.6*s],[11*s,-4*s],[11*s,4*s],[4*s,1.6*s]],'#e8c28c')+
+    poly2(F,[[11*s,-4*s],[44*s,-4*s],[44*s,4*s],[11*s,4*s]],'#f5c400')+poly2(F,[[44*s,-4.2*s],[48*s,-4.2*s],[48*s,4.2*s],[44*s,4.2*s]],'#9aa5b0')+
+    poly2(F,[[48*s,-4*s],[53*s,-4*s],[53*s,4*s],[48*s,4*s]],'#e98a9a')}
+/* scissors cutting at C along e: the blades snip open and shut about the pivot just behind C */
+function scissorsSVG(C,e,s){const P=[C[0]-14*s*e[0],C[1]-14*s*e[1]],F=frame2(P,e,[-e[1],e[0]]),px=k3(P[0]),py=k3(P[1]);
+  const half=(sg)=>poly2(F,[[0,-2.2*s*sg],[30*s,-.4*s*sg],[30*s,.6*s*sg],[0,2.2*s*sg]],'#c3ccd5')+poly2(F,[[0,-1.5*s],[-12*s,sg*7*s],[-14*s,sg*5*s],[-2*s,-1.5*s]],'#e3000b')+
+    poly2(F,arc2(5.5*s,0,340,14,-17*s).map(([a,b])=>[a,b+sg*8*s]),'#e3000b');
+  const snip=sg=>`<animateTransform attributeName="transform" type="rotate" values="${sg*14} ${px} ${py};${sg*1} ${px} ${py};${sg*14} ${px} ${py}" dur=".32s" repeatCount="indefinite"/>`;
+  return `<g>${snip(-1)}${half(1)}</g><g>${snip(1)}${half(-1)}</g>`}
+/* craft knife with its edge on C, blade along e */
+function knifeSVG(C,e,s){const F=frame2(C,e,[-e[1],e[0]]);
+  return poly2(F,[[-18*s,0],[16*s,0],[10*s,-7*s],[-18*s,-8*s]],'#dfe5ea')+poly2(F,[[-18*s,-9*s],[-46*s,-10*s],[-48*s,-2*s],[-18*s,1*s]],'#f07d00')}
+/* lighter held under C, flame flickering on C */
+function lighterSVG(C,s){const [x,y]=C,f=(a,b)=>`${k3(x+a*s)} ${k3(y+b*s)}`;
+  const flame=(h,w)=>`M${f(0,4)}C${f(w,0)} ${f(w*.6,-h*.6)} ${f(0,-h)}C${f(-w*.6,-h*.6)} ${f(-w,0)} ${f(0,4)}Z`;
+  return `<rect x="${k3(x-7*s)}" y="${k3(y+7*s)}" width="${k3(14*s)}" height="${k3(26*s)}" rx="${k3(3*s)}" fill="#0062ad" ${TL}/>`+
+    `<rect x="${k3(x-5*s)}" y="${k3(y+4*s)}" width="${k3(10*s)}" height="${k3(4*s)}" fill="#9aa5b0" ${TL}/>`+
+    `<path d="${flame(15,6)}" fill="#f07d00" stroke="#e3000b" stroke-width="1" ${NS}><animate attributeName="d" values="${flame(15,6)};${flame(19,5)};${flame(15,6)}" dur=".2s" repeatCount="indefinite"/></path>`}
 /* flat file centred on C, lying along e */
 function fileSVG(C,e,s){const F=frame2(C,e,[-e[1],e[0]]),cut=[];for(let a=-28,i=0;a<=28;a+=3,i++)cut.push(F(a*s,(i%2?4:-4)*s));
   return poly2(F,[[-30*s,-4.5*s],[30*s,-4.5*s],[34*s,0],[30*s,4.5*s],[-30*s,4.5*s]],'#9aa5b0')+`<polyline points="${cut.join(' ')}" fill="none" stroke="#55606b" stroke-width=".8" ${NS}/>`+
@@ -564,7 +584,7 @@ function annSVG(a,s,anim){
       return `<g>${fade}<line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#fff" stroke-width="10" stroke-linecap="round" ${NS}/><line x1="${A[0]}" y1="${A[1]}" x2="${E[0]}" y2="${E[1]}" stroke="#e3000b" stroke-width="5" stroke-linecap="round" ${NS}/>${head(A,B,'#e3000b',22)}</g>`}
     case 'line':if(anim&&a.draw){/* pen stroke: the line grows from a to b between draw[0] and draw[1] */
         const A=proj(a.a),B=proj(a.b),[d0,d1]=a.draw,kt=`keyTimes="0;${k3(d0)};${k3(d1)};1" ${REP()}`,v=i=>`values="${A[i]};${A[i]};${B[i]};${B[i]}"`;
-        const pen=`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(d0)};${k3(Math.min(d1+.03,.98))}" calcMode="discrete" ${REP()}/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${k3(B[0]-A[0])} ${k3(B[1]-A[1])};${k3(B[0]-A[0])} ${k3(B[1]-A[1])}" ${kt}/>${markerSVG(A,s)}</g></g>`;
+        const pen=`<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;${k3(d0)};${k3(Math.min(d1+.005,.98))}" calcMode="discrete" ${REP()}/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${k3(B[0]-A[0])} ${k3(B[1]-A[1])};${k3(B[0]-A[0])} ${k3(B[1]-A[1])}" ${kt}/>${(a.pen==='pencil'?pencilSVG:markerSVG)(A,s)}</g></g>`;
         return `<line x1="${A[0]}" y1="${A[1]}" x2="${A[0]}" y2="${A[1]}" stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''} opacity="0" ${NS}>`+
           `<animate attributeName="opacity" values="0;1;1" keyTimes="0;${k3(d0)};1" calcMode="discrete" ${REP()}/><animate attributeName="x2" ${v(0)} ${kt}/><animate attributeName="y2" ${v(1)} ${kt}/></line>`+pen}
       return ln(a.a,a.b,`stroke="${a.col||'#e3000b'}" stroke-width="${a.w||5}" stroke-linecap="round"${a.dash?` stroke-dasharray="${a.dash}"`:''}`)+(a.label?tag(mid(a.a,a.b),a.label,a.col||'#e3000b'):'');
@@ -618,6 +638,11 @@ function annSVG(a,s,anim){
       if(a.kind==='screwdriver'){const C=proj(a.p),d=unit2(sub(proj(add(a.p,a.dir)),C).slice(0,2)),cx=k3(C[0]),cy=k3(C[1]);
         const M=a.move?proj(a.move).map(k3).join(' '):'0 0',mv=`<animateTransform attributeName="transform" type="translate" values="0 0;0 0;${M};${M}" keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}/>`;
         return `<g opacity="0">${vis}<g>${mv}<g><animateTransform attributeName="transform" type="rotate" values="-8 ${cx} ${cy};8 ${cx} ${cy};-8 ${cx} ${cy}" dur=".24s" repeatCount="indefinite"/>${screwdriverSVG(C,s,d)}</g></g></g>`}
+      if(a.kind==='scissors'){const A=proj(a.a),B=proj(a.b),e=unit2([B[0]-A[0],B[1]-A[1]]),D=[B[0]-A[0],B[1]-A[1]].map(k3).join(' ');
+        return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${D};${D}" keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}/>${scissorsSVG(A,e,s)}</g></g>`}
+      if(a.kind==='knife'){const C=proj(a.p),e=unit2(sub(proj(add(a.p,a.dir)),C).slice(0,2)),d=[e[0]*9*s,e[1]*9*s].map(k3);
+        return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" values="${-d[0]} ${-d[1]};${d[0]} ${d[1]};${-d[0]} ${-d[1]}" dur=".26s" repeatCount="indefinite"/>${knifeSVG(C,e,s)}</g></g>`}
+      if(a.kind==='lighter')return `<g opacity="0">${vis}${lighterSVG(proj(a.p),s)}</g>`;
       if(a.kind==='jigsaw'){const A=proj(a.a),B=proj(a.b),D=[B[0]-A[0],B[1]-A[1]].map(k3).join(' ');
         return `<g opacity="0">${vis}<g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;${D};${D}" keyTimes="0;${k3(t0)};${k3(t1)};1" ${REP()}/>`+
           `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 ${k3(2.5*s)};0 0" dur=".08s" repeatCount="indefinite"/>${jigsawSVG(A,s)}</g></g></g>`}
@@ -748,6 +773,9 @@ def('rodTip',53,cyl('x',RODC,10,581,ROD_END,COL.rod,{seg:16}));
 def('pinR',54,pinBent(1),{...pinDef(1),tool:{kind:'pliers',at:[PIN_X,0,104]}});
 const loop=[];for(let d=0;d<=360;d+=10){const t=d*Math.PI/180;loop.push([0,EYE_Y+60*Math.sin(t),305-125*Math.cos(t)])}
 def('handle',60,[],{paths:[{pts:loop,col:COL.strap}]});
+/* 120 mm of garden hose on the top of the handle loop */
+const hoseP=Array.from({length:9},(_,i)=>{const t=Math.PI+(i-4)*.21;return[0,EYE_Y+60*Math.sin(t),305-125*Math.cos(t)]});
+def('hose',61,hoseP.slice(1).map((q,i)=>rodBetween(hoseP[i],q,9,'#2f7d3a',12)));
 
 const bolts=j=>HOLES[j].flatMap((_,i)=>[`${j}${i}t`,`${j}${i}b`]);
 const tops=j=>HOLES[j].map((_,i)=>`${j}${i}t`),bots=j=>HOLES[j].map((_,i)=>`${j}${i}b`);
@@ -789,7 +817,7 @@ S.cradle=[...S.pins,...CRADLE];
 S.cStraps=[...S.cradle,'cStraps','cStrapsUnder'];
 S.eye=[...S.cStraps,'eye','eyeB'];
 S.foot=[...S.eye,'foot'];
-S.handle=[...S.foot,'handle'];
+S.handle=[...S.foot,'handle','hose'];
 S.all=[...S.handle,'bowBlock','bStrap','bStrapUnder'];
 const FINAL=S.all.filter(i=>!BRICKS.includes(i));
 
@@ -1027,7 +1055,11 @@ const STEPS=[
   tip:'The bricks lift the frame so you can reach underneath.',
   view:()=>({ids:S.layB,hl:BRICKS})},
  {st:3,cap:'Mark the middle of the axle tube. Then make a mark <b>400 mm</b> each side of the middle.',parts:[],partsNote:'Nothing new',tools:['tape','marker'],
-  view:()=>({ids:S.layB,ann:[...marks,{t:'dim',a:[-400,25,155],b:[0,25,155],off:[0,120,0],label:'400'},{t:'dim',a:[0,25,155],b:[400,25,155],off:[0,120,0],label:'400'}]})},
+  view:()=>({ids:S.layB,ann:[
+    {t:'tool',kind:'tape',a:[-500,0,158],b:[0,0,158],tm:[.04,.16],hide:.2},{t:'text',p:[0,0,260],label:'middle',show:[.16,.3],animOnly:true},{t:'line',a:[0,-34,156],b:[0,34,156],draw:[.2,.26]},
+    {t:'tool',kind:'tape',a:[0,0,158],b:[400,0,158],tm:[.32,.44],hide:.48},{t:'line',a:[400,-34,156],b:[400,34,156],draw:[.48,.54]},
+    {t:'tool',kind:'tape',a:[0,0,158],b:[-400,0,158],tm:[.6,.72],hide:.76},{t:'line',a:[-400,-34,156],b:[-400,34,156],draw:[.76,.82]},
+    {t:'dim',a:[0,25,155],b:[400,25,155],off:[0,120,0],label:'400',show:[.32,.995]},{t:'dim',a:[-400,25,155],b:[0,25,155],off:[0,120,0],label:'400',show:[.6,.995]}]})},
  {st:3,cap:'Lay the long tube on the other 2 bricks, FRONT end away from the axle tube. Centre its back end on the middle mark and push it against the axle tube.',parts:[['A',1]],tools:['square'],
   view:()=>({ids:S.spine,hl:['A'],off:{A:[0,320,0]},ann:[...marks,{t:'arrow',a:[90,380,190],b:[90,60,190]}]})},
  {st:3,cap:'Put in both braces. Each FOOT goes on a 400 mm mark. Each TIP touches the long tube with its hole next to the long tube\'s front holes.',parts:[['C',2]],
@@ -1065,7 +1097,16 @@ const STEPS=[
   solo:()=>{/* upside down on its gunwales: the V bottom on top, the sides flaring down to the grass */
     const q=sabAt(BOAT_BOW),top=BOAT_DZ+q.sz,up=x=>top-hullZ(x);const sec=[[-q.sh,0],[q.sh,0],...[q.ch,0,-q.ch].map(x=>[x,up(x)])];
     const card=[...Array.from({length:17},(_,i)=>{const x=-400+800*i/16;return[x,up(x)]}).reverse(),[-400,up(0)+70],[400,up(0)+70]].reverse();
-    return{objs:[solo(extrudeY(sec,0,700,COL.boat)),solo(extrudeY(card,330,334,'#c8a46a'),{order:1,hl:true})],ann:[{t:'text',p:[0,332,up(0)+120],label:'trim to fit'},{t:'line',a:[-q.sh,350,2],b:[-q.ch,350,up(q.ch)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[-q.ch,350,up(q.ch)+2],b:[0,350,up(0)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[0,350,up(0)+2],b:[q.ch,350,up(q.ch)+2],col:'#1a1a1a',w:2,dash:'6 5'},{t:'line',a:[q.ch,350,up(q.ch)+2],b:[q.sh,350,2],col:'#1a1a1a',w:2,dash:'6 5'}]}}},
+    /* measure along the keel, pencil the line across, hold the card up and trace the V on it, cut it with scissors, then it sits on the line */
+    const H=110,Z=[0,0,0],U=[0,0,H],z0=up(400),V=[[-400,up(-400)],[0,up(0)],[400,up(400)]],hl=[[-q.sh,2],[-q.ch,up(q.ch)],[0,up(0)],[q.ch,up(q.ch)],[q.sh,2]];
+    return{objs:[solo(extrudeY(sec,0,700,COL.boat)),
+      solo(extrudeY(card,330,334,'#c8a46a'),{order:1,hl:true,keys:[[0,U,0],[.33,U,0],[.331,U,1],[.78,U,1],[.88,Z,1],[1,Z,1]]}),
+      solo(extrudeY([[-400,z0],...V.slice(1,2),[400,z0]],330,334,'#c8a46a'),{order:1,animOnly:true,keys:[[0,U,0],[.33,U,0],[.331,U,1],[.7,U,1],[.78,[0,0,H-70],0],[1,[0,0,H-70],0]]})],
+    ann:[{t:'tool',kind:'tape',a:[0,700,up(0)+5],b:[0,350,up(0)+5],tm:[.03,.13],hide:.16},{t:'text',p:[0,640,up(0)+90],label:'1.6 m from the bow',show:[.03,.16],animOnly:true},
+      ...hl.slice(1).map((b,i)=>({t:'line',a:[hl[i][0],350,hl[i][1]+2],b:[b[0],350,b[1]+2],col:'#1a1a1a',w:2,dash:'6 5',pen:'pencil',draw:[.15+i*.04,.19+i*.04]})),
+      ...[0,1].map(i=>({t:'line',a:[V[i][0],335,V[i][1]+H],b:[V[i+1][0],335,V[i+1][1]+H],col:'#1a1a1a',w:2,pen:'pencil',draw:[.36+i*.07,.43+i*.07],show:[.35,.7],animOnly:true})),
+      ...[0,1].map(i=>({t:'tool',kind:'scissors',a:[V[i][0],336,V[i][1]+H],b:[V[i+1][0],336,V[i+1][1]+H],tm:[.52+i*.09,.61+i*.09]})),
+      {t:'text',p:[0,332,up(0)+120],label:'trim to fit'}]}}},
  {st:6,cap:'Cut 2 pieces of pine board, <b>300 mm</b> long. Trace the cardboard shape onto each one. A grown-up cuts along the line with a jigsaw. Sand the edges.',parts:[['Qstock',1]],tools:['tape','pencil','clamp','jigsaw','sand'],adult:1,
   tip:'Use the right half of the pattern for one block and the left half for the other. Keep the rest of the board for the bow block.',
   solo:()=>({objs:[solo(extrudeY([[60,155],[360,155],...arcPts(360,60)],-22.5,22.5,COL.pine)),solo(extrudeY([...arcPts(60,360),[360,295],[60,295]],-22.5,22.5,COL.off),{order:1,off:[0,0,40],keys:[[0,[0,0,0],1],[.82,[0,0,0],1],[.92,[0,0,40],1],[1,[0,0,40],1]]}),solo(extrudeY([[-360,155],[-60,155],...arcPts(60,360).map(([x,z])=>[-x,z])].map(([x,z])=>[x,z]),-22.5,22.5,COL.pine),{off:[-40,0,0]})],ann:[{t:'text',p:[210,0,340],label:'offcut'},{t:'tool',kind:'jigsaw',a:[360,22.5,hullZ(360)+4],b:[60,22.5,hullZ(60)+4],tm:[.1,.8]}]})},
@@ -1081,7 +1122,16 @@ const STEPS=[
   tip:'Glue outside or with the door open. Fold the carpet neatly at the ends.',
   view:()=>({ids:[...CRADLE],hl:['carpetL','carpetR'],off:{carpetL:[0,0,90],carpetR:[0,0,90]},ann:[{t:'arrow',a:[210,0,400],b:[210,0,300]}]})},
  {st:6,cap:'Cut the webbing into <b>2 block straps</b> (900 mm), <b>1 bow strap</b> (1.3 m) and <b>1 long strap</b> (800 mm). A grown-up melts each cut end so it can\'t fray.',parts:[['Mstock',1]],tools:['tape','scissors','lighter'],adult:1,
-  solo:()=>({objs:[...Array.from({length:2},(_,i)=>solo(box(0,900,i*45,i*45+25,0,2.5,COL.strap))),solo(box(0,800,90,115,0,2.5,COL.strap)),solo(box(0,1300,180,205,0,2.5,COL.strap))],ann:[{t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'text',p:[880,102,3],label:'800'},{t:'dim',a:[0,205,3],b:[1300,205,3],off:[0,60,0],label:'1300'}]})},
+  /* each strap is still joined to the rest of the roll until the scissors cut it; then the lighter melts the cut end dark */
+  solo:()=>{const Z=[0,0,0],S=[[900,0],[900,45],[800,90],[1300,180]],cut=i=>.2+i*.08,melt=i=>.56+i*.1;
+    return{objs:[...S.map(([L,y])=>solo(box(0,L,y,y+25,0,2.5,COL.strap))),
+      ...S.map(([L,y],i)=>solo(box(L,L+170,y,y+25,0,2.5,COL.strap),{animOnly:true,keys:[[0,Z,1],[cut(i)+.07,Z,1],[cut(i)+.12,[90,0,0],0],[1,[90,0,0],0]]})),
+      ...S.map(([L,y],i)=>solo(box(L-8,L,y,y+25,0,2.8,'#6b4a1f'),{order:1,keys:[[0,Z,0],[melt(i)+.05,Z,0],[melt(i)+.06,Z,1],[1,Z,1]]}))],
+    ann:[{t:'tool',kind:'tape',a:[-60,192,6],b:[1300,192,6],tm:[.03,.15],hide:.18},
+      ...S.map(([L,y],i)=>({t:'tool',kind:'scissors',a:[L,y-20,4],b:[L,y+45,4],tm:[cut(i),cut(i)+.07]})),
+      ...S.map(([L,y],i)=>({t:'tool',kind:'lighter',p:[L-3,y+12,4],tm:[melt(i),melt(i)+.08]})),
+      {t:'text',p:[1100,120,3],label:'melt both ends',show:[.56,.99],animOnly:true},
+      {t:'dim',a:[0,0,3],b:[900,0,3],off:[0,-60,0],label:'900'},{t:'text',p:[880,102,3],label:'800'},{t:'dim',a:[0,205,3],b:[1300,205,3],off:[0,60,0],label:'1300'}]}}},
  {st:6,cap:'Sit each cradle block on the axle tube, between the middle plates and a corner plate. The cleats hug the tube. The high ends go outwards.',parts:[['Cb',2]],
   /* one block at a time, lifted well clear of the frame, and solid all the way down */
   view:()=>({ids:S.cradle,hl:CRADLE,off:offAll(CRADLE,[0,0,340]),noGhost:true,slide:{cradleL:[.06,.32],carpetL:[.06,.32],cradleR:[.4,.66],carpetR:[.4,.66]},focus:[-520,520,-80,80,90,700]})},
@@ -1093,10 +1143,28 @@ const STEPS=[
   view:()=>({ids:S.foot,hl:['foot'],off:{foot:[0,0,-90]},slide:{foot:[.08,.4]},focus:[-150,150,2050,2300,-40,260],ann:[{t:'arrow',a:[60,2120,-10],b:[60,2120,70],show:[.005,.4]},{t:'tool',kind:'screwdriver',p:[0,2120,75],dir:[0,0,1],tm:[.42,.85]}]})},
  {st:6,cap:'Slide a <b>120 mm</b> piece of old garden hose onto the long strap. Thread the strap through the eye and tie the ends with a double knot. That\'s your handle.',parts:[['Ml',1]],tools:['knife'],
   tip:'The hose makes a comfy grip so the strap doesn\'t dig into your hand.',
-  view:()=>({ids:S.handle,hl:['handle'],focus:F.front})},
+  /* the hose on the loop only appears once the knife has cut the piece, then rides up onto the strap */
+  view:()=>{const Z=[0,0,0],O=[-130,105,-421];return{ids:S.handle.filter(i=>i!=='hose'),hl:['handle'],focus:[-200,200,2050,2320,0,440],
+    extra:[solo(M.hose.solids,{order:61,hl:true,keys:[[0,O,0],[.379,O,0],[.38,O,1],[.58,Z,1],[1,Z,1]]}),solo(cyl('x',[0,2290,9],9,-70,90,'#2f7d3a',{seg:14,hubs:[{r:6,col:'#173f1d'}]}),{order:5}),
+      solo(cyl('x',[0,2290,9],9,-190,-71,'#2f7d3a',{seg:14,hubs:[{r:6,col:'#173f1d'}]}),{order:5,animOnly:true,keys:[[0,Z,1],[.3,Z,1],[.36,[-20,0,0],1],[.38,[-20,0,0],0],[1,[-20,0,0],0]]})],
+    ann:[{t:'tool',kind:'knife',p:[-70,2290,19],dir:[0,1,0],tm:[.06,.3]},{t:'text',p:[-130,2290,90],label:'120 mm',show:[.02,.36],animOnly:true},{t:'text',p:[0,EYE_Y,520],label:'double knot',show:[.62,.99],animOnly:true}]}}},
  {st:6,cap:'Cut a <b>440 mm</b> piece of pine for the bow block. Lift the dolly off the bricks and gently set the boat on the cradle. Lay the piece flat across the long tube and both braces, <b>400 mm</b> behind the front joint. Measure from its top up to the hull in the middle and at each end. Add <b>39 mm</b> to each (45 mm for the board, less 6 mm for the carpet) and mark those heights on the piece. Join the middle mark to each end mark with a straight line, to match the V of the hull. A grown-up cuts along the lines. Cut 2 short cleats, <b>100 mm</b> long, and screw them to the front so they will sit just inside the braces.',parts:[['Cs',2],['Ws',4]],tools:['tape','pencil','saw','jigsaw','drill:3.5','screwdriver'],adult:1,
   tip:'The bow block lies across the long tube and both braces, so it holds the hull across its width and stops it rocking.',
-  view:()=>({ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],extra:[solo(box(-BOW_X,BOW_X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true}),boatObj(.35)],ann:[...[-BOW_X+8,0,BOW_X-8].map(x=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places'}]})},
+  view:()=>{const Z=[0,0,0],X=BOW_X,F1=BOW_Y1+.6,on=(a,b)=>[[0,Z,0],[a-.001,Z,0],[a,Z,1],[b,Z,1],[b+.001,Z,0],[1,Z,0]],
+      V=[[-X,bowZ(-X)],[0,bowZ(0)],[X,bowZ(X)]],sx=[-107,107],cleatIn=[[0,[0,60,0],0],[.69,[0,60,0],0],[.7,[0,60,0],1],[.75,Z,1],[1,Z,1]];
+    return{ids:S.handle.filter(i=>!BRICKS.includes(i)),focus:[-520,520,420,1400,60,640],
+    extra:[solo(box(-X,X,BOW_YC-70,BOW_YC+70,155,200,COL.pine),{order:39,hl:true,keys:[[0,Z,1],[.33,Z,1],[.331,Z,0],[1,Z,0]]}),boatObj(.35),
+      solo(extrudeY([[-X,155],[X,155],...arcPts(X,-X,0,16,bowZ)],BOW_Y0,BOW_Y1,COL.pine),{order:39,hl:true,animOnly:true,keys:on(.331,.999)}),
+      solo(extrudeY([...arcPts(-X,X,0,16,bowZ),[X,300],[-X,300]],BOW_Y0,BOW_Y1,COL.pine),{order:39,animOnly:true,keys:[[0,Z,0],[.33,Z,0],[.331,Z,1],[.66,Z,1],[.72,[0,0,40],0],[1,[0,0,40],0]]}),
+      ...[-1,1].map(sg=>solo(bowCleat(sg),{order:41,animOnly:true,keys:cleatIn})),
+      ...sx.map((x,i)=>solo(cyl('y',[x,0,185],4.5,BOW_Y1+42,BOW_Y1+44.5,COL.bolt,{seg:12,hubs:[{r:1.2,col:'#333333'}]}),{order:42,animOnly:true,keys:[[0,Z,0],[.87+i*.055,[0,20,0],0],[.871+i*.055,[0,20,0],1],[.915+i*.055,Z,1],[1,Z,1]]}))],
+    ann:[...[-X+8,0,X-8].map((x,i)=>({t:'tool',kind:'tape',a:[x+30,BOW_YC+70,200],b:[x+30,BOW_YC+70,bowZ(x)+6],tm:[.03+i*.09,.1+i*.09],hide:.11+i*.09})),
+      ...[-X+8,0,X-8].map((x,i)=>({t:'dim',a:[x,BOW_YC,200],b:[x,BOW_YC,bowZ(x)+6],show:[.03+i*.09,.33]})),{t:'text',p:[0,BOW_YC,560],label:'measure 3 places',show:[.005,.33]},
+      ...[0,1].map(i=>({t:'line',a:[V[i][0],F1,V[i][1]],b:[V[i+1][0],F1,V[i+1][1]],col:'#1a1a1a',w:2,pen:'pencil',draw:[.35+i*.06,.41+i*.06],show:[.34,.66],animOnly:true})),
+      ...[0,1].map(i=>({t:'tool',kind:'jigsaw',a:[V[i][0],BOW_Y1,V[i][1]+4],b:[V[i+1][0],BOW_Y1,V[i+1][1]+4],tm:[.49+i*.08,.57+i*.08]})),
+      ...seqDrills(sx.map(x=>({t:'drill',a:[x,BOW_Y1+42+80,185],b:[x,BOW_Y1+10,185],e:[x,BOW_Y1+42,185],hole:1.75,chip:'#d9b483',label:x<0?'3.5 mm':'',guide:[.76,.86]})),{from:.76,to:.86}),
+      ...sx.map((x,i)=>({t:'tool',kind:'screwdriver',p:[x,BOW_Y1+64.5,185],dir:[0,-1,0],move:[0,-20,0],tm:[.871+i*.055,.915+i*.055]})),
+      {t:'text',p:[0,BOW_Y1+60,330],label:'2 screws in each cleat',show:[.7,.99],animOnly:true}]}}},
  {st:6,cap:'Glue carpet on top of the bow block. Lay it across the long tube and both braces, cleats at the front. Lash it to the long tube with the bow strap: over the block on one side of the tube, under the tube to the other side, and over the block again, so the strap crosses in an X under the tube. Go round twice and tie a double knot underneath.',parts:[['Bb',1],['Kc',1],['Mb',1]],adult:1,
   view:()=>({ids:S.all.filter(i=>!BRICKS.includes(i)),hl:['bowBlock','bStrap','bStrapUnder'],off:{bowBlock:[0,0,150],bStrap:[0,0,150],bStrapUnder:[0,0,150]},focus:[-420,420,600,1150,60,420]})},
  {st:6,cap:'Final check: tick every box.',parts:[],partsNote:'Nothing new',checks:['Every nut is snug.','Both split pins are bent open.','Both wheels spin freely and only move a little side to side.','The boat sits snugly on both cradle blocks and the bow block without rocking.','You\'ve read "Loading your boat" with a grown-up.'],
