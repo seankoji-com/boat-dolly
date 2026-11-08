@@ -166,7 +166,7 @@ const CAPTIONS = {
   26: "The head begins. The snout points forward over the chest.",
   27: "The snout and the black nose. The nose is the front-most brick.",
   28: "The top of the head. The two black eyes should face forward.",
-  29: "The ears rise. Each ear has a 2×2 footprint.",
+  29: "The ears rise on top of the head.",
   30: "The last ear bricks. The model is 29.8 cm tall here.",
   31: "Press a 2×2 tile onto each ear. That finishes the wallaby at 30.1 cm.",
 };

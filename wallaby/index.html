@@ -234,7 +234,12 @@ function go(i, push = true) {
   const focusId = document.activeElement?.id;
   page = Math.max(0, Math.min(PAGES.length - 1, i));
   render();
-  if (focusId === "prev" || focusId === "next") document.getElementById(focusId)?.focus();
+  if (focusId === "prev" || focusId === "next") {
+    const target = document.getElementById(focusId);
+    const other = document.getElementById(focusId === "prev" ? "next" : "prev");
+    if (target && !target.disabled) target.focus();
+    else if (other && !other.disabled) other.focus();
+  }
   const p = PAGES[page];
   if (push) history.replaceState(null, "", `#${p.hash}`);
   window.scrollTo({ top: 0, behavior: "smooth" });
