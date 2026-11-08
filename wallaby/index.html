@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wallaby: 30 cm Brick Build</title>
+<meta name="description" content="A step-by-step instruction set for a 30 cm wallaby built from real LEGO bricks, with a BrickLink-ready parts list.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='8' height='7' rx='1.5' fill='%23d01012'/%3E%3Crect x='18' y='4' width='8' height='7' rx='1.5' fill='%23d01012'/%3E%3Crect x='1' y='9' width='30' height='20' rx='3' fill='%23d01012'/%3E%3Cpath d='M1 24h30v2a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3z' fill='%23000' fill-opacity='.2'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#d01012">
+<style>
+:root{
+  --paper:#f3ecdf; --card:#fffdf8; --ink:#241a13; --muted:#776655; --line:#d9cbb8;
+  --red:#d01012; --yellow:#ffcf00; --blue:#0062ad; --green:#0d6b4f;
+  --brown:#7a351c; --dark:#3b2415; --tan:#e4cd9e; --darktan:#9a8f78;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 12px 12px, rgba(255,255,255,.55) 0 5px, transparent 5.5px),
+    radial-gradient(circle at 12px 12px, rgba(120,90,60,.05) 0 5px, transparent 5.5px);
+  background-size:24px 24px;
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;cursor:pointer}
+a{color:var(--blue)}
+.topbar{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+  padding:10px 22px;background:rgba(255,253,248,.95);backdrop-filter:blur(8px);
+  border-bottom:4px solid var(--yellow);
+}
+.brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:-.02em}
+.brand .brick{width:34px;height:24px;background:var(--red);border-radius:3px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.brand .brick::before,.brand .brick::after{content:"";position:absolute;top:-5px;width:10px;height:6px;background:var(--red);border-radius:2px 2px 0 0}
+.brand .brick::before{left:5px}.brand .brick::after{right:5px}
+.brand small{display:block;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.crosslink{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;border:2px solid var(--line);border-radius:999px;padding:6px 11px;white-space:nowrap}
+.crosslink:hover{color:var(--ink);border-color:var(--ink)}
+.printbtn{margin-left:auto;border:2px solid var(--ink);background:#fff;border-radius:999px;padding:7px 13px;font-weight:900;font-size:12px}
+.tabs{display:flex;gap:4px;background:#e9dfcf;padding:4px;border-radius:999px}
+#printall{display:none}
+.tab{border:0;background:transparent;padding:8px 15px;border-radius:999px;font-weight:900;color:var(--muted);font-size:13px}
+.tab[aria-current="page"]{background:var(--ink);color:#fff}
+.wrap{max-width:1140px;margin:0 auto;padding:24px 18px 70px}
+.progress{height:7px;background:#e2d5c2;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:999px;transition:width .25s}
+.page{background:var(--card);border:2px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 rgba(36,26,19,.08),0 20px 40px rgba(70,45,20,.08);padding:30px 34px 34px;position:relative;overflow:hidden;min-height:560px}
+.page::before{content:"";position:absolute;inset:0 0 auto 0;height:9px;background:linear-gradient(90deg,var(--red),var(--yellow),var(--blue))}
+.pager{display:flex;align-items:center;gap:12px;margin:16px 0 0}
+.pager button.nav{border:0;background:var(--ink);color:#fff;width:52px;height:52px;border-radius:50%;font-size:24px;font-weight:900;flex:none}
+.pager button.nav:disabled{opacity:.18;cursor:default}
+.dots{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
+.dot{border:0;min-width:24px;height:24px;border-radius:6px;background:#efe5d6;font-size:10.5px;font-weight:900;color:var(--muted);padding:0 4px}
+.dot.on{background:var(--red);color:#fff}
+.dot.special{background:#e3edf7;color:var(--blue)}
+.dot.special.on{background:var(--blue);color:#fff}
+
+.cover{display:grid;grid-template-columns:1fr 1.05fr;gap:34px;align-items:center;min-height:560px}
+.cover .setno{display:inline-flex;gap:8px;align-items:center;font-weight:900;font-size:12px;flex-wrap:wrap}
+.cover .setno span{background:var(--ink);color:#fff;padding:5px 9px;border-radius:5px;letter-spacing:.04em}
+.cover .setno span.y{background:var(--yellow);color:var(--ink)}
+.cover h1{font-size:clamp(52px,7vw,82px);line-height:.86;margin:16px 0 12px;letter-spacing:-.055em}
+.cover .lede{font-size:18px;line-height:1.45;color:#4a3a2b;max-width:34em;margin:0 0 18px}
+.facts{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
+.fact{border:2px solid var(--ink);border-radius:8px;padding:8px 12px;font-weight:900;font-size:15px;background:#fff}
+.fact small{display:block;font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.btn{border:0;background:var(--ink);color:#fff;border-radius:999px;padding:12px 20px;font-weight:900;font-size:14px;margin:5px 6px 5px 0}
+.btn.y{background:var(--yellow);color:var(--ink)}
+.btn.o{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+.btn.s{font-size:12.5px;padding:9px 15px}
+.art{background:radial-gradient(circle at 50% 40%,#fff,#eee3d2 75%);border:2px solid var(--ink);border-radius:14px;padding:8px}
+.art svg{width:100%;height:auto;display:block}
+.finenote{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px;font-weight:700}
+
+h2.pt{font-size:34px;margin:2px 0 6px;letter-spacing:-.035em}
+.sub{color:var(--muted);margin:0 0 20px;font-size:16px;line-height:1.45}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{border:2px solid var(--ink);border-radius:12px;padding:16px;background:#fff}
+.card h3{margin:0 0 8px;font-size:18px}
+.card p,.card li{margin:0 0 8px;font-size:14.5px;line-height:1.48}
+.card ul{margin:0;padding-left:18px}
+.card.warn{background:#fff7d1}
+.card.note{background:#eef6fd;border-color:var(--blue)}
+.swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.swatch{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--muted)}
+.swatch i{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.35);display:inline-block}
+.audit{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.audit div{border:2px solid var(--line);border-radius:10px;padding:10px;background:#fff}
+.audit b{display:block;font-size:22px;line-height:1}
+.audit span{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+.step{display:grid;grid-template-columns:300px 1fr;gap:26px}
+.stage{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--red)}
+.stepnum{font-size:92px;font-weight:900;line-height:.82;letter-spacing:-.07em;margin:7px 0 10px}
+.stepof{font-size:12px;font-weight:800;color:var(--muted);margin:0 0 10px}
+.caption{font-size:15px;line-height:1.5;margin:0 0 14px}
+.callout{border:2px solid var(--blue);border-radius:12px;background:#eef6fd;padding:10px;margin-bottom:12px}
+.callout h4{margin:0 0 8px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--blue)}
+.prow{display:grid;grid-template-columns:46px 30px 1fr;gap:7px;align-items:center;padding:5px 0;border-bottom:1px solid #cfe2f3}
+.prow:last-child{border-bottom:0}
+.prow .q{font-weight:900;font-size:15px}
+.prow .nm{font-size:12px;font-weight:800;line-height:1.2}
+.prow .id{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.03em}
+.tip{border-left:5px solid var(--yellow);background:#fffbdf;padding:9px 11px;font-size:12.5px;line-height:1.45;margin-bottom:12px}
+.tip b{font-weight:900}
+.diagram{position:relative;background:
+  repeating-linear-gradient(30deg,rgba(0,98,173,.055) 0 1px,transparent 1px 28px),
+  repeating-linear-gradient(150deg,rgba(0,98,173,.055) 0 1px,transparent 1px 28px),
+  linear-gradient(#fbf6ed,#fff 70%);
+  border:2px solid var(--ink);border-radius:14px;overflow:hidden;min-height:430px}
+.diagram>svg{width:100%;height:auto;display:block}
+.inset{position:absolute;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:3px;box-shadow:0 6px 14px rgba(40,25,10,.12)}
+.inset span{position:absolute;top:4px;left:8px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);background:#fff;padding:0 3px}
+.inset.map{right:10px;top:10px;width:178px}
+.inset.side{left:10px;bottom:10px;width:190px}
+.inset svg{width:100%;height:auto;display:block}
+.diagram .tools{position:absolute;left:10px;top:10px;display:flex;gap:7px}
+.replay{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900}
+.replay:hover{background:var(--ink);color:#fff}
+
+.partshead{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.partshead .grow{flex:1;min-width:260px}
+.partgroup{margin-top:20px}
+.partgroup h3{display:flex;align-items:center;gap:8px;font-size:17px;margin:0 0 10px}
+.partgroup h3 i{width:20px;height:20px;border-radius:5px;border:1px solid rgba(0,0,0,.4)}
+.partgroup h3 small{font-weight:800;color:var(--muted);font-size:11px;letter-spacing:.04em}
+.partgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px}
+.pcard{border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:8px;display:grid;grid-template-columns:58px 1fr;gap:7px;align-items:center}
+.pcard .q{font-size:20px;font-weight:900;line-height:1}
+.pcard .nm{font-size:11.5px;font-weight:800;line-height:1.25}
+.pcard .id{font-size:10px;color:var(--muted);font-weight:700;display:block;margin-top:2px}
+.totals{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 4px;font-size:12.5px;font-weight:800;color:var(--muted)}
+.totals b{color:var(--ink)}
+.xmlnote{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:8px;max-width:60em}
+
+.notes h3{font-size:18px;margin:22px 0 7px}
+.notes p,.notes li{font-size:14.5px;line-height:1.55}
+.notes ul{padding-left:20px}
+.notes .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.notes .box{border:2px solid var(--line);border-radius:10px;padding:14px;background:#fff}
+.smallprint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:24px;border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:860px){
+  .topbar{padding:9px 12px;flex-wrap:wrap}
+  .brand small{display:none}
+  .tabs{width:100%;margin-left:0;justify-content:center}
+  .wrap{padding:14px 10px 50px}
+  .page{padding:24px 18px 26px;border-radius:12px}
+  .cover{grid-template-columns:1fr;gap:20px;min-height:0}
+  .cover h1{font-size:60px}
+  .step{grid-template-columns:1fr;gap:16px}
+  .stepnum{font-size:70px}
+  .diagram{min-height:0}
+  .inset.map{position:static;width:min(250px,82%);margin:10px auto}
+  .inset.side{display:none}
+  .inset{position:relative}
+  .notes .two{grid-template-columns:1fr}
+  .audit{grid-template-columns:1fr 1fr}
+}
+@media print{
+  @page{size:A4;margin:12mm}
+  .wrap{display:none!important}
+  #printall{display:block!important}
+  #printall .page{display:block}
+  body{background:#fff;background-image:none}
+  .topbar,.pager,.progress,.replay,.btn{display:none!important}
+  .wrap{max-width:none;padding:0}
+  .page{border:0;box-shadow:none;border-radius:0;min-height:0;padding:0;break-after:page;break-inside:avoid}
+  .page::before{display:none}
+  .cover{min-height:0;display:flex!important;gap:24px}
+  .cover>div{flex:1;min-width:0}
+  .step{display:flex!important;gap:12px}
+  .step>div:first-child{width:220px;flex:none}
+  .step>div:last-child{flex:1;min-width:0}
+  .stepnum{font-size:64px}
+  .diagram{min-height:0;break-inside:avoid}
+  .inset.map{position:static!important;width:200px;margin:6px auto}
+  .inset.side{display:none!important}
+  .callout{break-inside:avoid}
+  .partshead .btn{display:none}
+  .partgrid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brick" aria-hidden="true"></span><div>Wallaby<small>30 cm brick build</small></div></div>
+  <a class="crosslink" href="../">← Boat Dolly</a>
+  <button class="printbtn" id="printbook" title="Print the whole booklet">Print</button>
+  <nav class="tabs" aria-label="Sections">
+    <button class="tab" data-tab="booklet" aria-current="page">Booklet</button>
+    <button class="tab" data-tab="parts">Parts</button>
+    <button class="tab" data-tab="notes">Notes</button>
+  </nav>
+</header>
+<main class="wrap">
+  <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+  <div id="app"></div>
+  <div class="pager" id="pager"></div>
+</main>
+
+<script type="module">
+import {
+  CELLS, CELL_COLORS, PARTS, PARTS_BY_COLOR, COLORS, STEPS, STEP_COUNT,
+  TOTAL_PIECES, WANTED_XML, AUDIT,
+} from "./model.js";
+import { renderCellsIso, renderCellsSide, renderLayerMap, brickIcon } from "./render.js";
+
+const PAGES = [
+  { kind: "cover", label: "Cover", hash: "cover" },
+  { kind: "intro", label: "Before", hash: "before" },
+  ...STEPS.map((s) => ({ kind: "step", step: s, label: String(s.index), hash: `step-${s.index}` })),
+  { kind: "finished", label: "Done", hash: "finished", special: true },
+  { kind: "parts", label: "Parts", hash: "parts", special: true },
+  { kind: "notes", label: "Notes", hash: "notes", special: true },
+];
+
+let page = 0;
+const app = document.getElementById("app");
+const pager = document.getElementById("pager");
+const bar = document.getElementById("bar");
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function stepIndexFor(step) {
+  return PAGES.findIndex((p) => p.kind === "step" && p.step.z === step.z);
+}
+function go(i, push = true) {
+  const focusId = document.activeElement?.id;
+  page = Math.max(0, Math.min(PAGES.length - 1, i));
+  render();
+  if (focusId === "prev" || focusId === "next") {
+    const target = document.getElementById(focusId);
+    const other = document.getElementById(focusId === "prev" ? "next" : "prev");
+    if (target && !target.disabled) target.focus();
+    else if (other && !other.disabled) other.focus();
+  }
+  const p = PAGES[page];
+  if (push) history.replaceState(null, "", `#${p.hash}`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function goHash(hash) {
+  const i = PAGES.findIndex((p) => p.hash === hash);
+  if (i >= 0) go(i, false);
+}
+
+function coverPage() {
+  const art = renderCellsIso(CELLS, { upToZ: 31, width: 560, height: 650, cellColors: CELL_COLORS });
+  return `<section class="page cover">
+    <div>
+      <div class="setno"><span>WBY-3001</span><span class="y">FAN BUILD</span><span>30.1 cm</span></div>
+      <h1>Wallaby</h1>
+      <p class="lede">A standing wallaby built from real LEGO bricks. It stands on two long hind feet and its tail, with a cream belly, a dark muzzle, and two leaf-shaped ears.</p>
+      <div class="facts">
+        <div class="fact">${TOTAL_PIECES}<small>pieces</small></div>
+        <div class="fact">${STEP_COUNT}<small>steps</small></div>
+        <div class="fact">30.1 cm<small>to ear tips</small></div>
+        <div class="fact">3-point<small>stance</small></div>
+      </div>
+      <button class="btn y" data-go="1">Start building →</button>
+      <button class="btn o" data-go="${PAGES.findIndex((p) => p.kind === "parts")}">See the pieces</button>
+      <p class="finenote">Original fan design. Not an official LEGO set. The model is a digital layout and has not been physically built or load-tested; check that it stands before display.</p>
+    </div>
+    <div class="art" aria-label="Side view of the finished wallaby">${art}</div>
+  </section>`;
+}
+
+function introPage() {
+  return `<section class="page">
+    <h2 class="pt">Before you build</h2>
+    <p class="sub">Thirty-one layers, bottom-up. Each page shows the bricks for one layer, a top-down map of where they go, and a 3/4 view of the model so far.</p>
+    <div class="cards">
+      <div class="card"><h3>1. Sort by colour</h3><p>Five colours do all the work. Keep the tan belly bricks separate from the dark tan feet; they are close in the bag.</p>
+        <div class="swatches">${Object.entries(COLORS).map(([k, c]) => `<span class="swatch"><i style="background:${c.hex}"></i>${c.name}</span>`).join("")}</div>
+      </div>
+      <div class="card"><h3>2. Check the count</h3><p><b>${TOTAL_PIECES} pieces</b>, ${PARTS.length} different part/colour combinations. The <a href="#parts">parts page</a> has the full list and a BrickLink wanted list.</p>
+        <p>Spare 1×1 and 1×2 bricks are useful for the eyes and nose if you substitute colours.</p>
+      </div>
+      <div class="card"><h3>3. How it stands</h3><p>The wallaby rests on its two hind feet and the tip of its tail. The tail is not decoration: together with the feet it makes a three-point stand.</p>
+        <p>Build it on a flat table. Check the stance before you put it on a shelf.</p>
+      </div>
+      <div class="card warn"><h3>Ages 10+</h3><p>Small parts. A younger builder can sort the pieces and place the big bricks, but an adult should press the tight tail and head joints.</p>
+        <p><b>Not physically built or load-tested.</b> This is an original digital design, not an official LEGO product.</p>
+      </div>
+    </div>
+    <div class="audit">
+      <div><b>${AUDIT.components}</b><span>connected brick graph</span></div>
+      <div><b>${PARTS.length}</b><span>part types</span></div>
+      <div><b>${(AUDIT.heightMm / 10).toFixed(1)}</b><span>cm to ear tips</span></div>
+    </div>
+    <p class="finenote">The model is checked as a brick graph: every brick is connected to the assembly. The head, arms and tail are display assemblies; lift the model by the body, not by an arm or the tail. It is still a display model, not a toy to throw in a bag.</p>
+  </section>`;
+}
+
+function partRow(p) {
+  const b = { w: p.w, d: p.d, tile: p.tile, color: p.color, colorKey: p.colorKey };
+  return `<div class="prow">${brickIcon(b, { size: 42 })}<span class="q">${p.qty}×</span><span class="nm">${esc(p.design.name)}<span class="id">${esc(p.color.name)} · ${p.design.id}</span></span></div>`;
+}
+
+function stepPage(step, opts = {}) {
+  const prevCells = step.z > 0 ? (STEPS.find((s) => s.z === step.z - 1)?.cells || []) : [];
+  const below = prevCells.map(([x, y]) => [x, y]);
+  const iso = renderCellsIso(CELLS, { upToZ: step.z, highlightZ: step.z, width: 760, height: 470, animate: !opts.print, cellColors: CELL_COLORS });
+  const map = renderLayerMap(step.bricks, below, { cell: 12 });
+  const side = renderCellsSide(CELLS, { upToZ: 31, highlightZ: step.z, width: 420, height: 520, cellColors: CELL_COLORS });
+  const showSide = step.z >= 8 && (step.z <= 13 || step.z >= 24);
+  const parts = step.parts.map(partRow).join("");
+  const tip = step.tip ? `<div class="tip"><b>Tip.</b> ${step.tip}</div>` : "";
+  return `<section class="page step" data-step="${step.index}">
+    <div>
+      <div class="stage">${esc(step.stage)}</div>
+      <div class="stepnum">${String(step.index).padStart(2, "0")}</div>
+      <p class="stepof">Layer ${step.z + 1} of 32 · ${step.bricks.length} brick${step.bricks.length === 1 ? "" : "s"}</p>
+      <p class="caption">${step.caption}</p>
+      <div class="callout"><h4>Add these</h4>${parts}</div>
+      ${tip}
+      <button class="btn s o" id="replay">↻ Replay layer</button>
+    </div>
+    <div>
+      <div class="diagram">
+        <div class="tools"><button class="replay" data-step="${step.index}">↻ Replay</button></div>
+        ${iso}
+        <div class="inset map"><span>Layer map</span>${map}</div>
+        ${showSide ? `<div class="inset side"><span>Side view</span>${side}</div>` : ""}
+      </div>
+    </div>
+  </section>`;
+}
+
+function finishedPage() {
+  const side = renderCellsSide(CELLS, { upToZ: 31, width: 520, height: 720, cellColors: CELL_COLORS });
+  const iso = renderCellsIso(CELLS, { upToZ: 31, width: 520, height: 560, cellColors: CELL_COLORS });
+  return `<section class="page">
+    <h2 class="pt">Finished wallaby</h2>
+    <p class="sub">Stand it on a flat surface. The two feet and the tail tip should all touch; if the tail floats, press the rump joint together.</p>
+    <div class="cover" style="grid-template-columns:1fr 1fr;min-height:0;align-items:start">
+      <div class="art" aria-label="Side view of the finished wallaby">${side}</div>
+      <div>
+        <div class="art" aria-label="Three-quarter view of the finished wallaby">${iso}</div>
+        <div class="audit">
+          <div><b>${(AUDIT.heightMm / 10).toFixed(1)}</b><span>cm tall</span></div>
+          <div><b>${TOTAL_PIECES}</b><span>pieces</span></div>
+          <div><b>${PARTS.length}</b><span>part types</span></div>
+        </div>
+        <p class="finenote">The tail is the third foot. Keep the model out of direct sun; dark brown and reddish brown can fade over years. If a joint loosens, add a hidden 1×2 plate under the tail base or swap the brick.</p>
+        <button class="btn y" data-go="0">Back to cover</button>
+        <button class="btn o" data-go="${PAGES.findIndex((p) => p.kind === "parts")}">Parts list</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function partsPage() {
+  const groups = PARTS_BY_COLOR.map((g) => `<div class="partgroup">
+    <h3><i style="background:${g.color.hex}"></i>${g.color.name} <small>${g.count} pieces · BrickLink ${g.color.bricklink}</small></h3>
+    <div class="partgrid">${g.parts.map((p) => `<div class="pcard">${brickIcon(p, { size: 54 })}<div><div class="q">${p.qty}×</div><div class="nm">${esc(p.design.name)}<span class="id">${p.design.id}</span></div></div></div>`).join("")}</div>
+  </div>`).join("");
+  return `<section class="page">
+    <div class="partshead">
+      <div class="grow"><h2 class="pt">The pieces</h2><p class="sub">Everything is an ordinary, currently produced LEGO brick. Design IDs are BrickLink catalogue numbers; colours use BrickLink names and IDs.</p></div>
+      <div>
+        <button class="btn y" id="downloadxml">Download BrickLink XML</button>
+        <button class="btn o" id="copyxml">Copy list</button>
+      </div>
+    </div>
+    <div class="totals"><span><b>${TOTAL_PIECES}</b> pieces</span><span><b>${PARTS.length}</b> part types</span><span><b>${PARTS_BY_COLOR.length}</b> colours</span><span><b>${(AUDIT.heightMm / 10).toFixed(1)}</b> cm tall</span></div>
+    ${groups}
+    <p class="xmlnote">The download is a BrickLink wanted list: upload it at BrickLink → Want → Upload, or paste the XML into a wanted-list import. It uses only the design IDs and colour IDs above. Prices and availability change; check the live listings. A few 1×1 and 1×2 bricks in the same colours are worth ordering as spares.</p>
+  </section>`;
+}
+
+function notesPage() {
+  return `<section class="page notes">
+    <h2 class="pt">About this build</h2>
+    <p class="sub">A fan-designed display wallaby, sized to 30 cm, built entirely from standard bricks.</p>
+    <div class="two">
+      <div class="box">
+        <h3>Size and count</h3>
+        <ul>
+          <li><b>30.1 cm</b> to the ear tips (300.8 mm): 31 brick layers plus a 2×2 tile on each ear.</li>
+          <li><b>${TOTAL_PIECES} pieces</b>: 283 bricks and 2 tiles.</li>
+          <li>Footprint about <b>11.2 × 20.8 cm</b> including the tail and long feet.</li>
+          <li>${PARTS.length} part/colour combinations in five colours.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>How it stands</h3>
+        <ul>
+          <li>Three ground contacts: the two hind feet and the tail tip.</li>
+          <li>The centre of mass projects inside that support triangle.</li>
+          <li>The tail is a cantilever. Tie it tightly into the rump at layers 9–13.</li>
+          <li>The head attaches at several points. Each arm and the tail hang from a small root cluster, so lift the model by the body.</li>
+          <li>The brick graph is connected, but the arms and tail are display assemblies, not handles.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Build notes</h3>
+    <ul>
+      <li>Build bottom-up. Each page is one layer; the yellow bricks are the new ones.</li>
+      <li>The top-down map is drawn from the back (top) to the front (bottom). The dashed grey cells are the layer below, for alignment.</li>
+      <li>The tail is built as part of the lower layers. Keep it tight against the rump at layers 9–13; that joint carries its weight.</li>
+      <li>The arms are short 2-stud columns. Press them fully onto the shoulder before adding the next chest layer.</li>
+      <li>The eyes and nose are small black bricks. If you substitute colours, keep them dark so the face still reads.</li>
+      <li>Tiles on the ears are smooth. Use 2×2 plates instead if you want studs on top.</li>
+    </ul>
+    <h3>Honest limits</h3>
+    <p>This is a digital design. It has a validated brick-connection graph and a static centre-of-mass check, but it has not been physically built, dropped, or load-tested. Clutch power varies between batches of bricks; if a joint feels loose, add a hidden 1×2 plate underneath or swap the brick. It is a display model, not a hand toy.</p>
+    <h3>Colours</h3>
+    <p>The palette is Reddish Brown, Dark Brown, Tan, Dark Tan and Black. Any current LEGO colour will build; the model reads best with a dark body, a cream belly, and dark feet. The BrickLink XML lists the exact IDs used here.</p>
+    <p class="smallprint">Wallaby WBY-3001 is an original fan build. It is not endorsed by, produced by, or affiliated with the LEGO Group. LEGO is a trademark of the LEGO Group. BrickLink design and colour IDs are used for parts sourcing only.</p>
+  </section>`;
+}
+
+function printAll(doPrint = true) {
+  let root = document.getElementById("printall");
+  if (!root) {
+    root = document.createElement("div");
+    root.id = "printall";
+    document.body.appendChild(root);
+  }
+  root.innerHTML =
+    coverPage() +
+    introPage() +
+    STEPS.map((s) => stepPage(s, { print: true })).join("") +
+    finishedPage() +
+    partsPage() +
+    notesPage();
+  document.body.classList.add("printing");
+  if (doPrint) window.print();
+}
+
+function render() {
+  const p = PAGES[page];
+  if (p.kind === "cover") app.innerHTML = coverPage();
+  else if (p.kind === "intro") app.innerHTML = introPage();
+  else if (p.kind === "step") app.innerHTML = stepPage(p.step);
+  else if (p.kind === "finished") app.innerHTML = finishedPage();
+  else if (p.kind === "parts") app.innerHTML = partsPage();
+  else app.innerHTML = notesPage();
+
+  bar.style.width = `${((page + 1) / PAGES.length) * 100}%`;
+  document.querySelectorAll(".tab").forEach((t) => {
+    const kind = t.dataset.tab;
+    const on = (kind === "booklet" && (p.kind === "cover" || p.kind === "intro" || p.kind === "step" || p.kind === "finished")) ||
+      (kind === "parts" && p.kind === "parts") || (kind === "notes" && p.kind === "notes");
+    if (on) t.setAttribute("aria-current", "page");
+    else t.removeAttribute("aria-current");
+  });
+  renderPager();
+  wire();
+}
+
+function renderPager() {
+  const dots = PAGES.map((p, i) => `<button class="dot ${i === page ? "on" : ""} ${p.special ? "special" : ""}" data-page="${i}" aria-label="${esc(p.label)}" ${i === page ? 'aria-current="page"' : ""}>${esc(p.label)}</button>`).join("");
+  pager.innerHTML = `<button class="nav" id="prev" ${page === 0 ? "disabled" : ""} aria-label="Previous page">‹</button><div class="dots">${dots}</div><button class="nav" id="next" ${page === PAGES.length - 1 ? "disabled" : ""} aria-label="Next page">›</button>`;
+}
+
+function wire() {
+  const printBtn = document.getElementById("printbook");
+  if (printBtn && !printBtn.dataset.bound) {
+    printBtn.dataset.bound = "1";
+    printBtn.addEventListener("click", printAll);
+  }
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(Number(b.dataset.go))));
+  document.querySelectorAll("[data-page]").forEach((b) => b.addEventListener("click", () => go(Number(b.dataset.page))));
+  document.querySelectorAll("[data-tab]").forEach((b) => {
+    if (b.dataset.bound) return;
+    b.dataset.bound = "1";
+    b.addEventListener("click", () => {
+      if (b.dataset.tab === "booklet") go(0);
+      else go(PAGES.findIndex((p) => p.kind === b.dataset.tab));
+    });
+  });
+  const prev = document.getElementById("prev");
+  const next = document.getElementById("next");
+  if (prev) prev.addEventListener("click", () => go(page - 1));
+  if (next) next.addEventListener("click", () => go(page + 1));
+  document.querySelectorAll("button[data-step]").forEach((b) => b.addEventListener("click", () => {
+    const s = STEPS.find((x) => x.index === Number(b.dataset.step));
+    if (s) go(stepIndexFor(s), false);
+    render();
+  }));
+  const replay = document.getElementById("replay");
+  if (replay) replay.addEventListener("click", render);
+  const dl = document.getElementById("downloadxml");
+  if (dl) dl.addEventListener("click", () => {
+    const blob = new Blob([WANTED_XML], { type: "application/xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "wallaby-parts.xml";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  const copy = document.getElementById("copyxml");
+  if (copy) copy.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(WANTED_XML); copy.textContent = "Copied"; }
+    catch { copy.textContent = "Copy failed"; }
+  });
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+  if (e.key === "ArrowLeft") go(page - 1);
+  if (e.key === "ArrowRight") go(page + 1);
+});
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("printing");
+  const r = document.getElementById("printall");
+  if (r) r.remove();
+});
+window.addEventListener("hashchange", () => goHash(location.hash.slice(1)));
+goHash(location.hash.slice(1) || "cover");
+if (!location.hash) go(0, false);
+if (new URLSearchParams(location.search).get("printall") === "1") printAll(false);
+</script>
+</body>
+</html>
