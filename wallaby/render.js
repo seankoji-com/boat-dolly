@@ -153,7 +153,8 @@ export function renderCellsIso(cells, opts = {}) {
   for (const [x, y, z, part, tile] of sorted) {
     const key = cellColor(x, y, z, part, set);
     const color = COLORS[key].hex;
-    const x0 = x, y0 = y, z0 = z, x1 = x + 1, y1 = y + 1, z1 = z + 1;
+    const h = tile ? 0.333 : 1;
+    const x0 = x, y0 = y, z0 = z, x1 = x + 1, y1 = y + 1, z1 = z + h;
     const top = [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]].map(iso);
     const front = [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]].map(iso);
     const right = [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]].map(iso);
@@ -182,7 +183,7 @@ export function renderCellsIso(cells, opts = {}) {
   if (animate && newLayer) {
     newLayer = `<g>${newLayer}<animateTransform attributeName="transform" type="translate" values="0 -28;0 0;0 0" dur="0.75s" begin="0.05s" fill="freeze" calcMode="spline" keySplines="0 0 1 1;0 0 1 1"/></g>`;
   }
-  const corners = list.flatMap(([x, y, z]) => [iso([x, y, z]), iso([x + 1, y + 1, z + 1])]);
+  const corners = list.flatMap(([x, y, z, , tile]) => [iso([x, y, z]), iso([x + 1, y + 1, z + (tile ? 0.333 : 1)])]);
   if (!corners.length) corners.push([0, 0], [1, 1]);
   const xs = corners.map((p) => p[0]), ys = corners.map((p) => p[1]);
   const pad = 8;
